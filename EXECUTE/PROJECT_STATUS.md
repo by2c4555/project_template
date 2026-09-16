@@ -1,30 +1,31 @@
 # Project Status
 
 ```yaml
-workflow_version: "3.4.1"
+workflow_version: "4.0.0"
 
 project_status: ACTIVE
+
 phase: INITIALIZE
 stage: INPUT_VALIDATION
 
-plan_revision: 0
 knowledge_revision: 0
+plan_revision: 0
+
+active_phase: none
+phase_authorized: false
 
 active_task: none
-recommended_agent: none
+recommended_agent: Planner512K
 
 active_issue: none
-escalation: NONE
 
 last_completed: none
 latest_history: none
 
-next_action: Validate project input, select the Planning model if required, and initialize/refine project knowledge.
+next_action: >
+  Validate EXECUTE/project_details.md using Planner512K+.
 ```
 
-## Rules
+This file is the compact global workflow router.
 
-- This is the single global workflow router.
-- Keep it small.
-- Persist before and after every major stage.
-- Detailed logs belong in Task history or Issues.
+Do not place long logs, Plan content, Knowledge content, or secrets here.

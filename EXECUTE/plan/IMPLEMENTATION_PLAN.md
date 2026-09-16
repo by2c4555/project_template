@@ -1,28 +1,16 @@
 # Implementation Plan
 
+Status: NOT_CREATED
 Plan revision: 0
-Status: NOT_PLANNED
 
-This becomes the authoritative current project Plan after Planning validates it.
+This placeholder is not a valid Plan.
 
-Until `Status: VALIDATED`, executable task generation must not be considered complete.
+It must not be used to generate executable Tasks until Planner512K+ has:
+1. passed the Context Gate;
+2. completed Input Validation;
+3. completed Knowledge Validation;
+4. created the Plan;
+5. passed Plan Validation;
+6. changed `Status` to `VALIDATED`.
 
-A validated Plan should own durable project truth:
-
-- purpose and success definition;
-- requirements and constraints;
-- architecture and rationale;
-- component boundaries;
-- interfaces/contracts;
-- schemas/data models;
-- data/control flow;
-- state/lifecycle rules;
-- error behavior;
-- security/performance/platform constraints;
-- testing/integration strategy;
-- packaging/install strategy;
-- release criteria;
-- critical assumptions and early risk validations;
-- requirement-to-task traceability.
-
-Detailed execution logs do not belong here.
+When created, the Plan should contain durable project-wide decisions and the Phase graph, not detailed execution logs.

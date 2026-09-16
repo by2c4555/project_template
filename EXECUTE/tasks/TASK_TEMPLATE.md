@@ -1,156 +1,121 @@
 ---
 task_id: TASK_NNN
-type: normal
+phase: PHASE_NN
 status: PENDING
-stage: pending
 
-required_builder_profile: Builder64K
-builder_profile_source: .github/agents/builder64k.agent.md
-planned_context_tokens: 0
-context_assessment: SAFE
+builder: Builder128K
 
 depends_on: []
+
 plan_refs: []
 knowledge_refs: []
-history_refs: []
 issue_refs: []
 ---
 
-# TASK_NNN — <Title>
+# TASK_NNN — Title
 
-## Objective
-One bounded outcome.
+## Goal
 
-## Definition of Done
-Observable completion condition.
+One coherent, independently verifiable outcome.
 
-## Plan References
-Exact stable Plan IDs only.
+## Context
 
-## Knowledge References
-Exact Knowledge IDs only.
+### WRITE
 
-## Dependencies
-All required dependencies must be PASS.
+- `path/to/file`
+  - `Exact.symbol` when known
 
-## Builder / Context Budget
-Derived from the selected Builder agent.
+### READ
 
-## Exploration Budget
+- `path/to/file`
+  - relevant symbol/section when known
+
+### TEST
+
+- `path/to/focused_test`
+
+Do not load unrelated project context.
+
+## Verified Facts
+
+Include only execution-critical facts.
+
+- FACT 1
+- FACT 2
+
+Sources:
+- KNOWLEDGE-ID
+- CONTRACT-ID
+
+## Required Change
+
+Describe the exact required behavior.
+
+Do not leave architecture decisions unresolved.
+
+## Must Preserve
+
+- existing required behavior;
+- named contracts;
+- unrelated functionality.
+
+## Acceptance Criteria
+
+- AC-01:
+- AC-02:
+
+## Verify
+
+```text
+<exact command or deterministic verification procedure>
+```
+
+Expected result:
+
+`PASS`
+
+## Environment
 
 ```yaml
-search_rounds: 3
-additional_files: 6
-log_lines: 200
+external_access: false
+
+required_user_env: []
+
+production_access: false
+database_access: none
 ```
 
 ## External I/O Budget
 
-Use zero when external access is not required.
+Use only when external access is required.
 
 ```yaml
+api_requests: 0
+api_pages: 0
+api_items_per_page: 0
+
 db_queries: 0
 db_rows_per_query: 0
-db_pages: 0
-
-api_requests: 0
-api_items_per_page: 0
-api_pages: 0
 
 repeated_equivalent_calls: 2
 transient_retries_per_operation: 2
 ```
 
-## Environment Contract
+## Stop If
 
-```yaml
-live_external_access: false
-required_user_env: []
-optional_user_env: []
-database_access: none
-production_access: false
-```
+Stop and create/escalate an Issue when:
+- Task facts conflict with repository/external reality;
+- required scope expands materially;
+- a required architecture decision is missing;
+- external configuration is missing;
+- equivalent failure repeats without new evidence;
+- two meaningful repairs fail;
+- unrelated regression is introduced.
 
-Missing required `.env.user` values -> `WAITING_USER` -> STOP.
-Never guess credentials or endpoints.
-
-## Context Manifest
-
-### Source
-- exact path/symbol
-
-### Tests
-- exact path/test
-
-### Supporting Context
-- exact file/section
-
-### Plan / Knowledge
-- exact refs
-
-## Required Evidence
-State exactly what evidence is sufficient to implement safely.
-
-## Current State / Verified Baseline
-Only verified task-relevant state.
-
-## Expected Behavior
-Observable required behavior.
-
-## Allowed Scope
-- ...
-
-## Out of Scope
-- ...
-
-## Implementation Requirements
-- ...
-
-## Error / Edge Cases
-- ...
-
-## Acceptance Criteria
-
-```text
-AC-01:
-AC-02:
-```
-
-## Test Ownership
-Mode: HYBRID
-
-### Planner-Owned Contract Tests
-None unless stable specification-derived tests were generated.
-
-### Builder-Owned Tests
-Focused unit/integration/regression tests required by implementation.
-
-## Verification Matrix
-
-| Check | Owner | Command / Procedure | Expected | Covers |
-|---|---|---|---|---|
-
-## Exploration Stop Conditions
-Stop discovery when sufficient evidence exists, two equivalent searches/calls yield no new evidence, or budget is exhausted.
-
-## Failure / Blocker Rules
-Budget exhaustion, environment failure, requirement conflict, knowledge conflict, or executor mismatch must produce a bounded stop.
-
-## Completion Condition
-
-After required verification passes:
-
-1. stop exploration;
-2. stop optional refactoring;
-3. do not rerun unchanged passing checks;
-4. persist Task/history/project state;
-5. signal completion when supported;
-6. stop.
-
-## Current Result
+## Result
 
 Status: PENDING
-Stage: pending
+
 Latest history: none
+
 Latest issue: none
-Summary: Not started.

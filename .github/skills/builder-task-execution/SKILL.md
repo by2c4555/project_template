@@ -1,196 +1,296 @@
 ---
 name: builder-task-execution
-description: Execute exactly one bounded task with strict context, exploration, external-I/O, repair, environment, history, issue, and completion controls.
-user-invocable: false
-disable-model-invocation: false
+description: Shared bounded execution kernel for Builder128K and Builder256K.
 ---
 
 # Builder Task Execution
 
-The selected Builder agent owns context profile and hard executor policy. This skill owns the shared Task procedure.
+Use this procedure only after the active Builder has passed its Context Gate.
 
-## Minimal Loading Order
+Execute exactly one active Task.
 
-```text
-EXECUTE/PROJECT_STATUS.md
--> active Task metadata
--> selected Builder agent
--> runtime context compatibility gate
--> active Task
--> exact Knowledge refs
--> exact Plan refs if needed
--> selected history Summary/Run if needed
--> linked Issue if needed
--> exact src/test Context Manifest
-```
+## 1. Preflight
 
-Do not load `project_details.md`, raw `docs/`, all reference files, the full Plan by default, all Tasks/history/issues, or the whole repository.
+Read:
+- `EXECUTE/PROJECT_STATUS.md`;
+- the active `TASK_NNN.md`.
 
-## Preflight
+When resuming escalation, also read the active `ISSUE_NNNN.md`.
 
-Before implementation:
+Confirm:
+- Task is the active Task;
+- Task dependencies are PASS;
+- required Builder profile matches;
+- Phase is authorized when executing a normal Phase Task;
+- Task is not already superseded or completed.
 
-1. confirm exact active Task;
-2. confirm dependencies PASS;
-3. confirm runtime/model context compatibility;
-4. confirm Task Context Budget is SAFE;
-5. preserve unrelated repository changes;
-6. perform Environment Safety Gate when external access is required;
-7. load only the Context Manifest.
+Do not load unrelated project context.
 
-## Environment Safety Gate
+If any precondition is invalid:
+- persist the exact reason;
+- return BLOCKED;
+- STOP.
 
-If the Task requires external access:
+---
 
-1. read Task Environment Contract;
-2. validate root `.env.user`;
-3. validate `EXECUTE/.env.execute`;
-4. never invent missing values;
-5. do not make external requests until required values pass validation.
+## 2. Load Bounded Context
 
-If `.env.user` is missing, create only required keys using `__REQUIRED__`, persist `WAITING_USER`, report exact variable names, and stop.
+Load only:
+- Task-listed WRITE files;
+- Task-listed READ files;
+- Task-listed tests;
+- execution-critical facts embedded in the Task;
+- the active Issue when resuming one;
+- the smallest additional evidence required by a verified failure.
 
-Never persist secret values into project state, Tasks, history, Issues, reference, logs, or final responses.
+Do not preload:
+- entire Implementation Plan;
+- entire Knowledge Base;
+- unrelated Task history;
+- unrelated Issues;
+- broad repository trees.
 
-Production access and DB write access require explicit policy permission.
+Context expansion requires evidence.
 
-## Evidence-First Exploration
+If the required scope materially exceeds the Task contract:
+- `SCOPE_EXPANSION_REQUIRED`;
+- create/update Issue;
+- BLOCKED;
+- STOP.
 
-Every discovery action must directly support required context, implementation, required verification, blocker diagnosis, or state/history update.
+---
 
-Stop discovery once sufficient evidence exists. Do not search merely for confidence.
+## 3. Dependency and Baseline Gate
 
-## Batch Operations
+Verify dependency state from persisted project data.
 
-Prefer bounded batch operations over repeated equivalent calls.
+Before code changes, establish the smallest useful relevant baseline.
 
-Avoid reading many files one-by-one when search can identify relevant files, N+1 DB queries, resource-by-resource API calls when batch/list/filter exists, rerunning unchanged passing tests, or repeatedly reading unchanged files.
+Examples:
+- focused existing test;
+- current function behavior;
+- current integration check.
 
-## Database Exploration
+Preserve unrelated user changes.
 
-Prefer:
+Never use destructive repository-reset behavior that may discard unrelated work.
 
-```text
+---
+
+## 4. Environment Gate
+
+Run this gate before any external API/DB access.
+
+Read:
+- Task Environment section;
+- `.env.user` only when required;
+- `EXECUTE/.env.execute`.
+
+Never guess:
+- API keys;
+- tokens;
+- passwords;
+- URLs;
+- DB URLs;
+- hosts;
+- ports;
+- credentials.
+
+If a required value is missing, the workflow may create only the required placeholder such as:
+
+`KEY=__REQUIRED__`
+
+Then:
+- set WAITING_USER;
+- state exact missing variable names without values;
+- STOP before external access.
+
+Production access is denied by default.
+
+Database writes are denied by default.
+
+Never expose secret values in history, Issues, logs, or responses.
+
+---
+
+## 5. Implement
+
+Implement only the Task-defined behavior.
+
+Respect:
+- exact WRITE scope;
+- verified Task facts;
+- Must Preserve requirements;
+- acceptance criteria;
+- existing valid contracts.
+
+Do not:
+- redesign architecture;
+- reinterpret project requirements;
+- modify Knowledge;
+- modify the Plan;
+- implement future Tasks;
+- perform unrelated refactors;
+- broaden scope silently.
+
+---
+
+## 6. Verify
+
+Run the exact Task verification first.
+
+On PASS:
+- use the Completion Fast Path;
+- do not continue exploring;
+- do not perform optional refactors;
+- do not rerun already-sufficient checks without reason.
+
+On FAIL:
+- capture concise failure evidence;
+- classify before changing more code.
+
+---
+
+## 7. Repair
+
+Default maximum:
+
+2 meaningful repair attempts.
+
+Each attempt must produce at least one:
+- new verified evidence;
+- materially different corrective change.
+
+A repeated equivalent failed action without new evidence is not valid progress.
+
+Repair sequence:
+
+failure evidence
+→ bounded hypothesis
+→ corrective change
+→ verification
+
+Do not repeat approaches already ruled out unless new evidence justifies them.
+
+---
+
+## 8. Progress Invariant
+
+Every meaningful execution loop must produce at least one:
+
+- new verified evidence;
+- state-changing corrective action;
+- termination.
+
+If none occurs:
+- `NO_PROGRESS`;
+- do not continue the loop.
+
+---
+
+## 9. Execution Integrity Guard
+
+Observable instability signals:
+
+- `REPEATED_EQUIVALENT_ACTION`
+- `NO_PROGRESS`
+- `SCOPE_DRIFT`
+- `REPEATED_REGRESSION`
+- `CONTRADICTED_VERIFIED_FACT`
+- `EXCESSIVE_CONTEXT_EXPANSION`
+- `REPAIR_LIMIT_REACHED`
+
+First recoverable drift:
+1. stop the current approach;
+2. reread Task Goal, Verified Facts, Must Preserve, Acceptance, and latest failure;
+3. perform at most one bounded reorientation.
+
+If drift repeats without new evidence:
+- `EXECUTION_UNSTABLE`;
+- create/update Issue;
+- BLOCKED;
+- STOP.
+
+---
+
+## 10. Regression Guard
+
+If a change causes previously passing unrelated verification to fail:
+- do not build further work on the regressed state;
+- restore only the Task-local change when safe;
+- preserve unrelated user work;
+- record the failed attempt.
+
+Repeated regression:
+- `EXECUTION_UNSTABLE`;
+- Issue;
+- STOP.
+
+---
+
+## 11. External I/O Guard
+
+Use bounded external access.
+
+Database:
 schema/metadata
--> aggregate/filter
--> candidate keys
--> bounded sample
--> exact affected rows
-```
+→ filter/aggregate
+→ candidate identifiers
+→ bounded rows
+→ exact affected records
 
-Avoid row-by-row enumeration, unbounded SELECT, open-ended pagination, and repeated equivalent queries.
-
-## API Exploration
-
-Prefer:
-
-```text
+API:
 metadata/list/filter
--> bounded page/batch
--> candidate resources
--> exact resource only when needed
-```
+→ bounded page/batch
+→ candidate IDs
+→ exact resources
 
-Avoid guessed endpoints, request-by-request enumeration, open-ended pagination, and unchanged credential retries.
+Avoid:
+- unbounded pagination;
+- N+1 investigation;
+- resource-by-resource enumeration without a bound;
+- repeated equivalent calls.
 
-Transient retries count against Task retry budget. Deterministic failures such as 400/401/403 must not be retried unchanged without evidence that state changed.
+Deterministic failures such as 400/401/403 must not be retried unchanged.
 
-## Implementation
+Transient failures such as 429/5xx/timeouts may use only configured bounded retries.
 
-Modify only active Task scope. Use `src/` for product code and `test/` for tests unless the repository explicitly requires otherwise.
+---
 
-Do not implement future Tasks, broaden architecture, or modify `EXECUTE/reference/`.
+## 12. Completion Fast Path
 
-If verified execution evidence contradicts project knowledge, create/update an Issue with `KNOWLEDGE_REVIEW_REQUIRED` and stop normal execution.
+When required verification passes:
 
-## Verification
+1. persist Task result;
+2. append bounded Task history;
+3. update `EXECUTE/PROJECT_STATUS.md`;
+4. return PASS to ProjectManager;
+5. STOP.
 
-Run the Task Verification Matrix.
+Do not start the next Task.
 
-`PASS` requires all required acceptance criteria and checks to pass.
+Do not perform extra exploration after sufficient PASS evidence exists.
 
-Do not weaken valid tests/requirements to obtain PASS. Never report unverified success.
+---
 
-## Repair
+## 13. Non-PASS Finalization
 
-Maximum:
+When reliable completion is not possible:
 
-```text
-5 meaningful repair attempts per repair round
-```
+1. preserve the safest practical repository state;
+2. create/update an Issue when meaningful;
+3. record:
+   - verified problem;
+   - exact failing evidence;
+   - approaches ruled out;
+   - relevant files/tests;
+   - safe resume point;
+   - recommended next role;
+4. update Task status;
+5. revoke Phase continuation through persisted state;
+6. return the exact status;
+7. STOP.
 
-A meaningful attempt requires evidence -> meaningful intervention -> verification.
+Never dump hidden reasoning or giant raw logs.
 
-Do not repeat essentially the same failed approach more than twice without new evidence.
-
-## Budget Exhaustion
-
-If exploration, external-I/O, or repair budget is exhausted:
-
-1. stop further actions of that class;
-2. create/update an Issue;
-3. record bounded evidence and remaining uncertainty;
-4. set Task BLOCKED;
-5. persist Task/history/project state;
-6. return control;
-7. stop.
-
-Never silently increase budget.
-
-## Task History
-
-Every meaningful Task execution creates one immutable:
-
-```text
-EXECUTE/tasks/history/TASK_NNN/RUN_NNNN.md
-```
-
-Maintain:
-
-```text
-EXECUTE/tasks/history/TASK_NNN/SUMMARY.md
-```
-
-Keep both concise. Read Summary before detailed old Runs.
-
-Do not write hidden reasoning or giant raw logs.
-
-## Issues
-
-Issue impact:
-
-```text
-LOCAL_REPAIR
-CORRECTIVE_TASK
-KNOWLEDGE_REVIEW_REQUIRED
-REPLAN_REQUIRED
-EXTERNAL_ACTION_REQUIRED
-EXECUTOR_SWITCH_REQUIRED
-```
-
-Issue evidence does not override Plan/Task requirements.
-
-## Completion Fast Path
-
-Once required verification passes:
-
-1. enter FINALIZE immediately;
-2. stop exploration;
-3. stop optional DB/API work;
-4. stop optional refactoring;
-5. do not rerun passing checks unless state changed after them;
-6. batch required Task/history/project-state writes when possible;
-7. signal `task_complete` when the harness supports it;
-8. stop.
-
-FINALIZE is terminal.
-
-## Result States
-
-```text
-PASS
-PARTIAL
-BLOCKED
-```
-
-Only PASS normally satisfies downstream dependencies.
+Never store secrets.

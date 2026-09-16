@@ -1,68 +1,75 @@
 ---
 issue_id: ISSUE_NNNN
 status: OPEN
-impact_level: LOCAL_REPAIR
-category: unspecified
-origin_task: none
-related_tasks: []
-latest_run: none
-knowledge_refs: []
-plan_refs: []
+
+origin_task: TASK_NNN
+origin_phase: PHASE_NN
+origin_builder: Builder128K
+
+classification: EXECUTOR_ESCALATION
+
+safe_baseline: unknown
 ---
 
-# ISSUE_NNNN — <Title>
+# ISSUE_NNNN — Title
 
-## Summary
-Concise problem statement.
+## Problem
+
+Concise verified problem.
 
 ## Verified Evidence
-Facts only. Never include secrets.
 
-## Failure Evidence
-Commands/errors/behavior or bounded observations.
+Only facts established during execution.
+
+- evidence
+
+## Last Confirmed Failure
+
+Exact failing test, command, external result, or behavior.
+
+Do not include giant raw logs.
+
+## Attempts Ruled Out
+
+- approach — reason
 
 ## Relevant Scope
-- paths:
-- symbols:
-- tests:
-- external systems:
 
-## Attempts
-Meaningful attempts only.
+Files/symbols/tests only.
 
-## Facts Ruled Out
-- ...
+- path
 
-## Current Hypothesis
-- ...
+## Impact
 
-## Impact Analysis
+Choose exactly one primary classification:
 
-Choose one:
+- LOCAL_REPAIR
+- EXECUTOR_ESCALATION
+- KNOWLEDGE_REVIEW_REQUIRED
+- REPLAN_REQUIRED
+- EXTERNAL_ACTION_REQUIRED
 
-```text
-LOCAL_REPAIR
-CORRECTIVE_TASK
-KNOWLEDGE_REVIEW_REQUIRED
-REPLAN_REQUIRED
-EXTERNAL_ACTION_REQUIRED
-EXECUTOR_SWITCH_REQUIRED
-```
+## Resume Package
 
-## Knowledge Conflict
-If runtime evidence conflicts with curated project knowledge, identify exact Knowledge IDs. Execution must not modify the Knowledge Base directly.
+Task:
+`TASK_NNN`
 
-## Resume Point
-Specific next safe action.
+Read:
+- exact file/test
+- exact file/test
 
-## Escalation
+Do not repeat:
+- ruled-out approach
 
-```text
-NONE
-REVIEW_REQUIRED
-HIGHER_MODEL_REQUIRED
-EXTERNAL_ACTION_REQUIRED
-EXECUTOR_SWITCH_REQUIRED
-REPLAN_REQUIRED
-PLANNING_MODEL_REQUIRED
-```
+Recommended next role:
+`Builder256K | Planner512K | User`
+
+## Safe Resume Point
+
+Describe current repository state and whether the failed Task change was reverted, partially preserved, or safely retained.
+
+Never discard unrelated user work.
+
+## Next Action
+
+One concrete action.

@@ -1,26 +1,19 @@
-# User-owned secrets
+# User-owned external configuration. Never commit.
 .env.user
 .env.user.*
 
-# Track only .github/agents and .github/skills
+# Only agents and skills are intentionally tracked under .github.
 /.github/*
 !/.github/agents/
 !/.github/agents/**
 !/.github/skills/
 !/.github/skills/**
 
-# Local / temporary noise
+# Local/editor noise
 .DS_Store
 Thumbs.db
 *.tmp
 *.temp
 *.log
 __pycache__/
-*.py[cod]
-.pytest_cache/
-.venv/
-venv/
-dist/
-build/
-.coverage
-htmlcov/
+*.pyc

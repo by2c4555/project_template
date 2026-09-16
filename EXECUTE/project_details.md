@@ -1,127 +1,139 @@
 # Project Details
 
-Purpose: provide high-quality project source input for Planning.
+Status: INCOMPLETE
 
-Do not manually decompose the project into `TASK_NNN` files here unless a task boundary is itself a hard requirement.
+This file is the authoritative user-maintained project requirement source.
 
-Fill what is known. Mark unknowns explicitly instead of guessing.
+Fill it with enough information for Planner512K+ to make architecture decisions.
 
-## 1. Project Identity
+Do not store secrets here.
 
-```yaml
-project_id: "__REQUIRED__"
-project_name: "__REQUIRED__"
-project_type: "__REQUIRED__"
-repository_state: "new"
-primary_language: "__REQUIRED__"
-primary_framework: "none"
-target_platforms: []
-```
+If an answer is genuinely unknown, write `UNKNOWN` rather than guessing.
 
-## 2. Project Summary
+## 1. Project Name
 
-Describe what the system does, who/what uses it, its primary output/value, whether it is new/migration/extension/repair, and its most important technical boundary.
+TODO
 
-## 3. Goals
+## 2. Purpose
 
-```text
-GOAL-001:
-GOAL-002:
-```
+What problem does this project solve?
 
-## 4. Success Criteria
+TODO
 
-```text
-SUCCESS-001:
-SUCCESS-002:
-```
+## 3. Success Criteria
 
-## 5. Scope
+What observable outcomes define success?
 
-### In Scope
+TODO
 
-```text
-SCOPE-IN-001:
-```
+## 4. In Scope
 
-### Out of Scope
+- TODO
 
-```text
-SCOPE-OUT-001:
-```
+## 5. Out of Scope
 
-## 6. Functional Requirements
+- TODO
 
-```text
-REQ-001:
-REQ-002:
-```
+## 6. Critical User / System Workflows
 
-## 7. Non-Functional Requirements
+Describe the workflows that must work end-to-end.
 
-Consider performance, security, reliability, observability, compatibility, resource limits, latency/throughput, privacy, and maintainability.
+- TODO
 
-```text
-NFR-001:
-```
+## 7. Functional Requirements
 
-## 8. Existing System / Repository
+- TODO
 
-Describe important modules, verified working behavior, known broken behavior, and compatibility constraints.
+## 8. Non-Functional Requirements
 
-## 9. Data
+Include only requirements that materially affect architecture.
 
-Describe entities, schemas/formats, lifecycle, retention, migrations, and expected scale.
+Examples:
+- performance;
+- reliability;
+- security;
+- latency;
+- throughput;
+- offline behavior;
+- data retention.
 
-## 10. Database
+- TODO
 
-If applicable, describe database/version, schema constraints, read/write expectations, transactions, migration constraints, scale assumptions, and whether production access is allowed for automated tests.
+## 9. Runtime and Target Platform
 
-Do not put credentials here.
+Examples:
+- OS;
+- language/runtime versions;
+- container/runtime;
+- hardware;
+- browser/client requirements.
 
-## 11. APIs / External Services
+TODO
 
-Describe purpose, known endpoint family, auth method, request/response contract, pagination, rate limits, failure behavior, staging/test availability, and whether production access is prohibited.
+## 10. Existing System / Repository Constraints
 
-Do not put secrets here.
+Is this a new project or an existing system?
 
-## 12. Runtime / Platform / Dependencies
+List compatibility or migration constraints.
 
-Describe supported OS/runtime versions, required libraries/tools, hardware/GPU/device requirements, packaging constraints, and deployment environment.
+TODO
 
-## 13. User Workflows
+## 11. Database / Persistence
 
-Describe critical end-to-end flows.
+Required technology, versions, schema constraints, migration expectations, data ownership.
 
-## 14. Error / Failure Expectations
+TODO
 
-Describe expected behavior for missing configuration, external failure, invalid input, partial work, and recovery.
+## 12. External APIs / Services
 
-## 15. Security / Access Constraints
+For each dependency, document:
+- purpose;
+- provider/system;
+- protocol/API;
+- known limits;
+- authentication type;
+- required compatibility.
 
-Describe policy only. Actual credentials belong in `.env.user`.
+Do not place keys/tokens here.
 
-## 16. Testing Expectations
+TODO
 
-Describe must-pass workflows, important regressions, required integration environments, realistic external-system validation, and unacceptable substitutions/mocking.
+## 13. Security Constraints
 
-## 17. Packaging / Installation / Release
+Authentication, authorization, sensitive data handling, trust boundaries, compliance requirements.
 
-Describe expected deliverable, installation method, clean-install behavior, smoke test, and supported target environments.
+TODO
 
-## 18. Known Risks / Uncertainties
+## 14. Packaging / Deployment / Installation
 
-```text
-RISK-001:
-UNKNOWN-001:
-```
+How must the system be packaged, installed, deployed, upgraded, or distributed?
 
-## 19. Source Documents
+TODO
 
-List important files placed under `EXECUTE/docs/`.
+## 15. Testing Expectations
 
-## 20. Notes for Planning
+Required test levels, important environments, contract requirements, acceptance environments.
 
-Add information that materially affects architecture or task decomposition.
+TODO
 
-Do not include secrets.
+## 16. Release Expectations
+
+What must be true before release?
+
+TODO
+
+## 17. Known Risks / Unknowns
+
+- TODO
+
+## 18. Source Documents
+
+List relevant files placed in `EXECUTE/docs/`.
+
+- TODO
+
+## 19. User Decisions
+
+Persist architecture-relevant answers here after Planner asks blocking questions.
+
+- TODO
