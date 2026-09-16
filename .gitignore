@@ -1,0 +1,26 @@
+# User-owned secrets
+.env.user
+.env.user.*
+
+# Track only .github/agents and .github/skills
+/.github/*
+!/.github/agents/
+!/.github/agents/**
+!/.github/skills/
+!/.github/skills/**
+
+# Local / temporary noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+*.log
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+dist/
+build/
+.coverage
+htmlcov/
