@@ -1082,3 +1082,30 @@ User approval
 ```
 
 This README is intentionally detailed because it is the architectural reference for maintaining and evolving v4 without accidentally returning to the prompt/context failure modes that motivated the redesign.
+
+
+## Provider-qualified model binding
+
+v4.0.1 requires provider-qualified model references for bound Planner/Builder roles so duplicate display names from different providers cannot be silently confused.
+
+Configure model name, provider/vendor, and documented context separately:
+
+```bash
+python scripts/configure_models.py \
+  --planner-model "Claude Opus 4.7" --planner-provider openrouter --planner-context 1048576 \
+  --builder128-model "Qwen3 Coder Next" --builder128-provider openrouter --builder128-context 262144 \
+  --builder256-model "Qwen3 Coder Next" --builder256-provider openrouter --builder256-context 262144
+```
+
+The script pins references such as:
+
+```text
+Claude Opus 4.7 (openrouter)
+Qwen3 Coder Next (openrouter)
+```
+
+To force the Copilot copy of the same display model instead, use `--planner-provider copilot`, which produces `Claude Opus 4.7 (copilot)`.
+
+Use the actual vendor identifier shown/used by VS Code. Do not infer it from the provider's friendly UI label.
+
+Important limitation: if two same-name models are registered under the same vendor (for example multiple `customendpoint` groups), `Model Name (vendor)` may still be ambiguous. Prefer distinct vendor providers such as `openrouter` versus `copilot`, or verify the runtime-selected model through VS Code diagnostics.

@@ -30,7 +30,7 @@ Before loading implementation files:
 1. read `EXECUTE/PROJECT_STATUS.md`;
 2. read `EXECUTE/MODEL_BINDINGS.json` and verify the `Builder128K` binding is non-null and meets this role floor;
 3. read the active Task metadata (and active Issue only for retry/escalation);
-4. confirm custom-agent frontmatter is pinned to the configured model (or equivalent host-enforced binding);
+4. confirm the binding includes the expected provider/vendor and custom-agent frontmatter is pinned to the exact provider-qualified `Model Name (vendor)` reference;
 5. run the deterministic preflight: `python scripts/context_guard.py EXECUTE/tasks/<ACTIVE_TASK>.md` when the Task file exists.
 
 Do not infer capacity from the model name and do not treat the policy minimum as proof of actual runtime capacity.

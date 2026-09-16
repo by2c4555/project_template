@@ -29,6 +29,19 @@ models:
 
 Provider-specific model names are not guessed by the template. Before execution, run `scripts/configure_models.py` with trusted documented capacities. It updates `EXECUTE/MODEL_BINDINGS.json` and pins `model:` in the three role agents. An unbound or undersized role is not runtime-ready.
 
+
+provider_binding:
+  provider_qualified_model_required: true
+  qualified_model_format: "Model Name (vendor)"
+  bind_provider_separately: true
+  silent_cross_provider_fallback_allowed: false
+  verify_runtime_selection_when_available: true
+  customendpoint_same_vendor_group_disambiguation_guaranteed: false
+
+A bound execution role MUST identify both the model display name and its VS Code provider/vendor identifier. Examples: `Claude Opus 4.7 (copilot)` and `Claude Opus 4.7 (openrouter)`. The provider suffix is part of the execution contract. A bare model name is not accepted for a bound role.
+
+If multiple same-name models are registered under the same vendor (especially `customendpoint`), current qualified-name routing might still be ambiguous because the qualified form does not encode group/id. Treat that setup as non-deterministic unless runtime diagnostics prove the intended model was selected.
+
 ## Context Isolation Policy
 
 ```yaml

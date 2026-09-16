@@ -1,17 +1,26 @@
 {
   "schema_version": "4.0.1",
+  "binding_schema_version": 2,
+  "provider_qualified_models_required": true,
+  "qualified_model_format": "Model Name (vendor)",
   "roles": {
     "Planner512K": {
+      "base_model": null,
+      "provider": null,
       "model": null,
       "documented_context_tokens": 0,
       "minimum_context_tokens": 524288
     },
     "Builder128K": {
+      "base_model": null,
+      "provider": null,
       "model": null,
       "documented_context_tokens": 0,
       "minimum_context_tokens": 131072
     },
     "Builder256K": {
+      "base_model": null,
+      "provider": null,
       "model": null,
       "documented_context_tokens": 0,
       "minimum_context_tokens": 262144

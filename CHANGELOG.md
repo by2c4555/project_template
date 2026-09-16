@@ -30,3 +30,11 @@ Provider-specific model names are not guessed because identifiers vary by Copilo
 ### Breaking behavior
 
 `PASS` may auto-continue workflow routing, but it never permits reuse of the prior Task context. A retry also starts fresh and receives only persisted Task/Issue evidence.
+
+
+### Provider-qualified model binding hardening
+- `MODEL_BINDINGS.json` now records `base_model`, `provider`, exact qualified `model`, and documented context separately.
+- `configure_models.py` requires `--*-provider` and pins `Model Name (vendor)` into role agent frontmatter.
+- `validate_v4.py` rejects bound bare model names and provider/frontmatter mismatches.
+- Bound roles prohibit silent cross-provider fallback.
+- `customendpoint` same-name/same-vendor ambiguity is surfaced as a warning instead of being treated as deterministic.

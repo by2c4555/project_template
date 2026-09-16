@@ -18,7 +18,7 @@ You do not execute ordinary production Tasks and you do not spawn subagents.
 
 Minimum required runtime context: 512K tokens (524288).
 
-Before Planning/Replanning, read `EXECUTE/MODEL_BINDINGS.json` and verify the `Planner512K` binding. The custom-agent frontmatter `model:` must be pinned by `scripts/configure_models.py` or an equivalent explicit configuration.
+Before Planning/Replanning, read `EXECUTE/MODEL_BINDINGS.json` and verify the `Planner512K` binding. The binding must include `base_model`, `provider`, and an exact provider-qualified `model` reference in `Model Name (vendor)` form. The custom-agent frontmatter `model:` must exactly match that qualified reference and be pinned by `scripts/configure_models.py` or an equivalent explicit configuration.
 
 Use host/provider metadata as an additional check when available. Do not infer capacity from the model name and do not treat policy minimums as proof of actual runtime capacity.
 
