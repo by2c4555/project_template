@@ -1,445 +1,130 @@
 ---
 name: project-planning
-description: Validate project input, refine Knowledge, create and validate the Implementation Plan, design Phases, compile bounded Tasks, and perform evidence-driven replanning.
+description: Checkpointed planning/replanning procedure that compiles high-context project knowledge into bounded isolated Tasks.
 ---
 
 # Project Planning
 
-Use this procedure only with a Planner that has already passed the >=512K Context Gate.
+Use only after Planner512K passes the >=524288 runtime context gate.
+Execute exactly one planning transaction per invocation, persist, then STOP.
 
-## State Machine
+## Transaction State Machine
 
-Use exactly this order:
+```text
+PT1_INPUT_KNOWLEDGE
+  INPUT_VALIDATION -> KNOWLEDGE_REFINEMENT -> KNOWLEDGE_VALIDATION
 
-INPUT_VALIDATION
-→ KNOWLEDGE_REFINEMENT
-→ KNOWLEDGE_VALIDATION
-→ IMPLEMENTATION_PLANNING
-→ PLAN_VALIDATION
-→ RISK_DESIGN
-→ PHASE_DESIGN
-→ TASK_COMPILATION
-→ CONTRACT_TEST_DESIGN
-→ TASK_PACK_VALIDATION
-→ EXECUTION_READY
+PT2_ARCHITECTURE_PLAN
+  IMPLEMENTATION_PLANNING -> PLAN_VALIDATION
 
-Never skip a failed stage.
+PT3_RISK_PHASES
+  RISK_DESIGN -> PHASE_DESIGN
 
-Persist `EXECUTE/PROJECT_STATUS.md` before and after each major stage.
+PT4_TASK_COMPILATION
+  TASK_COMPILATION -> CONTRACT_TEST_DESIGN
 
----
+PT5_TASK_PACK_VALIDATION
+  CONTEXT_PREFLIGHT -> TASK_PACK_VALIDATION -> EXECUTION_READY
+```
 
-## 1. Input Validation
+Never cross a transaction boundary in the same invocation.
+At each boundary persist `PROJECT_STATUS.md`, return `CONTINUE_PLANNING`, and STOP so ProjectManager creates a fresh Planner context.
 
-Required input:
+## PT1 — Input and Knowledge
 
-`EXECUTE/project_details.md`
+Require `EXECUTE/project_details.md`.
+Evaluate only architecture-relevant completeness: purpose, success, scope, workflows, functional/non-functional requirements, runtime/platform, compatibility, database, integrations, packaging/deployment, security, risks.
 
-If missing:
-- set WAITING_USER;
-- identify the required file;
+Architecture-critical missing information:
+- persist stable questions in `EXECUTE/reference/OPEN_QUESTIONS.md`;
+- set WAITING_USER with exact next action;
 - STOP.
 
-Evaluate whether the available project input contains enough information to make architecture decisions.
+Refine only relevant `EXECUTE/docs/` and verified repository evidence.
+Separate requirements, facts, and assumptions. Record provenance and stable Knowledge IDs.
+Recommended statuses: USER_STATED, VERIFIED, INFERRED, UNKNOWN, DISPUTED, SUPERSEDED.
+Critical UNKNOWN/DISPUTED -> WAITING_USER unless safely resolvable.
 
-Check only architecture-relevant subjects:
-- purpose;
-- success criteria;
-- scope;
-- functional requirements;
-- important non-functional requirements;
-- critical workflows;
-- runtime/platform;
-- compatibility;
-- database constraints;
-- external systems;
-- packaging/deployment;
-- security;
-- known risks.
+When Knowledge is sufficient, persist and set next transaction `PT2_ARCHITECTURE_PLAN`; return `CONTINUE_PLANNING`; STOP.
 
-Do not demand irrelevant information.
+## PT2 — Architecture and Plan
 
-If architecture-critical information is missing:
-1. create/update `EXECUTE/reference/OPEN_QUESTIONS.md`;
-2. use stable question IDs;
-3. explain why each answer affects architecture;
-4. identify where the user should persist the answer;
-5. set `project_status: WAITING_USER`;
-6. set the exact `next_action`;
-7. STOP.
+Create/update `EXECUTE/plan/IMPLEMENTATION_PLAN.md` with durable project-wide decisions: objective, scope, architecture, responsibilities, interfaces, schemas, flows, DB/API strategy, errors, security, performance, compatibility, runtime/deployment, packaging, tests, integration, release, critical assumptions.
 
-Important answers must ultimately exist in project files, not only chat history.
+Validate requirements coverage, consistency, feasibility, boundaries, contracts, data models, integrations, security, runtime/install, test/integration/release path.
 
----
+If user information is required -> persist question -> WAITING_USER -> STOP.
+When validated, set `PT3_RISK_PHASES`; return `CONTINUE_PLANNING`; STOP.
 
-## 2. Knowledge Refinement
+## PT3 — Risk and Phases
 
-Inputs:
-- `EXECUTE/project_details.md`;
-- relevant `EXECUTE/docs/`;
-- verified repository evidence when applicable.
+Identify assumptions capable of invalidating substantial downstream work and move high-impact proof work early.
+Prefer Foundation -> Critical Risk Proof -> Minimal Vertical Slice -> Integration Gate -> Expansion.
 
-`EXECUTE/docs/` is raw source material. Do not silently rewrite it.
+Phase = meaningful milestone + user authorization boundary.
+Each Phase defines ID, goal, dependencies, ordered Tasks, Integration Gate, default Builder, external access, completion criteria.
 
-Separate:
-- requirements;
-- factual claims;
-- assumptions.
+Persist Phase design, set `PT4_TASK_COMPILATION`; return `CONTINUE_PLANNING`; STOP.
 
-Normalize project terminology.
+## PT4 — Task Compilation
 
-Identify contradictions.
+Default Builder is Builder128K.
 
-Verify architecture-critical claims when evidence is available.
+For every Task:
+1. compile exact WRITE/READ/TEST context;
+2. embed execution-critical verified facts;
+3. define deterministic acceptance/verification;
+4. assign model profile;
+5. run `python scripts/context_guard.py <task-file>` after writing the Task.
 
-Recommended Knowledge statuses:
-- USER_STATED
-- VERIFIED
-- INFERRED
-- UNKNOWN
-- DISPUTED
-- SUPERSEDED
+Decision:
+- PASS: normal Builder128K Task;
+- WARN: still below hard max; tighten if practical;
+- SPLIT_REQUIRED: split on a clean reasoning boundary;
+- Builder256K only when clean splitting would break coherence.
 
-Use stable Knowledge IDs.
+Never use Builder256K merely to avoid decomposition.
+A Builder Task must not require project-wide architecture reasoning.
 
-Record provenance sufficient to trace important facts.
+Create contract tests for stable specification-derived behavior when practical.
+After compilation, set `PT5_TASK_PACK_VALIDATION`; return `CONTINUE_PLANNING`; STOP.
 
-Create only useful Knowledge files under `EXECUTE/reference/`.
+## PT5 — Context and Task Pack Validation
 
-Do not create large empty documentation trees.
+Validate every Task:
+- unambiguous Goal;
+- architecture already resolved;
+- exact bounded scope;
+- selected Builder valid;
+- `context_guard.py` is not SPLIT_REQUIRED;
+- execution-critical facts embedded;
+- valid dependencies;
+- deterministic acceptance/verification;
+- explicit environment contract;
+- stop/escalation conditions;
+- Integration Gates and release chain exist.
 
-Update `EXECUTE/reference/KNOWLEDGE_INDEX.md`.
+Invalid Task -> repair/split. Assign Builder256K only with coherence justification.
 
----
-
-## 3. Knowledge Validation
-
-Ask:
-
-Is Knowledge sufficient to make architecture-critical decisions?
-
-`UNKNOWN` or `DISPUTED` facts may remain only when they do not block architecture.
-
-If a critical fact cannot be resolved safely:
-- persist a question;
-- set WAITING_USER;
+When pack passes:
+- set phase EXECUTION;
+- stage PHASE_READY;
+- set active Phase/Task;
+- `phase_authorized: false`;
+- set recommended Builder;
+- clear planning transaction or set `none`;
+- precise next_action;
+- return status `EXECUTION_READY`;
 - STOP.
 
-No sufficient Knowledge
-→ no Implementation Plan.
+# Replanning Transaction
 
----
+Use `PTR_REPLAN_AFFECTED_SCOPE` only from verified evidence or explicit user Plan change.
+Load only affected Plan sections, active Issue, affected Knowledge IDs/Tasks, selected history, and required repository evidence.
 
-## 4. Implementation Planning
+Classify: EXECUTOR limitation, TASK defect, KNOWLEDGE defect, PLAN/architecture defect, EXTERNAL problem.
+Executor limitation alone does not justify replanning.
 
-Create/update:
+If Knowledge is wrong, correct it first and reassess Plan impact. If Plan changes, archive meaningful prior revision, revise only affected sections, preserve completed/unaffected work, invalidate only affected pending Tasks, compile replacements, validate affected graph, then return to execution.
 
-`EXECUTE/plan/IMPLEMENTATION_PLAN.md`
-
-This is the authoritative current project decision document only after validation.
-
-It should define durable project-wide decisions:
-- project objective and success;
-- scope and exclusions;
-- requirements;
-- architecture and rationale;
-- component responsibilities;
-- interfaces/contracts;
-- schemas/data models;
-- data/control/state flows;
-- database strategy;
-- external API/integration strategy;
-- error semantics;
-- security;
-- performance;
-- compatibility;
-- runtime/deployment;
-- packaging/install;
-- testing;
-- integration;
-- release criteria;
-- critical assumptions.
-
-Do not put detailed Task execution logs into the Plan.
-
----
-
-## 5. Plan Validation
-
-Do not accept the Plan because a file exists.
-
-Validate:
-- requirements coverage;
-- internal consistency;
-- architecture feasibility;
-- component boundaries;
-- interface completeness;
-- data-model consistency;
-- database/API assumptions;
-- error behavior;
-- security constraints;
-- compatibility;
-- runtime/install behavior;
-- test strategy;
-- integration path;
-- release path.
-
-If invalid:
-- repair only affected sections;
-- validate again.
-
-If resolution needs user information:
-- persist the question;
-- WAITING_USER;
-- STOP.
-
-No validated Plan
-→ no executable Tasks.
-
----
-
-## 6. Current User Request Compatibility
-
-Before compiling new work from a user request, compare it with:
-- validated Plan;
-- current Knowledge;
-- repository reality;
-- completed Task state.
-
-If the user request conflicts with a validated architectural decision:
-- do not silently override the Plan;
-- classify `PLAN_CHANGE_REQUIRED`;
-- enter Replanning.
-
-Task Compilation is not a second architecture-design phase.
-
----
-
-## 7. Risk Design
-
-Identify assumptions that could invalidate substantial downstream work.
-
-Examples:
-- API feasibility;
-- database/schema compatibility;
-- authentication provider behavior;
-- platform/runtime support;
-- hardware requirements;
-- packaging/install feasibility;
-- external service limitations;
-- critical performance assumptions.
-
-Move high-impact proof work early.
-
-Prefer:
-
-Foundation
-→ Critical Risk Proof
-→ Minimal Vertical Slice
-→ Integration Gate
-→ Feature Expansion
-
-Do not postpone the first realistic integration until the project end.
-
----
-
-## 8. Phase Design
-
-Phase = meaningful project milestone + user authorization boundary.
-
-A typical Phase contains several bounded Tasks plus one Integration Gate.
-
-Each Phase must define:
-- Phase ID;
-- Goal;
-- dependencies;
-- ordered Tasks;
-- Integration Gate;
-- default Builder profile;
-- external-access requirements;
-- completion criteria.
-
-Tasks inside an authorized Phase may auto-continue only after PASS.
-
----
-
-## 9. Task Compilation
-
-Default target:
-
-Builder128K.
-
-For every Task ask:
-
-Can the Task safely fit Builder128K with controlled context <= 64K?
-
-If YES:
-- Builder128K.
-
-If NO:
-- determine whether it can be split along a clean reasoning boundary.
-
-If it can be split:
-- SPLIT.
-
-If it cannot be split without breaking coherence:
-- Builder256K.
-
-Never use Builder256K merely to avoid good decomposition.
-
-Each Task must represent one coherent, independently verifiable implementation behavior.
-
-A normal Builder Task must not require project-wide architecture reasoning.
-
----
-
-## 10. Task Execution Contract
-
-Every Task must explicitly define:
-- Goal;
-- exact WRITE scope;
-- exact READ context;
-- focused TEST context;
-- execution-critical verified facts;
-- required behavior/change;
-- Must Preserve behavior;
-- acceptance criteria;
-- verification command/procedure;
-- environment requirements;
-- Task-specific stop/escalation conditions;
-- Builder profile;
-- dependencies;
-- Plan/Knowledge provenance IDs.
-
-Avoid copying global workflow philosophy into Tasks.
-
----
-
-## 11. Context Compilation
-
-Planner owns context reduction.
-
-Prefer:
-- exact files;
-- exact symbols;
-- exact tests;
-- exact Knowledge facts.
-
-Avoid:
-- `read src/`;
-- `read all docs/`;
-- loading the whole Plan for routine execution;
-- loading the whole Knowledge Base;
-- broad repository discovery.
-
-Embed execution-critical facts directly in the Task.
-
-Keep Knowledge IDs for provenance.
-
-A Builder should not need to open a large Knowledge file merely to discover one or two facts.
-
----
-
-## 12. Contract Test Design
-
-For stable specification-derived behavior, create or define contract tests when practical.
-
-Map:
-
-Requirement
-→ Contract
-→ Contract Test
-→ Task
-
-Do not over-specify private implementation.
-
-Builder may add:
-- unit tests;
-- integration tests;
-- regression tests.
-
-Builder must not weaken valid contract tests merely to obtain PASS.
-
----
-
-## 13. Task Pack Validation
-
-Before `EXECUTION_READY`, verify every Task:
-
-- Goal is unambiguous.
-- Architecture decision is already resolved.
-- Scope is bounded.
-- Required Builder is valid.
-- Controlled context fits the selected Builder.
-- Execution-critical facts are present.
-- Dependencies are valid.
-- Acceptance criteria are deterministic.
-- Verification is executable.
-- Environment contract is explicit when needed.
-- Stop conditions are defined.
-- Required Integration Gates exist.
-- Release chain exists.
-
-If a Task fails validation:
-- repair it;
-- split it;
-- or assign Builder256K only when splitting would break coherence.
-
-Do not publish an invalid Task Pack.
-
----
-
-## 14. Execution Ready
-
-When the Task Pack passes:
-- set `phase: EXECUTION`;
-- set `stage: PHASE_READY`;
-- set `active_phase` to the first executable Phase;
-- set `phase_authorized: false`;
-- set `active_task` to the first Task;
-- set `recommended_agent` to the required Builder;
-- set precise `next_action`;
-- return control to ProjectManager;
-- STOP.
-
----
-
-# Replanning
-
-Replanning is continuation, not restart.
-
-Trigger Replanning only from verified evidence or an explicit user-requested Plan change.
-
-Load only affected context:
-- current Plan;
-- active Issue;
-- affected Knowledge IDs;
-- selected Task history;
-- affected Tasks;
-- repository evidence when required.
-
-First classify the problem:
-
-- EXECUTOR limitation;
-- TASK planning defect;
-- KNOWLEDGE defect;
-- PLAN/architecture defect;
-- EXTERNAL problem.
-
-If only executor limitation:
-- do not replan.
-
-If Knowledge is wrong:
-- correct Knowledge first;
-- reassess Plan impact.
-
-If Plan is affected:
-- archive the previous meaningful Plan revision;
-- revise only affected sections;
-- preserve completed Tasks, valid tests, verified Knowledge, and unaffected decisions;
-- invalidate only affected pending Tasks;
-- compile replacement/corrective Tasks;
-- validate the affected Task graph;
-- return to EXECUTION_READY.
-
-Never erase historical evidence.
+Replanning is also one isolated transaction per invocation. Never erase historical evidence.

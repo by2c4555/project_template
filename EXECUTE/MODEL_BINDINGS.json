@@ -1,0 +1,20 @@
+{
+  "schema_version": "4.0.1",
+  "roles": {
+    "Planner512K": {
+      "model": null,
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 524288
+    },
+    "Builder128K": {
+      "model": null,
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 131072
+    },
+    "Builder256K": {
+      "model": null,
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 262144
+    }
+  }
+}

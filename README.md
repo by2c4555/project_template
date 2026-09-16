@@ -1,4 +1,4 @@
-# Project Template v4.0.0
+# Project Template v4.0.1
 ## High-Context Controlled Workflow for VS Code Copilot Chat
 
 This template is a strict AI-assisted software-development workflow designed around one lesson:
@@ -6,6 +6,51 @@ This template is a strict AI-assisted software-development workflow designed aro
 > Nominal model context is not the same as usable project context.
 
 VS Code Copilot Chat, agent instructions, tools, conversation history, user prompts, project material, and tool output all compete for the same model context. v4 therefore stops trying to support very small executors and instead enforces high-context roles with bounded project context.
+
+
+## v4.0.1 isolation correction
+
+v4.0.1 changes the runtime architecture: **Task isolation now means physical context isolation.** ProjectManager invokes Planner and Builders as VS Code custom subagents, each of which receives a separate context window.
+
+```text
+Main Chat / ProjectManager
+  -> Planner512K transaction (fresh context) -> bounded capsule
+  -> Builder128K TASK_001 (fresh context) -> bounded capsule
+  -> Builder128K TASK_002 (fresh context) -> bounded capsule
+  -> Builder256K Integration Gate (fresh context) -> bounded capsule
+```
+
+Hard invariant:
+
+> 1 Task = 1 execution contract = 1 isolated subagent invocation = 1 fresh context window.
+
+A Phase may still auto-continue after PASS; only workflow state continues, not the previous model context. Planner is similarly checkpointed into five fresh-context transactions. See `CHANGELOG.md`.
+
+### VS Code requirements for this release
+
+Use a VS Code/Copilot build that supports custom-agent `tools`, `agents`, and subagent invocation. Keep ProjectManager as the user-facing agent. Planner/Builders are internal (`user-invocable: false`).
+
+Provider-specific model names are intentionally not guessed because identifiers vary. Before testing, bind them explicitly:
+
+```bash
+python scripts/configure_models.py \
+  --planner-model "<MODEL>" --planner-context 524288 \
+  --builder128-model "<MODEL>" --builder128-context 131072 \
+  --builder256-model "<MODEL>" --builder256-context 262144
+```
+
+Use the real documented capacity for each selected model, not merely the minimum shown above. The script rejects undersized bindings and pins `model:` into the role agent frontmatter.
+
+### Preflight
+
+Run:
+
+```bash
+python scripts/validate_v4.py
+python scripts/context_guard.py EXECUTE/tasks/TASK_NNN.md
+```
+
+`context_guard.py` estimates controlled Task payload from the Task contract and its listed WRITE/READ/TEST files without injecting those files into model context. It is conservative and not tokenizer-accurate.
 
 ---
 
@@ -65,7 +110,7 @@ The workflow separates responsibilities aggressively:
 
 ```text
 ProjectManager
-    = routing, Phase authorization, user interaction
+    = lightweight routing, Phase authorization, isolated subagent invocation
 
 Planner512K+
     = requirements interpretation, Knowledge, architecture,
@@ -84,7 +129,7 @@ Builder Skill
     = reusable execution/repair/integrity algorithm
 
 Task
-    = exact bounded execution contract
+    = exact bounded execution contract + fresh context boundary
 ```
 
 The most important responsibility rule is:

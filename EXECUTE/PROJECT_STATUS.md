@@ -1,12 +1,12 @@
 # Project Status
 
 ```yaml
-workflow_version: "4.0.0"
+workflow_version: "4.0.1"
 
 project_status: ACTIVE
-
 phase: INITIALIZE
 stage: INPUT_VALIDATION
+planning_transaction: PT1_INPUT_KNOWLEDGE
 
 knowledge_revision: 0
 plan_revision: 0
@@ -21,11 +21,12 @@ active_issue: none
 
 last_completed: none
 latest_history: none
+latest_result_capsule: none
 
 next_action: >
-  Validate EXECUTE/project_details.md using Planner512K+.
+  Invoke Planner512K as a fresh isolated subagent for PT1_INPUT_KNOWLEDGE.
 ```
 
 This file is the compact global workflow router.
-
-Do not place long logs, Plan content, Knowledge content, or secrets here.
+Disk artifacts are authoritative; chat history is not.
+Do not place long logs, Plan content, Knowledge content, diffs, or secrets here.
