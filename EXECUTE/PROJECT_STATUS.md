@@ -3,7 +3,7 @@
 > GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`
 
 ```yaml
-workflow_version: "4.3.1"
+workflow_version: "4.3.2"
 active_cycle: none
 lifecycle_stage: AWAITING_SCOPE_IMPORT
 project_validation_status: NOT_VALIDATED

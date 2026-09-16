@@ -1,4 +1,4 @@
-# Codex Independent Evaluation & Completion Handoff — v4.3.1
+# Codex Independent Evaluation & Completion Handoff — v4.3.2
 
 Role: independent evaluator. Read-only with respect to production implementation and approved planning artifacts.
 
@@ -23,7 +23,7 @@ One authorization covers **one Evaluation attempt only**.
 
 Read as needed:
 
-- external scope/Research referenced by the Cycle;
+- the immutable Scope Snapshot referenced by the Cycle (scope revision + digest);
 - approved compiled knowledge, Plan, Task contracts and package manifest;
 - machine execution state and Task evidence;
 - execution/recovery Issues, Diagnoses and Resolutions;
@@ -68,7 +68,8 @@ Before finalization create a detailed actual-system Completion Report, normally:
 
 `EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md`
 
-It must transfer verified post-build truth for a future external scope/version cycle.
+It must transfer verified post-build truth for a future external research/scope cycle.
+It must include `based_on_scope_revision` and `based_on_scope_digest` matching the active immutable Scope Snapshot. `finalize_evaluation.py` rejects a PASS/PASS_WITH_FINDINGS Completion Report that does not match.
 
 Then call only the machine finalizer:
 

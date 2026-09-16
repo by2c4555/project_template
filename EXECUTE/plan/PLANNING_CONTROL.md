@@ -1,4 +1,4 @@
-# Planning & Approval Control Contract — v4.3.1
+# Planning & Approval Control Contract — v4.3.2
 
 `EXECUTE/control/STATE.json` is authoritative. Markdown status files are generated views.
 
@@ -8,12 +8,14 @@
 2. **No material decision -> no speculative Task/package expansion.**
 3. `AWAITING_MATERIAL_FEEDBACK` and `PLAN_READY` are terminal states for the current Codex invocation.
 4. The planning agent may call machine planning gates, but may never call human approval gates.
-5. `approve_plan.py` is interactive-TTY only and binds approval to the exact Cycle, Planning revision, Task count, manifest, and SHA-256 package digest.
+5. `approve_plan.py` is interactive-TTY only and binds approval to the exact Cycle, immutable Scope revision/digest, Planning revision, Task count, manifest, and SHA-256 package digest.
 6. Task contracts are immutable after approval. Runtime Task state is stored only in `STATE.json`.
-7. Any approved-package mutation blocks every later Task dispatch until a new Planning package is approved.
-8. Closed validated cycles are immutable; new external scope starts a new cycle with no inherited execution authority.
+7. Any active Scope Snapshot or approved-package integrity failure blocks later Task dispatch. A material scope change requires a new Scope revision and invalidates/revises Planning authority.
+8. Closed validated cycles are immutable; new external scope is captured as a fresh cycle-scoped Scope Snapshot with no inherited execution authority.
 
 ## Planning flow
+
+Before Planning, `start_cycle.py` or `import_scope.py` must have captured the external handoff as the active immutable `SCOPE_NNN`. Planning records `based_on_scope_revision` + `based_on_scope_digest`.
 
 ```text
 IN_PROGRESS

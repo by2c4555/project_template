@@ -1,4 +1,4 @@
-# Codex Authorized Recovery — v4.3.1
+# Codex Authorized Recovery — v4.3.2
 
 Role: external technical resolver for one diagnosed Issue.
 

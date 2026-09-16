@@ -1,4 +1,4 @@
-# Execute / Resume Approved Project — v4.3.1
+# Execute / Resume Approved Project — v4.3.2
 
 Use `ProjectManager500K` as the only user-facing local execution agent.
 

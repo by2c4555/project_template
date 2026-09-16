@@ -1,139 +1,147 @@
+---
+artifact_kind: PROJECT_DETAILS
+artifact_status: INCOMPLETE
+scope_title: TODO
+baseline_ref: none
+product_scope_unknowns: unknown
+supporting_files: []
+---
+
 # Project Details
 
-Status: INCOMPLETE
+This file is the concise canonical external scope handoff for Codex.
 
-This file is the current concise authoritative scope/requirement source maintained through the ChatGPT Research layer and explicit user decisions.
+Do not use it as a research diary or repository implementation plan. Keep only the **current confirmed truth** needed to understand what must be built, preserved, or verified.
 
-Fill it with enough product/scope information for Codex to perform repository-level technical research and architecture/planning without inventing user intent.
+A final handoff must use `artifact_status: READY_FOR_CODEX` and `product_scope_unknowns: 0`. If material product/scope information is still unresolved, do not finalize this file.
 
-Do not store secrets here.
+## 1. Executive Handoff
 
-If an answer is genuinely unknown, write `UNKNOWN` rather than guessing.
-
-## 1. Project Name
+What problem/change is being requested, why it matters, and what outcome is expected?
 
 TODO
 
-## 2. Purpose
+## 2. Current Baseline
 
-What problem does this project solve?
+Describe only verified baseline facts relevant to this scope.
 
-TODO
-
-## 3. Success Criteria
-
-What observable outcomes define success?
+For a new project, state that no prior validated baseline exists.
 
 TODO
 
-## 4. In Scope
+## 3. Change Summary / Delta
+
+Summarize what is new or changed relative to the baseline.
 
 - TODO
 
-## 5. Out of Scope
+## 4. Requirements
+
+Use stable requirement IDs when useful, for example `REQ-001`.
+
+Mark importance when relevant (`MUST`, `SHOULD`, `OPTIONAL`).
+
+- REQ-001 — TODO
+
+## 5. Scope
+
+### In Scope
 
 - TODO
 
-## 6. Critical User / System Workflows
-
-Describe the workflows that must work end-to-end.
+### Out of Scope / Non-Goals
 
 - TODO
 
-## 7. Functional Requirements
+### Explicitly Unchanged
+
+For an existing validated system, list behavior/subsystems that this scope does not intend to change.
 
 - TODO
 
-## 8. Non-Functional Requirements
+## 6. Constraints and Invariants
 
-Include only requirements that materially affect architecture.
-
-Examples:
-- performance;
-- reliability;
-- security;
-- latency;
-- throughput;
-- offline behavior;
-- data retention.
+List only constraints that implementation must preserve or satisfy: compatibility, platform, protocol, security, performance, workflow, data, deployment, or other material boundaries.
 
 - TODO
 
-## 9. Runtime and Target Platform
+## 7. Confirmed Decisions
 
-Examples:
-- OS;
-- language/runtime versions;
-- container/runtime;
-- hardware;
-- browser/client requirements.
-
-TODO
-
-## 10. Existing System / Repository Constraints
-
-Is this a new project or an existing system?
-
-List compatibility or migration constraints.
-
-TODO
-
-## 11. Database / Persistence
-
-Required technology, versions, schema constraints, migration expectations, data ownership.
-
-TODO
-
-## 12. External APIs / Services
-
-For each dependency, document:
-- purpose;
-- provider/system;
-- protocol/API;
-- known limits;
-- authentication type;
-- required compatibility.
-
-Do not place keys/tokens here.
-
-TODO
-
-## 13. Security Constraints
-
-Authentication, authorization, sensitive data handling, trust boundaries, compliance requirements.
-
-TODO
-
-## 14. Packaging / Deployment / Installation
-
-How must the system be packaged, installed, deployed, upgraded, or distributed?
-
-TODO
-
-## 15. Testing Expectations
-
-Required test levels, important environments, contract requirements, acceptance environments.
-
-TODO
-
-## 16. Release Expectations
-
-What must be true before release?
-
-TODO
-
-## 17. Known Risks / Unknowns
+Product/scope decisions explicitly confirmed by the user.
 
 - TODO
 
-## 18. Source Documents
+## 8. Implementation-Relevant Facts
 
-List relevant files placed in `EXECUTE/docs/`.
+Distilled facts/observations that materially affect technical planning. Distinguish provenance/classification.
+
+Example:
+
+```text
+FACT-001
+Classification: VERIFIED_FACT
+Finding: ...
+Evidence: EXECUTE/docs/raw/example.md
+```
 
 - TODO
 
-## 19. User Decisions
+## 9. External / Reference Findings
 
-Persist material product/scope decisions here after ChatGPT/Codex clarification loops. Technical implementation decisions belong in Codex compiled/plan artifacts.
+Summarize only findings that materially affect scope or implementation readiness. Point to `docs/raw/*` rather than copying large evidence here.
 
 - TODO
+
+## 10. Known Risks
+
+Known external/product/integration risks that Codex should prioritize during repository research.
+
+- TODO
+
+## 11. Remaining Unknowns
+
+### Product / Scope Unknowns
+
+A final handoff must contain `NONE` here and `product_scope_unknowns: 0` in metadata.
+
+- TODO
+
+### Technical Unknowns for Codex
+
+Repository/implementation questions that do not block the external scope handoff.
+
+- TODO
+
+## 12. Repository Investigation Targets
+
+Questions Codex should answer during targeted repository research. Do not prescribe implementation unless it is itself a requirement.
+
+- INV-001 — TODO
+
+## 13. Success Criteria
+
+Use observable/testable criteria and link them to requirements when useful.
+
+- SC-001 -> REQ-001 — TODO
+
+## 14. Codex Context Map
+
+Prioritize supporting evidence so Codex does not read all raw files by default.
+
+### P0 — Read During Planning
+
+- none
+
+### P1 — Read When Relevant
+
+- none
+
+### P2 — Read Only If Needed
+
+- none
+
+## 15. Supporting Research Index
+
+List the exact supporting files included in the metadata `supporting_files` field and what each is for.
+
+- none

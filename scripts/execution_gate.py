@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Authoritative task dispatch/completion/failure transitions for v4.3.1."""
+"""Authoritative task dispatch/completion/failure transitions for v4.3.2."""
 from __future__ import annotations
 import argparse
 from pathlib import Path

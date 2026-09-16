@@ -11,7 +11,7 @@
     "recovery_approval": 0
   },
   "cycles": {},
-  "last_transition_at": "2026-09-16T16:29:21Z",
+  "last_transition_at": "2026-09-16T17:47:22Z",
   "project_state": "AWAITING_SCOPE_IMPORT",
   "runtime_policy": {
     "default_local_repair_attempts_per_task": 2,
@@ -21,5 +21,5 @@
     "safe_exec_stdout_chars": 12000
   },
   "schema_version": 1,
-  "workflow_version": "4.3.1"
+  "workflow_version": "4.3.2"
 }

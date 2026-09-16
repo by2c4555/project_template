@@ -1,7 +1,7 @@
-# Project Template v4.3.1
+# Project Template v4.3.2
 ## Machine-Governed Workflow & Token-Safety Architecture
 
-Project Template v4.3.1 is a controlled, restartable engineering workflow for large AI-assisted software projects operated primarily inside **VS Code + Codex**.
+Project Template v4.3.2 is a controlled, restartable engineering workflow for large AI-assisted software projects operated primarily inside **VS Code + Codex**.
 
 The v4.3 design goal is not merely “better prompts”. It is to reduce the blast radius of an agent misunderstanding by moving workflow authority into Python state transitions and explicit human gates.
 
@@ -81,18 +81,26 @@ A validated Cycle is never reopened for new work. New feature/version/refactor/n
 
 ## External research setup (outside controlled runtime)
 
-The external research layer is vendor-neutral in v4.3.1. Use:
+v4.3.2 uses a vendor-neutral **checkpointed External Research** layer. The web AI produces only the mutable handoff; Python creates local versioned Scope Snapshots.
 
 ```text
-EXECUTE/external_research/RESEARCH_PROTOCOL.md
-EXECUTE/external_research/chatgpt/PROJECT_INSTRUCTIONS.txt       # ChatGPT Project
-EXECUTE/external_research/generic/INSTRUCTIONS_1000.txt          # other Web AI
-EXECUTE/external_research/RUN_RESEARCH.md                        # one universal entry prompt
+EXECUTE/external_research/RESEARCH_GUIDE.md
+EXECUTE/external_research/setup/CHATGPT_INSTRUCTIONS.txt
+EXECUTE/external_research/setup/EXTERNAL_INSTRUCTIONS_1000.txt
 ```
 
-Upload `RESEARCH_PROTOCOL.md` as project knowledge/resource, paste the instruction file appropriate for the platform, then use `RUN_RESEARCH.md` for Initial Research, Next-Version/Feature/Post-validation Debug Research, or Codex Scope Clarification. The AI infers the mode from the supplied inputs.
+Use `RESEARCH_GUIDE.md` as the Project/Workspace knowledge resource. Paste the platform instruction appropriate for the service. The generic instruction is deliberately under 1,000 characters.
 
-The generic instruction is deliberately under 1,000 characters; detailed rules live in the resource file so platforms with small instruction limits remain usable. See `EXECUTE/external_research/README.md`.
+External Research should understand the problem, define requirements/scope/constraints/success criteria, collect high-value external/reference evidence, maintain resumable topic checkpoints when context grows, and refuse finalization while material product/scope gaps remain.
+
+Final repository handoff only when ready:
+
+```text
+EXECUTE/project_details.md
+EXECUTE/docs/raw/*        # only useful evidence
+```
+
+There is no `Research_Vx.md` in the v4.3.2 handoff. Web-chat working checkpoints such as `RESEARCH_INDEX.md`, topic files, and source notes are external working memory and do not automatically become Codex context.
 
 Local model bindings are configured with:
 
@@ -161,6 +169,7 @@ This is an accidental-flow/token-runaway barrier, not a security sandbox against
 
 | Purpose | Script |
 |---|---|
+| Scope capture / revision | `start_cycle.py` / `import_scope.py` |
 | Planning interaction / expansion / PLAN_READY | `planning_gate.py` |
 | Task dispatch / repair counter / PASS / Issue / execution completion | `execution_gate.py` |
 | Diagnosis registration + routing | `diagnosis_gate.py` |
@@ -183,17 +192,34 @@ project_state = AWAITING_SCOPE_IMPORT
 
 `init_v43.py` exists only to reconstruct state if creating a template manually; do not run it over an existing state file.
 
-After external scope/research is copied into the repository, start the first Cycle:
+After External Research has produced a **READY_FOR_CODEX** handoff, copy:
 
-```bash
-python scripts/start_cycle.py --scope Research_V1 --title "Initial implementation"
+```text
+EXECUTE/project_details.md
+EXECUTE/docs/raw/* declared in supporting_files
 ```
 
-For a later version:
+Then start the Cycle:
 
 ```bash
-python scripts/start_cycle.py --scope Research_V2 --title "Feature/version scope"
+python scripts/start_cycle.py --title "Initial implementation"
 ```
+
+`start_cycle.py` validates readiness and supporting files, then captures the mutable handoff into immutable history:
+
+```text
+EXECUTE/history/cycles/CYCLE_001/scope/SCOPE_001/
+```
+
+The Scope Snapshot receives a SHA-256 digest. Codex Planning is bound to that exact scope revision/digest. Editing root `project_details.md` later does not mutate the active Scope Snapshot.
+
+For a material clarification/change **inside an open Cycle**, update the external handoff and capture it with:
+
+```bash
+python scripts/import_scope.py --reason "<why scope changed>"
+```
+
+This creates `SCOPE_002+`. If implementation was already approved, prior approval is superseded and replan/new approval is required.
 
 A new Cycle can start only when the previous active Cycle is `CLOSED_VALIDATED`.
 
@@ -209,7 +235,7 @@ Run:
 EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
 ```
 
-Codex researches the repository and current external scope.
+Codex researches the repository against the active immutable Scope Snapshot. It reads the snapshot `project_details.md` first and follows its `Codex Context Map` so raw evidence is loaded selectively rather than wholesale.
 
 ## Material decision gate
 
@@ -666,25 +692,28 @@ After any correction, every new Evaluation attempt again requires the user to ru
 
 # 17. Next version / post-validation debug
 
-After Cycle N passes Evaluation, do **not** modify/reopen its Planning/Execution history.
+After Cycle N passes Evaluation, do **not** modify/reopen its Planning/Execution/Scope history.
 
-Bring the new external scope into the repo, then:
+Use the prior Completion Report as baseline context in External Research, combine it with the new feature/change/debug intent, and produce a new cumulative:
 
-```bash
-python scripts/start_cycle.py \
-  --scope Research_V2 \
-  --title "Next version"
+```text
+EXECUTE/project_details.md
+EXECUTE/docs/raw/*
 ```
 
-or for a bug discovered after validation:
+Then start the next Cycle:
 
 ```bash
-python scripts/start_cycle.py \
-  --scope docs/post_validation_bug_scope.md \
-  --title "Post-validation defect fix"
+python scripts/start_cycle.py --title "Next version"
 ```
 
-The new Cycle begins with:
+or:
+
+```bash
+python scripts/start_cycle.py --title "Post-validation defect fix"
+```
+
+The new Cycle captures a new `SCOPE_001` under its own cycle namespace and begins with:
 
 ```text
 approval = none
@@ -698,14 +727,14 @@ This distinction is critical:
 
 ```text
 Evaluation has not passed yet -> stay in same Cycle through Diagnosis/Recovery/Replan/Re-evaluate
-Evaluation already passed      -> new scope/debug = new Cycle
+Evaluation already passed      -> new scope/debug = NEW EXTERNAL SCOPE -> NEW CYCLE
 ```
 
 ---
 
 # 18. Package integrity model
 
-At `PLAN_READY`, Python computes a candidate manifest from:
+Before Planning, Python captures and verifies the immutable Scope Snapshot. At `PLAN_READY`, Python binds the candidate package to the active Scope digest and computes a package manifest from:
 
 ```text
 EXECUTE/compiled/**
@@ -714,9 +743,9 @@ EXECUTE/tasks/TASK_INDEX.md
 all generated EXECUTE/tasks/TASK_NNN.md
 ```
 
-At approval, the exact manifest is stored under `EXECUTE/control/manifests/` and bound to the approval record.
+At approval, the exact package manifest is stored under `EXECUTE/control/manifests/`. The approval record binds **both** the active `scope_digest` and exact `package_digest`.
 
-Package integrity is checked before Task execution, recovery verification, resume and evaluation.
+Scope Snapshot integrity and package integrity are checked before Task execution, recovery verification, resume and evaluation.
 
 Task contracts therefore must not contain mutable runtime fields.
 
@@ -750,7 +779,7 @@ python -m unittest discover -s test/regression -p 'test_*.py'
 A clean template should report:
 
 ```text
-TEMPLATE_VALID: PASS (v4.3.1)
+TEMPLATE_VALID: PASS (v4.3.2)
 ```
 
 `validate_v4.py` checks structural v4.3 invariants, state schema, required scripts/prompts, human TTY gate markers, generated Task contract rules, package-integrity infrastructure and deprecated combined-recovery protection.
@@ -762,22 +791,17 @@ Regression tests exercise the machine state/package/gate helpers in isolated tem
 # 21. Core v4.3 rules
 
 ```text
-LLM MAY PRODUCE WORK.
-LLM MAY PRODUCE EVIDENCE.
-LLM MAY NOT GRANT ITSELF AUTHORITY.
-
-CHAT != APPROVAL.
-
-NO VALID PACKAGE DIGEST -> NO EXECUTION.
-NO EXECUTION GATE -> NO BUILDER.
-NO REPAIR TOKEN -> NO LOCAL REPAIR.
-NO RECOVERY APPROVAL -> NO BROAD RECOVERY.
-NO RESUME APPROVAL -> NO CONTINUATION AFTER EXECUTION INCIDENT.
-NO EVALUATION AUTHORIZATION -> NO EVALUATION.
-
-CLOSED CYCLE -> IMMUTABLE HISTORY.
-NEW EXTERNAL SCOPE -> NEW CYCLE.
-NO APPROVAL CROSSES A CYCLE BOUNDARY.
+External Research owns WHAT / WHY / REQUIREMENTS / SCOPE / EVIDENCE / SUCCESS.
+Python owns Scope versioning / snapshot / digest / authority.
+Codex owns HOW / repository truth / implementation planning / Tasks.
 ```
 
-These rules are the architectural center of Project Template v4.3.1.
+- Incomplete external scope produces questions/research recommendations, not final artifacts.
+- External Research is checkpointable; a fresh web chat must be able to resume from saved Index/Topic/Source files without the old conversation.
+- `project_details.md` is the distilled mutable handoff; `docs/raw/*` is selective evidence, not a bulk dump.
+- `start_cycle.py`/`import_scope.py` convert that handoff into an immutable `SCOPE_NNN` snapshot.
+- `PLAN_READY` and implementation approval bind both exact Scope digest and exact package digest.
+- Chat is feedback, never implementation authority.
+- LLMs may produce artifacts/evidence; Python grants authoritative transitions.
+- No approval or execution authority carries forward across Cycle boundaries.
+- Expensive phases have machine/human circuit breakers and bounded retries/context.

@@ -4,7 +4,7 @@ This directory is the machine-governed control plane for the VS Code/Codex workf
 
 ## Authoritative files
 
-- `STATE.json` — current workflow/cycle/task/recovery/evaluation state.
+- `STATE.json` — current workflow/cycle/scope/task/recovery/evaluation state.
 - `TRANSITIONS.jsonl` — append-only transition audit ledger.
 - `approvals/APPROVAL_xxxx.json` — immutable implementation approval records.
 - `manifests/APPROVAL_xxxx_PACKAGE.json` — exact approved package SHA-256 manifests.
@@ -38,7 +38,7 @@ PLANNING
  -> CLOSED_VALIDATED
 ```
 
-Recovery/Replan states may interrupt the path before validation. A `CLOSED_VALIDATED` Cycle is immutable history. New external scope creates the next Cycle.
+Recovery/Replan states may interrupt the path before validation. A `CLOSED_VALIDATED` Cycle is immutable history. New external scope is captured as an immutable Scope Snapshot and creates the next Cycle.
 
 ## Approval scope
 
@@ -46,6 +46,8 @@ Implementation approval is not global. It is bound to:
 
 ```text
 cycle_id
+scope_revision
+scope_digest
 planning_version
 planning_revision
 package_digest
@@ -53,7 +55,7 @@ task_count
 manifest_path
 ```
 
-It cannot authorize another Cycle or another Planning revision.
+It cannot authorize another Cycle, another Scope revision, or another Planning revision.
 
 ## Runtime Task state
 

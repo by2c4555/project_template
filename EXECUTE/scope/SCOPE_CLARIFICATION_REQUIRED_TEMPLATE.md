@@ -1,43 +1,46 @@
 # Scope Clarification Required Vx
 
+Use this artifact only when Codex/Diagnosis has proven that a **material product/scope decision** cannot be resolved from the active immutable Scope Snapshot or repository truth.
+
 ```yaml
-scope_clarification_version: Scope_Clarification_Vx
-source_diagnosis: Diagnosis_Vx
-source_issue_or_evaluation: unknown
-status: USER_DECISION_REQUIRED
-blocks_execution: true
+artifact_kind: SCOPE_CLARIFICATION_REQUIRED
+status: OPEN
+cycle_id: CYCLE_NNN
+current_scope_revision: SCOPE_NNN
+current_scope_digest: sha256:...
+origin: PLANNING | DIAGNOSIS
+origin_artifact: path/to/source
 ```
 
-## Why Technical Recovery Cannot Decide This
+## Material Gap
 
-Explain why the blocker is a product/scope decision rather than an implementation decision.
+Describe the exact missing/ambiguous product or scope decision.
 
-## Current Approved Scope
+## Why It Blocks Technical Work
 
-## Missing / Ambiguous Decision
+Explain which requirement, behavior, compatibility boundary, success criterion, or Task decomposition could change depending on the answer.
 
-## Decision Questions
+## What Is Already Known
 
-### SCQ-001
+Summarize verified scope/repository facts so External Research does not redo unrelated work.
 
-**Question:**
+## Requested External/User Resolution
 
-**Why it matters:**
+State the smallest set of decisions or external facts needed.
 
-**Option A:**
-- behavior
-- technical consequence
+## Return Path
 
-**Option B:**
-- behavior
-- technical consequence
+Use External Research to update the cumulative handoff:
 
-**Other valid answer:**
+```text
+EXECUTE/project_details.md
+EXECUTE/docs/raw/*   # only if new evidence is useful
+```
 
-## Existing Evidence
+When the updated handoff is `READY_FOR_CODEX`, the user captures it with:
 
-## What Must Not Be Assumed
+```bash
+python scripts/import_scope.py --reason "<clarification resolved>"
+```
 
-## Return Contract
-
-ChatGPT/User should return only clarified scope/requirements and updated Research artifacts. Codex then performs the required replan/recovery. Do not ask ChatGPT to diagnose implementation logs.
+This creates a new immutable `SCOPE_NNN`. Do not edit the old Scope Snapshot or Planning package in place.

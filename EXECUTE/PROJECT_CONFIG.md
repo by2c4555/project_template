@@ -1,14 +1,17 @@
-# Project Configuration — v4.3.1
+# Project Configuration — v4.3.2
 
 ## Controlled boundary
 
-v4.3 controls only work after external scope/research is manually handed into the VS Code repository. ChatGPT Web UI is outside this runtime and remains a manual scope/product layer.
+v4.3 controls only work after external scope handoff is manually handed into the VS Code repository. External Web AI is outside this runtime and remains a manual scope/product/evidence layer.
 
 ```text
-External scope / Research
-        │ manual handoff
+External Research handoff
+(project_details.md + useful docs/raw/*)
+        │ manual copy
         ▼
-════════ v4.3 controlled boundary ════════
+Scope Snapshot (Python, SHA-256)
+        │
+════════ v4.3.2 controlled boundary ════════
 Change Cycle -> Codex Planning -> Human Plan Approval
              -> Manager/Builder Execution
              -> Diagnosis -> Human Recovery Approval -> Recovery -> Human Resume
@@ -39,8 +42,8 @@ New Change Cycle (no inherited approval)
 3. Natural-language chat never counts as implementation approval, recovery approval, resume approval, or evaluation authorization.
 4. Expensive phase boundaries require interactive human scripts.
 5. Routine within-phase transitions use machine gates without user interaction.
-6. Approval is bound to one exact Change Cycle, Planning version/revision, manifest, Task count, and SHA-256 package digest.
-7. Approved package mutation -> execution hard stop.
+6. Approval is bound to one exact Change Cycle, immutable Scope revision/digest, Planning version/revision, manifest, Task count, and SHA-256 package digest.
+7. Scope Snapshot integrity failure or approved package mutation -> execution hard stop.
 8. Task contracts are immutable; Task runtime status/counters live in machine state.
 9. Ordinary Task dispatch is one-time. Local repair attempts are machine-counted.
 10. Manager context accumulation is bounded by a dispatch batch; reaching the limit forces a fresh Manager conversation.
@@ -66,6 +69,7 @@ These scripts require an interactive TTY challenge and intentionally do not acce
 ## Machine gates
 
 ```text
+scope capture/revision -> start_cycle.py / import_scope.py
 planning interaction/package -> planning_gate.py
 task dispatch/repair/pass/fail/completion -> execution_gate.py
 diagnosis registration/routing -> diagnosis_gate.py
@@ -99,7 +103,8 @@ Exactly one primary classification:
 ## Token-safety controls
 
 - unresolved material decisions block Task expansion;
-- exact approved-package digest checked on execution/recovery/evaluation transitions;
+- external handoff is captured into immutable Scope Snapshots;
+- exact approved Scope digest + approved-package digest checked on execution/recovery/evaluation transitions;
 - Builder context preflight target/hard limit;
 - machine-counted local repair budget;
 - ordinary Task can be dispatched only once;

@@ -26,6 +26,11 @@ if result in {'PASS','PASS_WITH_FINDINGS'}:
     suffix=a.evaluation.replace('Evaluation_','')
     cp=a.completion_report or f'EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_{suffix}.md'; cpp=ROOT/cp
     if not cpp.is_file(): raise SystemExit(f'FINALIZE_EVALUATION: BLOCKED\nCompletion Report required before validation: {cp}')
+    cptext=cpp.read_text(encoding='utf-8',errors='replace'); scope=cycle.get('scope') or {}
+    if value(cptext,'based_on_scope_revision') != scope.get('revision_label'):
+        raise SystemExit('FINALIZE_EVALUATION: BLOCKED\nCompletion Report based_on_scope_revision must match the active Scope Snapshot')
+    if value(cptext,'based_on_scope_digest') != scope.get('digest'):
+        raise SystemExit('FINALIZE_EVALUATION: BLOCKED\nCompletion Report based_on_scope_digest must match the active Scope Snapshot')
     ev['status']='PASS'; ev['next_route']='AWAIT_NEW_SCOPE'; cycle['completion_report']=cp; cycle['status']='CLOSED_VALIDATED'; cycle['lifecycle_stage']='AWAITING_NEW_SCOPE'; cycle['closed_at']=utc_now(); cycle['next_action']='IMPORT_NEW_EXTERNAL_SCOPE_THEN_START_NEW_CYCLE'; state['project_state']='AWAITING_NEW_SCOPE'
     if cycle.get('approval'): cycle['approval']['status']='CONSUMED'
     ex['status']='COMPLETE_VALIDATED'

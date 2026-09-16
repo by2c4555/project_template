@@ -31,7 +31,7 @@ class V43WorkflowRegression(unittest.TestCase):
         cls.root = Path(cls.tmp.name) / 'repo'
         shutil.copytree(
             SOURCE_ROOT, cls.root,
-            ignore=shutil.ignore_patterns('__pycache__', '*.pyc', 'project_template-v4.3.1.zip')
+            ignore=shutil.ignore_patterns('__pycache__', '*.pyc', 'project_template-v4.3.2.zip')
         )
 
     @classmethod
@@ -39,12 +39,15 @@ class V43WorkflowRegression(unittest.TestCase):
         cls.tmp.cleanup()
 
     def setUp(self):
-        # Reset mutable machine/package workspaces without re-copying the whole template.
         ws = import_ws(self.root)
         ws.save_state(ws.initial_state())
         ws.LEDGER_PATH.write_text('', encoding='utf-8')
         ws.reset_package_workspace('none', 'none')
-        for d in [self.root/'EXECUTE/control/approvals', self.root/'EXECUTE/control/recovery_approvals', self.root/'EXECUTE/control/manifests']:
+        for d in [
+            self.root/'EXECUTE/control/approvals',
+            self.root/'EXECUTE/control/recovery_approvals',
+            self.root/'EXECUTE/control/manifests',
+        ]:
             for item in d.glob('*.json'):
                 item.unlink()
         h = self.root/'EXECUTE/history/cycles'
@@ -52,9 +55,47 @@ class V43WorkflowRegression(unittest.TestCase):
             shutil.rmtree(h)
         for item in (self.root/'EXECUTE/issues').glob('ISSUE_[0-9]*.md'):
             item.unlink()
+        for item in (self.root/'EXECUTE/docs/raw').glob('source-*.md'):
+            item.unlink()
 
-    def start_cycle(self, scope='Research_Test'):
-        p = run(self.root, 'scripts/start_cycle.py', '--scope', scope, '--title', 'Test cycle')
+    def write_handoff(self, title='Test Scope', suffix='v1', supporting=False):
+        files=[]
+        if supporting:
+            raw=self.root/f'EXECUTE/docs/raw/source-{suffix}.md'
+            raw.parent.mkdir(parents=True,exist_ok=True)
+            raw.write_text(f'# Source {suffix}\nverified evidence\n',encoding='utf-8')
+            files=[str(raw.relative_to(self.root)).replace('\\','/')]
+        inline='['+', '.join(files)+']'
+        text=(
+            '---\n'
+            'artifact_kind: PROJECT_DETAILS\n'
+            'artifact_status: READY_FOR_CODEX\n'
+            f'scope_title: {title}\n'
+            'baseline_ref: none\n'
+            'product_scope_unknowns: 0\n'
+            f'supporting_files: {inline}\n'
+            '---\n\n'
+            '# Project Details\n\n'
+            f'## 1. Executive Handoff\n{title} {suffix}\n\n'
+            f'## 3. Change Summary / Delta\n- change {suffix}\n\n'
+            '## 4. Requirements\n- REQ-001 — required\n\n'
+            '## 5. Scope\n### In Scope\n- feature\n### Out of Scope / Non-Goals\n- none\n### Explicitly Unchanged\n- none\n\n'
+            '## 6. Constraints and Invariants\n- preserve baseline\n\n'
+            '## 7. Confirmed Decisions\n- confirmed\n\n'
+            '## 8. Implementation-Relevant Facts\n- FACT-001\n\n'
+            '## 9. External / Reference Findings\n- none\n\n'
+            '## 10. Known Risks\n- none\n\n'
+            '## 11. Remaining Unknowns\n### Product / Scope Unknowns\nNONE\n### Technical Unknowns for Codex\n- TECH-001\n\n'
+            '## 12. Repository Investigation Targets\n- INV-001\n\n'
+            '## 13. Success Criteria\n- SC-001 -> REQ-001\n\n'
+            '## 14. Codex Context Map\n### P0 — Read During Planning\n- none\n\n'
+            '## 15. Supporting Research Index\n- none\n'
+        )
+        (self.root/'EXECUTE/project_details.md').write_text(text,encoding='utf-8')
+
+    def start_cycle(self, title='Test cycle', suffix='v1', supporting=False):
+        self.write_handoff(title='Test Scope', suffix=suffix, supporting=supporting)
+        p = run(self.root, 'scripts/start_cycle.py', '--title', title)
         self.assertEqual(p.returncode, 0, p.stdout)
         return p
 
@@ -73,10 +114,39 @@ class V43WorkflowRegression(unittest.TestCase):
         task_lines=[]
         for i in range(1, task_count+1):
             tid=f'TASK_{i:03d}'
-            deps='[]'
             task_lines.append(f'- {tid}')
             (self.root/f'EXECUTE/tasks/{tid}.md').write_text(
-                f'''---\ntask_id: {tid}\nartifact_status: COMPILED\nplanning_version: {pv}\nplanning_revision: {rev}\nphase: PHASE_01\nbuilder: Builder100K\ndepends_on: {deps}\n---\n\n# {tid}\n\n## Context Manifest\n### mandatory\n- `EXECUTE/compiled/GLOBAL_CONSTRAINTS.md`\n\n## Allowed Scope\n### WRITE\n- `src/file_{i}.txt`\n\n## Acceptance Criteria\n- AC-01\n\n## Verification\n`true`\n\n## Local Repair Budget\n```yaml\nmax_evidence_driven_repair_attempts: {max_repairs}\n```\n''', encoding='utf-8'
+                f'''---
+task_id: {tid}
+artifact_status: COMPILED
+planning_version: {pv}
+planning_revision: {rev}
+phase: PHASE_01
+builder: Builder100K
+depends_on: []
+---
+
+# {tid}
+
+## Context Manifest
+### mandatory
+- `EXECUTE/compiled/GLOBAL_CONSTRAINTS.md`
+
+## Allowed Scope
+### WRITE
+- `src/file_{i}.txt`
+
+## Acceptance Criteria
+- AC-01
+
+## Verification
+`true`
+
+## Local Repair Budget
+```yaml
+max_evidence_driven_repair_attempts: {max_repairs}
+```
+''', encoding='utf-8'
             )
         (self.root/'EXECUTE/tasks/TASK_INDEX.md').write_text(
             f'---\nartifact_kind: TASK_INDEX\nartifact_status: COMPILED\nplanning_version: {pv}\nplanning_revision: {rev}\n---\n\n# Tasks\n'+'\n'.join(task_lines)+'\n', encoding='utf-8'
@@ -90,27 +160,82 @@ class V43WorkflowRegression(unittest.TestCase):
         return pv, rev
 
     def force_test_approval(self):
-        ws=import_ws(self.root); state=ws.load_state(); cid,cycle=ws.active_cycle(state); p=cycle['planning']
+        ws=import_ws(self.root); state=ws.load_state(); cid,cycle=ws.active_cycle(state); p=cycle['planning']; scope=cycle['scope']
         manifest=ws.build_package_manifest(p['version'],p['revision_label'])
         approval_id='APPROVAL_TEST'
         mp=ws.manifest_path_for(approval_id); ws.write_json(mp,manifest)
         approval={
-            'approval_id':approval_id,'cycle_id':cid,'status':'ACTIVE','planning_version':p['version'],
-            'planning_revision':p['revision_label'],'package_digest':manifest['package_digest'],
+            'approval_id':approval_id,'cycle_id':cid,'status':'ACTIVE',
+            'scope_revision':scope['revision_label'],'scope_digest':scope['digest'],'scope_snapshot':scope['snapshot_path'],
+            'planning_version':p['version'],'planning_revision':p['revision_label'],'package_digest':manifest['package_digest'],
             'task_count':manifest['task_count'],'manifest_path':str(mp.relative_to(self.root)).replace('\\','/'),
             'human_interactive':True,
         }
         tasks={}
         for c in manifest['task_contracts']:
-            tasks[c['task_id']]={'status':'PENDING','contract_path':c['path'],'dependencies':c['depends_on'],'dispatch_count':0,'repair_attempts':0,'max_repairs':c.get('max_repairs') if c.get('max_repairs') is not None else 2,'evidence':None,'recovery':None}
+            tasks[c['task_id']]={
+                'status':'PENDING','contract_path':c['path'],'dependencies':c['depends_on'],'dispatch_count':0,
+                'repair_attempts':0,'max_repairs':c.get('max_repairs') if c.get('max_repairs') is not None else 2,
+                'evidence':None,'recovery':None,
+            }
         cycle['approval']=approval; p['status']='APPROVED'; p['package_status']='APPROVED'
-        cycle['execution']={'version':'Execution_Test','status':'READY','bound_planning_version':p['version'],'bound_planning_revision':p['revision_label'],'approval_id':approval_id,'approved_package_digest':manifest['package_digest'],'tasks':tasks,'active_task':None,'active_issue':None,'last_resolved_issue':None,'manager_batch':{'number':1,'dispatches':0,'max_dispatches':state['runtime_policy']['manager_max_task_dispatches_per_batch'],'reset_required':False},'recovery':{'status':'NOT_ACTIVE','diagnosis':None,'resolution':None,'verification':None,'resume_authorized':False,'next_task':None,'recovery_baseline':None}}
+        cycle['execution']={
+            'version':'Execution_Test','status':'READY','bound_scope_revision':scope['revision_label'],'approved_scope_digest':scope['digest'],
+            'bound_planning_version':p['version'],'bound_planning_revision':p['revision_label'],'approval_id':approval_id,
+            'approved_package_digest':manifest['package_digest'],'tasks':tasks,'active_task':None,'active_issue':None,'last_resolved_issue':None,
+            'manager_batch':{'number':1,'dispatches':0,'max_dispatches':state['runtime_policy']['manager_max_task_dispatches_per_batch'],'reset_required':False},
+            'recovery':{'status':'NOT_ACTIVE','diagnosis':None,'resolution':None,'verification':None,'resume_authorized':False,'next_task':None,'recovery_baseline':None},
+        }
         cycle['status']='EXECUTION'; cycle['lifecycle_stage']='EXECUTION'; state['project_state']='EXECUTION'; ws.save_state(state)
         return manifest
 
     def evidence(self, tid):
         p=self.root/f'EXECUTE/execution/evidence/{tid}.md'; p.parent.mkdir(parents=True,exist_ok=True); p.write_text('# evidence\nPASS\n',encoding='utf-8')
         return str(p.relative_to(self.root)).replace('\\','/')
+
+    def test_incomplete_project_details_blocks_cycle(self):
+        (self.root/'EXECUTE/project_details.md').write_text('---\nartifact_kind: PROJECT_DETAILS\nartifact_status: INCOMPLETE\nscope_title: test\nproduct_scope_unknowns: 1\nsupporting_files: []\n---\n',encoding='utf-8')
+        p=run(self.root,'scripts/start_cycle.py','--title','Blocked')
+        self.assertNotEqual(p.returncode,0); self.assertIn('READY_FOR_CODEX',p.stdout)
+
+    def test_missing_supporting_file_blocks_cycle(self):
+        self.write_handoff()
+        t=(self.root/'EXECUTE/project_details.md').read_text(encoding='utf-8').replace('supporting_files: []','supporting_files: [EXECUTE/docs/raw/missing.md]')
+        (self.root/'EXECUTE/project_details.md').write_text(t,encoding='utf-8')
+        p=run(self.root,'scripts/start_cycle.py')
+        self.assertNotEqual(p.returncode,0); self.assertIn('supporting file missing',p.stdout)
+
+    def test_scope_snapshot_is_immutable_when_root_handoff_changes(self):
+        self.start_cycle(suffix='v1',supporting=True)
+        ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); scope=cy['scope']; snap=self.root/scope['snapshot_path']/'EXECUTE/project_details.md'
+        before=snap.read_text(encoding='utf-8')
+        self.write_handoff(title='Changed Root',suffix='v2',supporting=False)
+        self.assertEqual(snap.read_text(encoding='utf-8'),before)
+        self.assertEqual(ws.verify_active_scope(cy),[])
+
+    def test_import_scope_revisions_planning_and_invalidates_plan_ready(self):
+        self.start_cycle(); self.compile_package()
+        ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); old_scope=cy['scope']['digest']; old_rev=cy['planning']['revision_label']
+        self.write_handoff(title='Updated Scope',suffix='v2')
+        p=run(self.root,'scripts/import_scope.py','--reason','new confirmed feature')
+        self.assertEqual(p.returncode,0,p.stdout)
+        st=json.loads((self.root/'EXECUTE/control/STATE.json').read_text()); cy=st['cycles'][cid]
+        self.assertEqual(cy['scope']['revision_label'],'SCOPE_002'); self.assertNotEqual(cy['scope']['digest'],old_scope)
+        self.assertEqual(cy['planning']['status'],'IN_PROGRESS'); self.assertNotEqual(cy['planning']['revision_label'],old_rev)
+        self.assertIsNone(cy['planning']['candidate_package_digest'])
+
+    def test_scope_change_after_approval_routes_to_replan(self):
+        self.start_cycle(); self.compile_package(); self.force_test_approval()
+        self.write_handoff(title='Changed Approved Scope',suffix='v2')
+        p=run(self.root,'scripts/import_scope.py','--reason','material scope change')
+        self.assertEqual(p.returncode,0,p.stdout); self.assertIn('REPLAN_REQUIRED',p.stdout)
+        st=json.loads((self.root/'EXECUTE/control/STATE.json').read_text()); cy=st['cycles'][st['active_cycle']]
+        self.assertEqual(cy['status'],'REPLAN_REQUIRED'); self.assertIsNone(cy['approval'])
+        self.assertTrue(cy['approval_history']); self.assertEqual(cy['approval_history'][-1]['status'],'SUPERSEDED_BY_SCOPE_CHANGE')
+        q=run(self.root,'scripts/start_replan.py')
+        self.assertEqual(q.returncode,0,q.stdout)
+        st=json.loads((self.root/'EXECUTE/control/STATE.json').read_text()); cy=st['cycles'][st['active_cycle']]
+        self.assertEqual(cy['status'],'PLANNING'); self.assertEqual(cy['planning']['based_on_scope_revision'],'SCOPE_002')
 
     def test_material_unknown_hard_stop_blocks_expansion(self):
         self.start_cycle()
@@ -135,6 +260,13 @@ class V43WorkflowRegression(unittest.TestCase):
         p=run(self.root,'scripts/execution_gate.py','begin-task','TASK_001')
         self.assertNotEqual(p.returncode,0); self.assertIn('PACKAGE_INTEGRITY: FAIL',p.stdout)
 
+    def test_scope_snapshot_mutation_blocks_dispatch(self):
+        self.start_cycle(); self.compile_package(); self.force_test_approval()
+        ws=import_ws(self.root); st=ws.load_state(); _,cy=ws.active_cycle(st); snap=self.root/cy['scope']['snapshot_path']/'EXECUTE/project_details.md'
+        snap.write_text(snap.read_text()+'\nmutated\n',encoding='utf-8')
+        p=run(self.root,'scripts/execution_gate.py','begin-task','TASK_001')
+        self.assertNotEqual(p.returncode,0); self.assertIn('SCOPE_INTEGRITY: FAIL',p.stdout)
+
     def test_repair_budget_is_machine_counted(self):
         self.start_cycle(); self.compile_package(max_repairs=2); self.force_test_approval()
         b=run(self.root,'scripts/execution_gate.py','begin-task','TASK_001'); self.assertEqual(b.returncode,0,b.stdout)
@@ -145,7 +277,7 @@ class V43WorkflowRegression(unittest.TestCase):
 
     def test_manager_batch_forces_context_reset(self):
         self.start_cycle(); self.compile_package(task_count=3); self.force_test_approval()
-        ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); cy['execution']['manager_batch']['max_dispatches']=2; ws.save_state(st)
+        ws=import_ws(self.root); st=ws.load_state(); _,cy=ws.active_cycle(st); cy['execution']['manager_batch']['max_dispatches']=2; ws.save_state(st)
         for tid in ['TASK_001','TASK_002']:
             p=run(self.root,'scripts/execution_gate.py','begin-task',tid); self.assertEqual(p.returncode,0,p.stdout)
             ev=self.evidence(tid)
@@ -157,30 +289,26 @@ class V43WorkflowRegression(unittest.TestCase):
     def test_new_cycle_does_not_inherit_approval(self):
         self.start_cycle(); self.compile_package(); self.force_test_approval()
         ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); cy['status']='CLOSED_VALIDATED'; cy['lifecycle_stage']='AWAITING_NEW_SCOPE'; st['project_state']='AWAITING_NEW_SCOPE'; ws.save_state(st)
-        p=run(self.root,'scripts/start_cycle.py','--scope','Research_V2','--title','Next')
+        self.write_handoff(title='Next Scope',suffix='v2')
+        p=run(self.root,'scripts/start_cycle.py','--title','Next')
         self.assertEqual(p.returncode,0,p.stdout)
         st=json.loads((self.root/'EXECUTE/control/STATE.json').read_text()); new=st['cycles'][st['active_cycle']]
         self.assertEqual(new['status'],'PLANNING'); self.assertIsNone(new['approval']); self.assertIsNone(new['execution']); self.assertNotEqual(st['active_cycle'],cid)
+        self.assertEqual(new['scope']['revision_label'],'SCOPE_001')
 
     def test_open_cycle_blocks_new_cycle(self):
         self.start_cycle()
-        p=run(self.root,'scripts/start_cycle.py','--scope','Research_V2')
+        self.write_handoff(title='Second',suffix='v2')
+        p=run(self.root,'scripts/start_cycle.py')
         self.assertNotEqual(p.returncode,0); self.assertIn('only CLOSED_VALIDATED',p.stdout)
 
     def test_evaluation_requires_human_tty(self):
         self.start_cycle(); self.compile_package(); self.force_test_approval()
-        ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); ex=cy['execution']
+        ws=import_ws(self.root); st=ws.load_state(); _,cy=ws.active_cycle(st); ex=cy['execution']
         for t in ex['tasks'].values(): t['status']='PASS'
         ex['status']='AWAITING_EVALUATION'; cy['status']='EXECUTION_COMPLETE'; cy['lifecycle_stage']='AWAITING_EVALUATION_AUTHORIZATION'; ws.save_state(st)
         p=run(self.root,'scripts/start_evaluation.py')
         self.assertNotEqual(p.returncode,0); self.assertIn('interactive TTY',p.stdout)
-
-    def test_approved_package_snapshot_helper_preserves_files(self):
-        self.start_cycle(); self.compile_package(); ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); p=cy['planning']; m=ws.build_package_manifest(p['version'],p['revision_label'])
-        rel=ws.snapshot_package(cid,'APPROVAL_TEST',m)
-        snap=self.root/rel
-        self.assertTrue((snap/'PACKAGE_MANIFEST.json').is_file())
-        self.assertTrue((snap/'package/EXECUTE/tasks/TASK_001.md').is_file())
 
     def test_execution_finalize_requires_bound_complete_summary(self):
         self.start_cycle(); self.compile_package(); self.force_test_approval()
@@ -196,13 +324,15 @@ class V43WorkflowRegression(unittest.TestCase):
 
     def test_finalize_pass_closes_cycle(self):
         self.start_cycle(); self.compile_package(); self.force_test_approval()
-        ws=import_ws(self.root); st=ws.load_state(); cid,cy=ws.active_cycle(st); ex=cy['execution']
+        ws=import_ws(self.root); st=ws.load_state(); _,cy=ws.active_cycle(st); ex=cy['execution']
         for t in ex['tasks'].values(): t['status']='PASS'
         ex['status']='AWAITING_EVALUATION'; cy['status']='EVALUATION'; cy['lifecycle_stage']='EVALUATION'
         cy['evaluation']={'status':'AUTHORIZED','active':{'version':'Evaluation_V1','status':'AUTHORIZED','execution_version':ex['version'],'report':'EXECUTE/evaluation/Evaluation_V1.md','result':None,'blocking_findings':0},'attempts':[],'latest_result':None,'next_route':'RUN_CODEX_EVALUATION'}
         ws.save_state(st)
         (self.root/'EXECUTE/evaluation/Evaluation_V1.md').write_text('# Evaluation\n\n```yaml\nresult: PASS\nblocking_findings: 0\n```\n',encoding='utf-8')
-        (self.root/'EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_V1.md').write_text('# Completion\nverified\n',encoding='utf-8')
+        scope=cy['scope']
+        (self.root/'EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_V1.md').write_text(
+            f'# Completion\n\nbased_on_scope_revision: {scope["revision_label"]}\nbased_on_scope_digest: {scope["digest"]}\nverified\n',encoding='utf-8')
         p=run(self.root,'scripts/finalize_evaluation.py','--evaluation','Evaluation_V1','--completion-report','EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_V1.md')
         self.assertEqual(p.returncode,0,p.stdout); self.assertIn('CLOSED_VALIDATED',p.stdout)
         st=json.loads((self.root/'EXECUTE/control/STATE.json').read_text()); cy=st['cycles'][st['active_cycle']]

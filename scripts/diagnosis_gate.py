@@ -39,7 +39,7 @@ elif a.classification=='EVALUATION_DEFECT':
         ex['status']='AWAITING_EVALUATION'
     rec['status']='RE_EVALUATION_REQUIRED'; cycle['lifecycle_stage']='AWAITING_EVALUATION_AUTHORIZATION'; cycle['next_action']='USER_RUN_START_EVALUATION'; cycle['status']='EXECUTION_COMPLETE'
 elif a.classification=='SCOPE_AMBIGUITY':
-    rec['status']='SCOPE_CLARIFICATION_REQUIRED'; cycle['lifecycle_stage']='SCOPE_CLARIFICATION_REQUIRED'; cycle['next_action']='EXTERNAL_SCOPE_CLARIFICATION'
+    rec['status']='SCOPE_CLARIFICATION_REQUIRED'; cycle['lifecycle_stage']='SCOPE_CLARIFICATION_REQUIRED'; cycle['next_action']='EXTERNAL_SCOPE_CLARIFICATION_THEN_IMPORT_SCOPE'
 elif a.classification=='EXTERNAL_BLOCKER':
     rec['status']='EXTERNAL_ACTION_REQUIRED'; cycle['lifecycle_stage']='EXTERNAL_BLOCKER'; cycle['next_action']='USER_EXTERNAL_ACTION'
 else:

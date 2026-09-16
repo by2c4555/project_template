@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared machine-state and integrity helpers for Project Template v4.3.1.
+"""Shared machine-state and integrity helpers for Project Template v4.3.2.
 
 STATE.json is the authoritative workflow state. Human-readable Markdown status files are
 views generated from it; agents must not grant themselves authority by editing Markdown.
@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "EXECUTE" / "control"
 STATE_PATH = CONTROL / "STATE.json"
 LEDGER_PATH = CONTROL / "TRANSITIONS.jsonl"
-WORKFLOW_VERSION = "4.3.1"
+WORKFLOW_VERSION = "4.3.2"
 SCHEMA_VERSION = 1
 
 PACKAGE_STATIC = [
@@ -143,6 +143,167 @@ def parse_inline_list(raw: Optional[str]) -> List[str]:
         return [p.strip().strip("\"'") for p in inner.split(",") if p.strip()]
     return [raw]
 
+
+
+def validate_project_details_handoff() -> Dict[str, Any]:
+    """Validate the mutable external handoff before it becomes a Scope Snapshot."""
+    path = ROOT / "EXECUTE" / "project_details.md"
+    errors: List[str] = []
+    if not path.is_file():
+        raise ValueError("missing EXECUTE/project_details.md")
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if markdown_value(text, "artifact_kind") != "PROJECT_DETAILS":
+        errors.append("project_details artifact_kind must be PROJECT_DETAILS")
+    if markdown_value(text, "artifact_status") != "READY_FOR_CODEX":
+        errors.append("project_details artifact_status must be READY_FOR_CODEX")
+    title = markdown_value(text, "scope_title")
+    if not title or title.upper() in {"TODO", "UNKNOWN", "NONE"}:
+        errors.append("project_details scope_title must be a real short title")
+    raw_unknowns = markdown_value(text, "product_scope_unknowns")
+    try:
+        unknowns = int(raw_unknowns) if raw_unknowns is not None else -1
+    except ValueError:
+        unknowns = -1
+    if unknowns != 0:
+        errors.append("project_details product_scope_unknowns must be exactly 0")
+    supporting = parse_inline_list(markdown_value(text, "supporting_files"))
+    seen = set()
+    for rel in supporting:
+        if rel in seen:
+            errors.append(f"duplicate supporting file: {rel}")
+            continue
+        seen.add(rel)
+        rp = Path(rel)
+        if rp.is_absolute() or ".." in rp.parts:
+            errors.append(f"invalid supporting file path: {rel}")
+            continue
+        norm = str(rp).replace("\\", "/")
+        if not norm.startswith("EXECUTE/docs/raw/"):
+            errors.append(f"supporting file must be under EXECUTE/docs/raw/: {rel}")
+            continue
+        if not (ROOT / rp).is_file():
+            errors.append(f"supporting file missing: {rel}")
+    if errors:
+        raise ValueError("\n".join(errors))
+    return {
+        "path": "EXECUTE/project_details.md",
+        "scope_title": title,
+        "baseline_ref": markdown_value(text, "baseline_ref") or "none",
+        "product_scope_unknowns": unknowns,
+        "supporting_files": supporting,
+    }
+
+
+def build_scope_manifest(scope_revision: str) -> Dict[str, Any]:
+    """Build a deterministic manifest from the external scope handoff."""
+    meta = validate_project_details_handoff()
+    rels = [meta["path"], *meta["supporting_files"]]
+    file_records = []
+    aggregate = hashlib.sha256()
+    for rel in rels:
+        fp = ROOT / rel
+        digest = sha256_file(fp)
+        rec = {"path": rel, "sha256": digest, "bytes": fp.stat().st_size}
+        file_records.append(rec)
+        aggregate.update(rel.encode("utf-8"))
+        aggregate.update(b"\0")
+        aggregate.update(digest.encode("ascii"))
+        aggregate.update(b"\n")
+    return {
+        "manifest_schema": 1,
+        "scope_revision": scope_revision,
+        "created_at": utc_now(),
+        "scope_title": meta["scope_title"],
+        "baseline_ref": meta["baseline_ref"],
+        "product_scope_unknowns": 0,
+        "source_handoff_path": meta["path"],
+        "supporting_files": meta["supporting_files"],
+        "scope_digest": aggregate.hexdigest(),
+        "files": file_records,
+    }
+
+
+def snapshot_scope(cycle_id: str, manifest: Dict[str, Any]) -> str:
+    """Capture the mutable external handoff into immutable cycle history."""
+    import shutil
+    revision = manifest["scope_revision"]
+    base = ROOT / "EXECUTE" / "history" / "cycles" / cycle_id / "scope" / revision
+    if base.exists():
+        raise ValueError(f"scope snapshot already exists: {base.relative_to(ROOT)}")
+    for rec in manifest.get("files", []):
+        rel = Path(rec["path"])
+        src = ROOT / rel
+        dst = base / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+    write_json(base / "SCOPE_MANIFEST.json", manifest)
+    return str(base.relative_to(ROOT)).replace("\\", "/")
+
+
+def verify_scope_snapshot(cycle: Dict[str, Any]) -> List[str]:
+    """Verify immutable Scope Snapshot files/digest without checking current execution authority."""
+    scope = cycle.get("scope") or {}
+    snap = scope.get("snapshot_path")
+    if not snap:
+        return ["cycle has no active Scope Snapshot"]
+    base = ROOT / snap
+    mp = base / "SCOPE_MANIFEST.json"
+    if not mp.is_file():
+        return [f"Scope Snapshot manifest missing: {mp.relative_to(ROOT)}"]
+    try:
+        manifest = json.loads(mp.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return [f"invalid Scope Snapshot manifest: {exc}"]
+    errors: List[str] = []
+    aggregate = hashlib.sha256()
+    for rec in manifest.get("files", []):
+        rel = str(rec.get("path"))
+        fp = base / rel
+        if not fp.is_file():
+            errors.append(f"Scope Snapshot file missing: {rel}")
+            continue
+        got = sha256_file(fp)
+        if got != rec.get("sha256"):
+            errors.append(f"Scope Snapshot file changed: {rel}")
+        aggregate.update(rel.encode("utf-8"))
+        aggregate.update(b"\0")
+        aggregate.update(got.encode("ascii"))
+        aggregate.update(b"\n")
+    if not errors and aggregate.hexdigest() != manifest.get("scope_digest"):
+        errors.append("Scope Snapshot aggregate digest mismatch")
+    if scope.get("digest") != manifest.get("scope_digest"):
+        errors.append("cycle scope digest != Scope Snapshot manifest digest")
+    if scope.get("revision_label") != manifest.get("scope_revision"):
+        errors.append("cycle scope revision != Scope Snapshot manifest revision")
+    return errors
+
+
+def verify_active_scope(cycle: Dict[str, Any]) -> List[str]:
+    """Verify the Scope Snapshot and all active approval/execution bindings."""
+    scope = cycle.get("scope") or {}
+    errors = verify_scope_snapshot(cycle)
+    approval = cycle.get("approval") or {}
+    if approval:
+        if approval.get("scope_digest") != scope.get("digest"):
+            errors.append("approval is bound to a different scope digest")
+        if approval.get("scope_revision") != scope.get("revision_label"):
+            errors.append("approval is bound to a different scope revision")
+    execution = cycle.get("execution") or {}
+    if execution and execution.get("approved_scope_digest") not in {None, scope.get("digest")}:
+        errors.append("execution is bound to a different scope digest")
+    return errors
+
+
+def ensure_scope_snapshot_integrity(cycle: Dict[str, Any]) -> None:
+    errors = verify_scope_snapshot(cycle)
+    if errors:
+        raise SystemExit("SCOPE_INTEGRITY: FAIL\n" + "\n".join(f"FAIL: {e}" for e in errors))
+
+
+def ensure_scope_integrity(cycle: Dict[str, Any]) -> None:
+    errors = verify_active_scope(cycle)
+    if errors:
+        raise SystemExit("SCOPE_INTEGRITY: FAIL\n" + "\n".join(f"FAIL: {e}" for e in errors))
 
 def task_paths() -> List[Path]:
     task_dir = ROOT / "EXECUTE" / "tasks"
@@ -372,9 +533,10 @@ def sync_views(state: Dict[str, Any]) -> None:
     resume_authorized = bool((execution_obj.get("recovery") or {}).get("resume_authorized"))
     next_action = cycle.get("next_action") or "NONE"
 
-    project = f'''# Project Status\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Agents must not edit this file to grant authority.\n\n```yaml\nworkflow_version: "{WORKFLOW_VERSION}"\nactive_cycle: {cid}\ncycle_status: {cycle.get("status", "UNKNOWN")}\nlifecycle_stage: {cycle.get("lifecycle_stage", "UNKNOWN")}\nproject_validation_status: {validation}\nscope_ref: {cycle.get("scope_ref", "none")}\nplanning_version: {planning_obj.get("version", "none")}\nplanning_revision: {planning_obj.get("revision_label", "none")}\nplanning_status: {planning_obj.get("status", "NOT_CREATED")}\nmaterial_unknowns: {planning_obj.get("material_unknowns", "unknown")}\napproval_id: {approval.get("approval_id", "none")}\napproval_status: {approval.get("status", "NONE")}\napproved_package_digest: {approval.get("package_digest", "none")}\nexecution_version: {execution_obj.get("version", "none")}\nexecution_status: {execution_obj.get("status", "LOCKED")}\nactive_task: {execution_obj.get("active_task", "none")}\nactive_issue: {execution_obj.get("active_issue", cycle.get("active_issue") or "none")}\nrecovery_status: {(execution_obj.get("recovery") or {}).get("status", "NOT_ACTIVE")}\nresume_authorized: {str(resume_authorized).lower()}\nevaluation_version: {active_eval.get("version", "none")}\nevaluation_status: {evaluation_obj.get("status", "NOT_STARTED")}\nlatest_evaluation_result: {evaluation_obj.get("latest_result", "none")}\ncompletion_report: {cycle.get("completion_report", "none")}\nnext_action: {next_action}\n```\n'''
+    project = f'''# Project Status\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Agents must not edit this file to grant authority.\n\n```yaml\nworkflow_version: "{WORKFLOW_VERSION}"\nactive_cycle: {cid}\ncycle_status: {cycle.get("status", "UNKNOWN")}\nlifecycle_stage: {cycle.get("lifecycle_stage", "UNKNOWN")}\nproject_validation_status: {validation}\nscope_revision: {(cycle.get("scope") or {}).get("revision_label", "none")}
+scope_digest: {(cycle.get("scope") or {}).get("digest", "none")}\nplanning_version: {planning_obj.get("version", "none")}\nplanning_revision: {planning_obj.get("revision_label", "none")}\nplanning_status: {planning_obj.get("status", "NOT_CREATED")}\nbased_on_scope_revision: {planning_obj.get("based_on_scope_revision", "none")}\nbased_on_scope_digest: {planning_obj.get("based_on_scope_digest", "none")}\nmaterial_unknowns: {planning_obj.get("material_unknowns", "unknown")}\napproval_id: {approval.get("approval_id", "none")}\napproval_status: {approval.get("status", "NONE")}\napproved_package_digest: {approval.get("package_digest", "none")}\nexecution_version: {execution_obj.get("version", "none")}\nexecution_status: {execution_obj.get("status", "LOCKED")}\nactive_task: {execution_obj.get("active_task", "none")}\nactive_issue: {execution_obj.get("active_issue", cycle.get("active_issue") or "none")}\nrecovery_status: {(execution_obj.get("recovery") or {}).get("status", "NOT_ACTIVE")}\nresume_authorized: {str(resume_authorized).lower()}\nevaluation_version: {active_eval.get("version", "none")}\nevaluation_status: {evaluation_obj.get("status", "NOT_STARTED")}\nlatest_evaluation_result: {evaluation_obj.get("latest_result", "none")}\ncompletion_report: {cycle.get("completion_report", "none")}\nnext_action: {next_action}\n```\n'''
 
-    planning_view = f'''# Planning Status\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Chat messages are feedback, never implementation approval.\n\n```yaml\ncycle_id: {cid}\nplanning_version: {planning_obj.get("version", "none")}\nplanning_revision: {planning_obj.get("revision_label", "none")}\nplanning_status: {planning_obj.get("status", "NOT_CREATED")}\nmaterial_unknowns: {planning_obj.get("material_unknowns", "unknown")}\npackage_status: {planning_obj.get("package_status", "NOT_COMPILED")}\ntask_expansion_allowed: {str(bool(planning_obj.get("task_expansion_allowed"))).lower()}\ninteraction_gate: {planning_obj.get("interaction_gate", "NONE")}\ninvocation_stop_required: {str(bool(planning_obj.get("invocation_stop_required"))).lower()}\nexecution_locked: {str(cycle.get("status") not in {"EXECUTION", "EXECUTION_COMPLETE"}).lower()}\napproval_id: {approval.get("approval_id", "none")}\napproval_status: {approval.get("status", "NONE")}\n```\n\nAllowed planning states: `NOT_CREATED`, `IN_PROGRESS`, `AWAITING_MATERIAL_FEEDBACK`, `PLAN_READY`, `APPROVED`, `SUPERSEDED`.\n'''
+    planning_view = f'''# Planning Status\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Chat messages are feedback, never implementation approval.\n\n```yaml\ncycle_id: {cid}\nplanning_version: {planning_obj.get("version", "none")}\nplanning_revision: {planning_obj.get("revision_label", "none")}\nplanning_status: {planning_obj.get("status", "NOT_CREATED")}\nbased_on_scope_revision: {planning_obj.get("based_on_scope_revision", "none")}\nbased_on_scope_digest: {planning_obj.get("based_on_scope_digest", "none")}\nmaterial_unknowns: {planning_obj.get("material_unknowns", "unknown")}\npackage_status: {planning_obj.get("package_status", "NOT_COMPILED")}\ntask_expansion_allowed: {str(bool(planning_obj.get("task_expansion_allowed"))).lower()}\ninteraction_gate: {planning_obj.get("interaction_gate", "NONE")}\ninvocation_stop_required: {str(bool(planning_obj.get("invocation_stop_required"))).lower()}\nexecution_locked: {str(cycle.get("status") not in {"EXECUTION", "EXECUTION_COMPLETE"}).lower()}\napproval_id: {approval.get("approval_id", "none")}\napproval_status: {approval.get("status", "NONE")}\n```\n\nAllowed planning states: `NOT_CREATED`, `IN_PROGRESS`, `AWAITING_MATERIAL_FEEDBACK`, `PLAN_READY`, `APPROVED`, `SUPERSEDED`.\n'''
 
     tasks = execution_obj.get("tasks") or {}
     completed = [tid for tid, t in tasks.items() if t.get("status") in {"PASS", "PASS_RECOVERED"}]
@@ -382,7 +544,7 @@ def sync_views(state: Dict[str, Any]) -> None:
     blocked = [tid for tid, t in tasks.items() if t.get("status") == "BLOCKED"]
     batch = execution_obj.get("manager_batch") or {}
     recovery = execution_obj.get("recovery") or {}
-    execution_view = f'''# Execution State\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Manager/Builder must use Python gates for transitions.\n\n```yaml\ncycle_id: {cid}\nexecution_version: {execution_obj.get("version", "none")}\nexecution_status: {execution_obj.get("status", "LOCKED")}\nexecution_bound_planning_version: {execution_obj.get("bound_planning_version", "none")}\napproved_package_digest: {execution_obj.get("approved_package_digest", "none")}\ncompleted_tasks: {json.dumps(completed)}\nrecovered_tasks: {json.dumps(recovered)}\nactive_task: {execution_obj.get("active_task", "none")}\nblocked_tasks: {json.dumps(blocked)}\nactive_issue: {execution_obj.get("active_issue", "none")}\nlast_resolved_issue: {execution_obj.get("last_resolved_issue", "none")}\nmanager_batch_number: {batch.get("number", 0)}\nmanager_batch_dispatches: {batch.get("dispatches", 0)}\nmanager_batch_max_dispatches: {batch.get("max_dispatches", state.get("runtime_policy", {}).get("manager_max_task_dispatches_per_batch", 10))}\nmanager_context_reset_required: {str(bool(batch.get("reset_required"))).lower()}\nrecovery_status: {recovery.get("status", "NOT_ACTIVE")}\nrecovery_diagnosis: {recovery.get("diagnosis", "none")}\nrecovery_resolution: {recovery.get("resolution", "none")}\nrecovery_verification: {recovery.get("verification", "none")}\nresume_authorized: {str(bool(recovery.get("resume_authorized"))).lower()}\nnext_task: {recovery.get("next_task", "none")}\n```\n'''
+    execution_view = f'''# Execution State\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Manager/Builder must use Python gates for transitions.\n\n```yaml\ncycle_id: {cid}\nexecution_version: {execution_obj.get("version", "none")}\nexecution_status: {execution_obj.get("status", "LOCKED")}\nexecution_bound_planning_version: {execution_obj.get("bound_planning_version", "none")}\napproved_scope_digest: {execution_obj.get("approved_scope_digest", "none")}\napproved_package_digest: {execution_obj.get("approved_package_digest", "none")}\ncompleted_tasks: {json.dumps(completed)}\nrecovered_tasks: {json.dumps(recovered)}\nactive_task: {execution_obj.get("active_task", "none")}\nblocked_tasks: {json.dumps(blocked)}\nactive_issue: {execution_obj.get("active_issue", "none")}\nlast_resolved_issue: {execution_obj.get("last_resolved_issue", "none")}\nmanager_batch_number: {batch.get("number", 0)}\nmanager_batch_dispatches: {batch.get("dispatches", 0)}\nmanager_batch_max_dispatches: {batch.get("max_dispatches", state.get("runtime_policy", {}).get("manager_max_task_dispatches_per_batch", 10))}\nmanager_context_reset_required: {str(bool(batch.get("reset_required"))).lower()}\nrecovery_status: {recovery.get("status", "NOT_ACTIVE")}\nrecovery_diagnosis: {recovery.get("diagnosis", "none")}\nrecovery_resolution: {recovery.get("resolution", "none")}\nrecovery_verification: {recovery.get("verification", "none")}\nresume_authorized: {str(bool(recovery.get("resume_authorized"))).lower()}\nnext_task: {recovery.get("next_task", "none")}\n```\n'''
 
     evaluation_view = f'''# Evaluation Status\n\n> GENERATED VIEW — authoritative state: `EXECUTE/control/STATE.json`. Evaluation requires `start_evaluation.py`.\n\n```yaml\ncycle_id: {cid}\nevaluation_version: {active_eval.get("version", "none")}\nevaluation_status: {evaluation_obj.get("status", "NOT_STARTED")}\nresult: {evaluation_obj.get("latest_result", "none")}\nblocking_findings: {active_eval.get("blocking_findings", 0)}\ndiagnosis_required: {str(evaluation_obj.get("status") == "DIAGNOSIS_REQUIRED").lower()}\ncompletion_report: {cycle.get("completion_report", "none")}\nnext_route: {evaluation_obj.get("next_route", "none")}\n```\n'''
 
@@ -440,6 +602,9 @@ def reset_package_workspace(planning_version: str, planning_revision: str) -> No
         atomic_write_text(cp, compiled_text)
 
 def ensure_package_integrity(cycle: Dict[str, Any]) -> None:
+    scope_errors = verify_active_scope(cycle)
+    if scope_errors:
+        raise SystemExit("SCOPE_INTEGRITY: FAIL\n" + "\n".join(f"FAIL: {e}" for e in scope_errors))
     errors = verify_active_package(cycle)
     if errors:
         raise SystemExit("PACKAGE_INTEGRITY: FAIL\n" + "\n".join(f"FAIL: {e}" for e in errors))

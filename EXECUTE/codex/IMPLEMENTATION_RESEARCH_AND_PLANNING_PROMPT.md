@@ -1,4 +1,4 @@
-# Codex Implementation Research & Planning — v4.3.1
+# Codex Implementation Research & Planning — v4.3.2
 
 Role: external technical research/planning authority inside the VS Code/repository control boundary.
 
@@ -12,7 +12,8 @@ Read first:
 - `EXECUTE/PROJECT_STATUS.md` (generated view)
 - `EXECUTE/plan/PLANNING_STATUS.md` (generated view)
 - `EXECUTE/plan/PLANNING_CONTROL.md`
-- current external scope/Research referenced by the active Cycle
+- the active immutable Scope Snapshot referenced by `STATE.json` (`cycle.scope.snapshot_path`)
+- the snapshot copy of `EXECUTE/project_details.md` first; then only supporting `docs/raw/*` files selected by its Codex Context Map
 - relevant repository source/tests/configuration
 
 `STATE.json` + Python transition scripts are authoritative. Editing status Markdown never grants authority.
@@ -27,9 +28,15 @@ Read first:
 6. When the package is ready, call `planning_gate.py mark-plan-ready`, present a concise review summary, and STOP.
 7. Do not implement production code during Planning.
 
-## Phase A — Scope handoff
+## Phase A — Scope Snapshot handoff
 
-Determine whether the external scope is sufficient to begin technical preparation. Product/scope ownership remains external to this controlled runtime. Do not silently invent missing product decisions.
+The active Cycle must contain an immutable Scope Snapshot created by `start_cycle.py` or `import_scope.py`. Treat that snapshot—not the mutable root `EXECUTE/project_details.md`—as authoritative for this Planning revision.
+
+Read the snapshot `project_details.md` first. Use its `Codex Context Map` to load only P0 evidence initially; open P1/P2 supporting evidence only when the corresponding repository question becomes relevant.
+
+The Scope Snapshot owns WHAT/WHY/requirements/boundaries/constraints/confirmed decisions/success criteria. Repository architecture and implementation choices remain your responsibility. Do not edit the Scope Snapshot.
+
+If the snapshot still exposes a material product/scope ambiguity, do not invent the answer. Use the material decision loop below. If external research/clarification changes scope, the user must import it with `python scripts/import_scope.py --reason "..."`; continue only after the new immutable Scope revision is active.
 
 ## Phase B — Repository research
 
@@ -41,7 +48,7 @@ Inspect only what is necessary to establish implementation truth:
 - existing decisions and verified recovery knowledge;
 - likely implementation boundaries and risks.
 
-Prefer targeted search/read over repository-wide dumps. Do not load giant logs or unrelated raw research.
+Prefer targeted search/read over repository-wide dumps. Use the Scope Snapshot investigation targets and context priorities to focus search. Do not load giant logs or unrelated raw research.
 
 ## Phase C — Material decision loop
 
@@ -61,11 +68,13 @@ When a later user message supplies feedback, resume with:
 python scripts/planning_gate.py resume-feedback
 ```
 
-If prior plan/package content must change, start a new revision first:
+If feedback changes only technical planning while the Scope Snapshot is unchanged, start a new revision first:
 
 ```bash
 python scripts/planning_gate.py begin-revision --reason "<why>"
 ```
+
+If the user/external research changes product scope, requirements, constraints, or success criteria, do **not** encode that change only in Planning artifacts. The updated external handoff must first be captured through `scripts/import_scope.py`, which creates a new Scope revision and invalidates/revises Planning authority as required.
 
 ## Phase D — Zero-unknown checkpoint
 

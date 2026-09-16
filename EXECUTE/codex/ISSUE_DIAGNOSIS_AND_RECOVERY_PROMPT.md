@@ -1,4 +1,4 @@
-# DEPRECATED COMBINED RECOVERY PROMPT — v4.3.1
+# DEPRECATED COMBINED RECOVERY PROMPT — v4.3.2
 
 **STOP. Do not diagnose and repair in one invocation.**
 

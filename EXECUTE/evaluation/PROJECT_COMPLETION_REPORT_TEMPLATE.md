@@ -1,11 +1,12 @@
 # Project Completion Report Vx
 
-This is the **post-implementation truth package** for future ChatGPT scope/version research.
+This is the **post-implementation truth package** for future external scope/version research.
 It is created only after Evaluation returns `PASS` or `PASS_WITH_FINDINGS`.
 
 ```yaml
 completion_report_version: Completion_Vx
-based_on_research_version: Research_Vx
+based_on_scope_revision: SCOPE_NNN
+based_on_scope_digest: sha256:...
 based_on_planning_version: Planning_Vx
 based_on_execution_version: Execution_Vx
 based_on_evaluation_version: Evaluation_Vx
@@ -124,11 +125,11 @@ State the final repository/runtime baseline that passed Evaluation.
 
 ## 21. Context for Future Version Research
 
-Explain what ChatGPT should understand before defining the next scope:
+Explain what any External Research session should understand before defining the next scope:
 - current capabilities
 - constraints
 - limitations
 - extension boundaries
 - unresolved product questions, if any
 
-Do not decide what the next feature/version should be. Product evolution returns to the User + ChatGPT scope layer.
+Do not decide what the next feature/version should be. Product evolution returns to the User + External Research scope layer.

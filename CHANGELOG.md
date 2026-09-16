@@ -1,5 +1,28 @@
 # Changelog
 
+## v4.3.2 — Checkpointed External Research & Immutable Scope Snapshot Patch
+
+### External Research contract
+- Replaced the v4.3.1 mode/prompt-oriented external research pack with one durable `RESEARCH_GUIDE.md` plus thin ChatGPT/generic setup instructions.
+- Final external handoff is now only `EXECUTE/project_details.md` plus useful `EXECUTE/docs/raw/*`; `Research_Vx.md` is retired.
+- Added rolling readiness: newly confirmed material features can return overall scope from ready to not-ready without discarding unaffected prior findings.
+- Added the hard rule **Incomplete scope produces questions, not final artifacts**. Material gaps are classified by owner (`USER_DECISION_REQUIRED`, `EXTERNAL_RESEARCH_REQUIRED`, `BASELINE_CONTEXT_REQUIRED`, `CODEX_TECHNICAL_INVESTIGATION`).
+- Added checkpointed research guidance for limited web-chat contexts using compact `RESEARCH_INDEX`, topic, and source files so research can resume in a fresh chat without the old transcript.
+- Added evidence/source classification, repository revision pinning guidance, high-signal raw-evidence rules, and a P0/P1/P2 Codex Context Map to reduce downstream token use.
+
+### Scope handoff / machine control
+- Added machine validation for `READY_FOR_CODEX` `project_details.md`, zero product/scope unknowns, and declared supporting files.
+- `start_cycle.py` no longer accepts `--scope`; it captures the current handoff as immutable cycle-scoped `SCOPE_001` with a SHA-256 Scope Manifest.
+- Added `import_scope.py` for `SCOPE_002+` clarification/change imports inside an open Cycle. Scope changes invalidate Planning candidates and supersede prior implementation approval when necessary.
+- Planning now records `based_on_scope_revision` + `based_on_scope_digest`; `PLAN_READY` records `candidate_scope_digest`.
+- `approve_plan.py` binds exact Scope revision/digest **and** exact implementation package digest. Execution verifies both Scope Snapshot and approved package integrity.
+- Scope clarification/replan/evaluation/completion-report contracts now reference immutable Scope Snapshots rather than `Research_Vx`.
+
+### Token efficiency / validation
+- Redesigned `project_details.md` as a concise high-signal Codex briefing with delta/unchanged scope, requirement IDs, technical investigation targets, success criteria, and context priorities.
+- Retired active `EXECUTE/research/**` versioning artifacts.
+- Expanded validation/regression coverage for incomplete handoff blocking, missing evidence, immutable Scope snapshots, scope revision import, post-approval scope invalidation, and scope-integrity enforcement during execution.
+
 ## v4.3.1 — Vendor-Neutral External Research UX Patch
 
 ### External research simplification
