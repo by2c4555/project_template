@@ -36,9 +36,9 @@ Unknown/insufficient runtime capacity or oversized context -> BLOCKED -> STOP.
 
 ## Knowledge Boundary
 
-The Task packet is compiled by external high-capability planning intelligence.
+The Task packet is compiled by external high-capability Codex preparation intelligence after repository research and user clarification.
 Do not search RAW KNOWLEDGE to invent missing requirements.
-If the Task is not self-contained enough to execute safely, return `TASK_CONTEXT_DEFECT` rather than guessing.
+If the Task is not self-contained enough to execute safely, return `TASK_CONTEXT_DEFECT` rather than guessing; the Manager must escalate material defects back to the preparation/replan path.
 
 ## Authority
 

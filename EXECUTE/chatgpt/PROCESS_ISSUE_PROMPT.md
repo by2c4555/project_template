@@ -1,6 +1,6 @@
 # PROCESS ISSUE
 
-Run the Project Template v4.1 Research process in `ISSUE_DRIVEN_RESEARCH` mode.
+Run the Project Template v4.1.3 Research process in `ISSUE_DRIVEN_RESEARCH` mode.
 
 Treat the supplied issue as an observation that requires investigation.
 

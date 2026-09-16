@@ -1,6 +1,6 @@
-# CHATGPT Prompt Pack — Project Template v4.1.2
+# CHATGPT Prompt Pack — Project Template v4.1.3
 
-This folder is used in the ChatGPT Project research workspace.
+This folder is used in the ChatGPT Project **scope-research** workspace. ChatGPT defines the scope; Codex later prepares the implementation against the real repository.
 
 ## Setup once
 
@@ -28,4 +28,4 @@ The ChatGPT Project outputs:
 - `EXECUTE/docs/raw/**`
 - `EXECUTE/research/Research_Vx.md`
 
-The next phase is Codex / GPT-6 Astra Planning & Knowledge Compilation.
+The next phase is Codex / GPT-6 Astra Implementation Research & Planning.

@@ -1,6 +1,6 @@
 # START RESEARCH
 
-Run the Project Template v4.1 Research process in `INITIAL_RESEARCH` mode.
+Run the Project Template v4.1.3 Research process in `INITIAL_RESEARCH` mode.
 
 Target:
 `Research V1`

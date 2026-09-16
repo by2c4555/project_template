@@ -1,4 +1,4 @@
-# ChatGPT Project Research Handoff — v4.1
+# ChatGPT Project Research Handoff — v4.1.3
 
 Use this when Evaluation Vx routes the project back to research.
 
@@ -14,6 +14,6 @@ Goal: produce Research Vx+1 by resolving evidence-backed knowledge gaps, not by 
 Outputs:
 - add/update research material in `EXECUTE/docs/raw/**`;
 - update `EXECUTE/project_details.md` when requirements/constraints are clarified;
-- create immutable `EXECUTE/research/Research_Vx.md` summarizing what changed, why, provenance, unresolved questions, and what Planning Vx+1 must account for.
+- create immutable `EXECUTE/research/Research_Vx.md` summarizing what changed, why, provenance, unresolved questions, and what the downstream Codex preparation/Planning Vx+1 must account for.
 
-Do not delete prior Research/Evaluation history. Do not declare implementation fixed. The next step after Research Vx+1 is external Codex Planning/Compilation Vx+1 and user approval.
+Do not delete prior Research/Evaluation history. Do not declare implementation fixed. The next step after Research Vx+1 is external Codex Implementation Research & Planning Vx+1, including its user clarification loop, followed by explicit implementation approval.

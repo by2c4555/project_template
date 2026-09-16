@@ -1,5 +1,27 @@
 # Changelog
 
+## v4.1.3 — Codex Preparation & Approval Loop Patch
+
+### Role architecture
+- Canonicalized the responsibility split: **ChatGPT Research = define scope; Codex GPT-6 = prepare the work; Manager = manage the work; Builder = perform the work**.
+- Reframed Codex from one-shot “Planning & Knowledge Compilation” into repository-level **Implementation Research, Context Compilation & Planning**.
+- Kept the previous `PLANNING_AND_COMPILATION_PROMPT.md` as a compatibility entry point while making `IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md` canonical.
+
+### Planning refinement loop
+- Added an explicit Codex material-unknown/user-feedback loop before implementation approval.
+- Added `AWAITING_USER_FEEDBACK` as distinct from `AWAITING_USER_APPROVAL`.
+- Added `planning_revision`, `material_unknowns`, and `implementation_approval_requested` state fields.
+- Pre-approval comments normally create revisions inside the same Planning Vx; Planning Vx increments only for a materially new planning cycle/replan.
+
+### Hard implementation approval gate
+- A complete plan no longer implies permission to implement. Codex must explicitly request implementation authorization only after `material_unknowns: 0`.
+- `approve_plan.py` now refuses approval unless the exact plan is `AWAITING_USER_APPROVAL`, has zero material unknowns, and records `implementation_approval_requested: true`.
+- Local Manager/Builder are explicitly forbidden from guessing missing material requirements; preparation defects escalate to Codex/user resolution or replan.
+
+### Version / validation
+- Updated workflow/model-binding metadata and validators to v4.1.3.
+- README now documents the feedback loop, explicit implementation approval, revised tool ownership, and new canonical Codex prompt.
+
 ## v4.1.2 — Tool Map & Model Identity Patch
 
 ### Onboarding / workflow clarity

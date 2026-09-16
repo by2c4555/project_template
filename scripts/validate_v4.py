@@ -2,7 +2,6 @@
 from pathlib import Path
 import configparser
 import json
-import sys
 
 R = Path(__file__).resolve().parents[1]
 errors = []
@@ -23,9 +22,10 @@ def text(rel):
 
 for rel in [
     'VERSION', 'README.md', 'EXECUTE_PROJECT_PROMPT.md', 'EXECUTE/PROJECT_STATUS.md', 'EXECUTE/PROJECT_CONFIG.md', 'EXECUTE/project_details.md',
-    'EXECUTE/MODEL_CONFIG.ini', 'EXECUTE/MODEL_BINDINGS.json', 'EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md', 'EXECUTE/codex/EVALUATION_PROMPT.md',
+    'EXECUTE/MODEL_CONFIG.ini', 'EXECUTE/MODEL_BINDINGS.json',
+    'EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md', 'EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md', 'EXECUTE/codex/EVALUATION_PROMPT.md',
     'EXECUTE/compiled/PROJECT_BRIEF.md', 'EXECUTE/compiled/ARCHITECTURE.md', 'EXECUTE/compiled/DECISIONS.md', 'EXECUTE/compiled/GLOBAL_CONSTRAINTS.md',
-    'EXECUTE/plan/IMPLEMENTATION_PLAN.md', 'EXECUTE/plan/PLANNING_STATUS.md', 'EXECUTE/tasks/TASK_INDEX.md', 'EXECUTE/tasks/TASK_TEMPLATE.md',
+    'EXECUTE/plan/IMPLEMENTATION_PLAN.md', 'EXECUTE/plan/PLANNING_STATUS.md', 'EXECUTE/plan/PLANNING_REVISION_TEMPLATE.md', 'EXECUTE/tasks/TASK_INDEX.md', 'EXECUTE/tasks/TASK_TEMPLATE.md',
     'EXECUTE/execution/EXECUTION_STATE.md', 'EXECUTE/evaluation/EVALUATION_STATUS.md', 'EXECUTE/reference/KNOWLEDGE_INDEX.md',
     '.github/agents/project-manager.agent.md', '.github/agents/builder100k.agent.md', '.github/skills/builder-task-execution/SKILL.md',
     'EXECUTE/docs/raw', 'EXECUTE/execution/evidence', 'EXECUTE/history/planning', 'EXECUTE/history/evaluation'
@@ -33,17 +33,28 @@ for rel in [
     req(rel)
 
 version = text('VERSION').strip()
-if version != '4.1.2':
-    errors.append('VERSION must be 4.1.2')
+if version != '4.1.3':
+    errors.append('VERSION must be 4.1.3')
 
 status = text('EXECUTE/PROJECT_STATUS.md')
-if 'workflow_version: "4.1.2"' not in status:
-    errors.append('PROJECT_STATUS workflow_version must be 4.1.2')
-for x in ['research_version', 'planning_version', 'execution_version', 'evaluation_version']:
+if 'workflow_version: "4.1.3"' not in status:
+    errors.append('PROJECT_STATUS workflow_version must be 4.1.3')
+for x in ['research_version', 'planning_version', 'planning_revision', 'planning_status', 'material_unknowns', 'implementation_approval_requested', 'execution_version', 'evaluation_version']:
     if x not in status:
         errors.append(f'PROJECT_STATUS missing {x}')
 
-if 'Only external independent Evaluation' not in text('.github/agents/project-manager.agent.md'):
+planning_status = text('EXECUTE/plan/PLANNING_STATUS.md')
+for x in ['planning_revision', 'material_unknowns', 'implementation_approval_requested', 'AWAITING_USER_FEEDBACK', 'AWAITING_USER_APPROVAL']:
+    if x not in planning_status:
+        errors.append(f'PLANNING_STATUS missing v4.1.3 contract marker: {x}')
+
+planning_prompt = text('EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md')
+for marker in ['Material-Unknown Loop', 'AWAITING_USER_FEEDBACK', 'material_unknowns: 0', 'implementation_approval_requested: true', 'A complete plan is **not** permission to implement']:
+    if marker not in planning_prompt:
+        errors.append(f'Codex preparation prompt missing marker: {marker}')
+
+manager = text('.github/agents/project-manager.agent.md')
+if 'Only external independent Evaluation' not in manager:
     errors.append('Manager completion gate/evaluation separation missing')
 
 # Verify human-editable configuration shape.
@@ -74,8 +85,8 @@ except json.JSONDecodeError as e:
     errors.append(f'MODEL_BINDINGS invalid JSON: {e}')
     b = {}
 
-if b.get('schema_version') != '4.1.2':
-    errors.append('MODEL_BINDINGS schema_version must be 4.1.2')
+if b.get('schema_version') != '4.1.3':
+    errors.append('MODEL_BINDINGS schema_version must be 4.1.3')
 
 for role, floor in {'ProjectManager500K': 512000, 'Builder100K': 102400}.items():
     r = b.get('roles', {}).get(role, {})
@@ -102,7 +113,7 @@ if errors:
     [print('FAIL:', e) for e in errors]
     raise SystemExit(1)
 
-print('TEMPLATE_VALID: PASS (v4.1.2)')
+print('TEMPLATE_VALID: PASS (v4.1.3)')
 for w in warns:
     print('WARN:', w)
 print('RUNTIME_READY:', 'YES' if not warns else 'NO - edit EXECUTE/MODEL_CONFIG.ini, then run python scripts/configure_models.py')

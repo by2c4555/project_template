@@ -1,6 +1,6 @@
 # PROCESS EVALUATION
 
-Run the Project Template v4.1 Research process in `EVALUATION_DRIVEN_RESEARCH` mode.
+Run the Project Template v4.1.3 Research process in `EVALUATION_DRIVEN_RESEARCH` mode.
 
 The latest Codex / GPT-6 Astra Evaluation is new evidence, not automatically authoritative project knowledge.
 

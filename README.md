@@ -1,7 +1,7 @@
-# Project Template v4.1.2
-## Research → Plan → Approve → Execute → Evaluate → Repeat
+# Project Template v4.1.3
+## Scope Research → Prepare & Refine → Approve Implementation → Execute → Evaluate → Repeat
 
-Project Template v4.1.2 is a controlled engineering workflow that separates **research**, **planning**, **local implementation**, and **independent evaluation**.
+Project Template v4.1.3 is a controlled engineering workflow that separates **scope research**, **implementation preparation/refinement**, **explicit user implementation approval**, **local execution**, and **independent evaluation**.
 
 This README is usage-first. If you are new to the template, follow the setup and workflow sections from top to bottom. The architecture/reference sections are later in the file.
 
@@ -14,7 +14,7 @@ Install or prepare these tools before starting the workflow.
 | Tool | Required? | Used for |
 |---|---:|---|
 | **ChatGPT Project** | Yes | Research Vx, requirements clarification, processing evaluation findings/issues into new research |
-| **Codex** with the project-designated high-capability model (**GPT-6 Astra** in this template) | Yes | Planning & Knowledge Compilation Vx and independent Evaluation Vx |
+| **Codex** with the project-designated high-capability model (**GPT-6 Astra** in this template) | Yes | Implementation Research & Planning Vx and independent Evaluation Vx |
 | **Visual Studio Code** | Yes | Local repository/workspace, terminal commands, and execution agents |
 | **VS Code Chat / GitHub Copilot Chat custom-agent support** | Yes for local agent execution | Runs the workspace custom agents in `.github/agents/` such as `ProjectManager500K` and `Builder100K` |
 | **Other Models / BYOK provider in VS Code** | Yes when using external/local runtime models | Supplies the Manager/Builder models; typical choices are **OpenRouter** or **Ollama** |
@@ -42,14 +42,17 @@ BYOK models can be used for VS Code chat without a Copilot plan, but some VS Cod
 Every numbered workflow step below states exactly which tool owns that phase.
 
 ```text
-Step 1  Research V1
+Step 1  Scope Research V1
         Tool: ChatGPT Project
              ↓
-Step 2  Planning & Knowledge Compilation V1
+Step 2  Implementation Research & Planning V1
         Tool: Codex / GPT-6 Astra
+        Loop: inspect repo → ask user → revise → repeat
+              until material_unknowns = 0
              ↓
-Step 3  User review + approval
+Step 3  Explicit implementation approval
         Tool: Human + terminal/Python
+        Gate: AWAITING_USER_APPROVAL → APPROVED
              ↓
 Step 4  Local Execution V1
         Tool: VS Code Chat custom agent
@@ -65,6 +68,15 @@ Step 6  Route result
 ```
 
 A successful local build is **not** the end of the lifecycle. Execution must still go through independent Evaluation.
+
+The canonical responsibility split is:
+
+```text
+ChatGPT Research = Define the scope.
+Codex GPT-6      = Prepare the work.
+Manager          = Manage the work.
+Builder          = Perform the work.
+```
 
 ---
 
@@ -222,7 +234,7 @@ If validation says `RUNTIME_READY: YES`, local runtime model setup is ready.
 
 **Tool:** ChatGPT Project
 
-**Do not use:** VS Code Manager/Builder or Codex Planning yet.
+**Do not use:** VS Code Manager/Builder or Codex implementation preparation yet.
 
 ## 1.1 Create a ChatGPT Project
 
@@ -279,7 +291,7 @@ Research does **not** create the Implementation Plan and does **not** start codi
 
 ---
 
-# Step 2 — Planning & Knowledge Compilation V1
+# Step 2 — Implementation Research & Planning V1
 
 **Tool:** Codex / GPT-6 Astra
 
@@ -288,7 +300,7 @@ Research does **not** create the Implementation Plan and does **not** start codi
 Run the instructions in:
 
 ```text
-EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md
+EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
 ```
 
 Codex/Astra reads the Research artifacts, repository state, evidence, and project constraints, then creates the execution package for the local no-RAG Manager/Builder runtime.
@@ -310,6 +322,7 @@ EXECUTE/reference/KNOWLEDGE_INDEX.md
 
 EXECUTE/plan/IMPLEMENTATION_PLAN.md
 EXECUTE/plan/PLANNING_STATUS.md
+EXECUTE/plan/PLANNING_REVISION_TEMPLATE.md
 
 EXECUTE/tasks/TASK_INDEX.md
 EXECUTE/tasks/TASK_NNN.md
@@ -317,16 +330,29 @@ EXECUTE/tasks/TASK_NNN.md
 EXECUTE/history/planning/Planning_V1/**
 ```
 
-Planning must stop with:
+Codex does **not** jump directly from Research to approval. It must inspect the repository and run a clarification/refinement loop with the user whenever material unknowns exist. During that loop:
 
 ```yaml
-planning_status: AWAITING_USER_APPROVAL
+planning_status: AWAITING_USER_FEEDBACK
+material_unknowns: <non-zero count>
+implementation_approval_requested: false
 execution_locked: true
 ```
 
-Codex/Astra cannot approve its own plan.
+User comments, answers, questions, rejections, and requested changes cause another Codex analysis/revision cycle. Pre-approval revisions normally stay inside the same `Planning_Vx`; do not increment the Planning version for every comment.
 
-**Next tool:** Human review + terminal.
+Only when the package is execution-ready may Codex explicitly ask whether the user wants implementation to begin and set:
+
+```yaml
+planning_status: AWAITING_USER_APPROVAL
+material_unknowns: 0
+implementation_approval_requested: true
+execution_locked: true
+```
+
+A complete plan is not authorization to implement. Codex/Astra cannot approve its own plan.
+
+**Next tool:** Human decision + terminal approval gate.
 
 ---
 
@@ -343,15 +369,17 @@ EXECUTE/plan/IMPLEMENTATION_PLAN.md
 EXECUTE/tasks/TASK_INDEX.md
 ```
 
-If the plan is acceptable, bind the exact Planning version to the new Execution version:
+If you have feedback, questions, or requested changes, give them to Codex. Codex must research/analyze again as needed, update the current Planning revision, and present the revised package again. This loop continues until the package has zero material unknowns and Codex explicitly requests implementation approval.
+
+If you explicitly want implementation to proceed, bind the exact Planning version to the new Execution version:
 
 ```bash
 python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1
 ```
 
-If approval succeeds, local implementation is unlocked.
+The approval script refuses to unlock execution unless the plan is `AWAITING_USER_APPROVAL`, `material_unknowns: 0`, and `implementation_approval_requested: true`.
 
-If the plan is not acceptable, return it to Planning instead of silently editing approved history.
+If approval succeeds, local implementation is unlocked. If you reject the plan, return it to Codex preparation/refinement; do not silently edit approved history.
 
 Before starting Execution, you may run:
 
@@ -555,7 +583,8 @@ Then use this table:
 | Current state | Tool to open | What to do |
 |---|---|---|
 | `RESEARCH` / `INPUT_REQUIRED` | ChatGPT Project | Continue Research with the appropriate prompt in `EXECUTE/chatgpt/`. |
-| Research ready, no plan yet | Codex / Astra | Run `PLANNING_AND_COMPILATION_PROMPT.md`. |
+| Research ready, no plan yet | Codex / Astra | Run `IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md`. |
+| `AWAITING_USER_FEEDBACK` | Codex / Astra + Human | Resolve questions/comments, inspect again as needed, revise the same pre-approval Planning Vx, and present it again. |
 | `AWAITING_USER_APPROVAL` | Human + terminal | Review plan and run `approve_plan.py` only if approved. |
 | `EXECUTION` / `READY` / `IN_PROGRESS` | VS Code Chat → `ProjectManager500K` | Run/use `EXECUTE_PROJECT_PROMPT.md`. |
 | `AWAITING_EVALUATION` or Evaluation `REQUIRED` | Codex / Astra | Run `EVALUATION_PROMPT.md`. |
@@ -573,7 +602,7 @@ Then use this table:
 | Start a new project's research | ChatGPT Project | `EXECUTE/chatgpt/START_RESEARCH_PROMPT.md` |
 | Evaluation says more research is needed | ChatGPT Project | `EXECUTE/chatgpt/PROCESS_EVALUATION_PROMPT.md` |
 | New error/issue/feedback may change knowledge | ChatGPT Project | `EXECUTE/chatgpt/PROCESS_ISSUE_PROMPT.md` |
-| Research is ready and you need Planning | Codex / GPT-6 Astra | `EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md` |
+| Research is ready and you need Planning | Codex / GPT-6 Astra | `EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md` |
 | Plan is approved and implementation should start | VS Code Chat / `ProjectManager500K` | `EXECUTE_PROJECT_PROMPT.md` |
 | Local execution finished | Codex / GPT-6 Astra | `EXECUTE/codex/EVALUATION_PROMPT.md` |
 
@@ -586,7 +615,7 @@ These boundaries are deliberate.
 | Tool/role | Owns | Must not silently do |
 |---|---|---|
 | ChatGPT Project | Research, requirements clarification, Research Vx evidence | Implement production code or create the approved implementation plan |
-| Codex / GPT-6 Astra Planning | Architecture, compilation, Tasks, Planning Vx | Approve its own plan or execute local production changes |
+| Codex / GPT-6 Astra Preparation | Repository implementation research, user clarification loop, architecture/context compilation, Tasks, Planning Vx | Approve its own plan or execute local production changes |
 | Human | Approval/release decisions | Be bypassed by automatic Planning → Execution transition |
 | VS Code `ProjectManager500K` | Orchestrate approved local Execution Vx | Redesign approved architecture/requirements |
 | VS Code `Builder100K` | One bounded implementation Task | Own global architecture or future Tasks |
@@ -601,10 +630,10 @@ These boundaries are deliberate.
 | `EXECUTE/project_details.md` | ChatGPT Research | Concise authoritative project requirements/context |
 | `EXECUTE/docs/raw/**` | ChatGPT Research | Raw evidence, facts, provenance, limitations, research details |
 | `EXECUTE/research/**` | ChatGPT Research | Research Vx records and handoff state |
-| `EXECUTE/reference/**` | Planning / controlled knowledge process | Durable indexed project knowledge with provenance |
-| `EXECUTE/compiled/**` | Astra Planning | Distilled execution intelligence for local no-RAG models |
-| `EXECUTE/plan/**` | Astra Planning | Implementation plan and Planning state |
-| `EXECUTE/tasks/**` | Astra Planning | Atomic self-contained Builder work packages |
+| `EXECUTE/reference/**` | Codex preparation / controlled knowledge process | Durable indexed project knowledge with provenance |
+| `EXECUTE/compiled/**` | Codex preparation | Distilled execution intelligence for local no-RAG models |
+| `EXECUTE/plan/**` | Codex preparation | Implementation plan and Planning state |
+| `EXECUTE/tasks/**` | Codex preparation | Atomic self-contained Builder work packages |
 | `EXECUTE/execution/**` | Local Manager/Builder | Execution state, summaries, and implementation evidence |
 | `EXECUTE/evaluation/**` | Astra Evaluation | Independent Evaluation reports and Research handoffs |
 | `EXECUTE/history/**` | Versioning process | Immutable Planning/Evaluation history |
@@ -656,13 +685,16 @@ Only independent Evaluation can produce the final validation result for an Execu
 # Core architecture
 
 ```text
-Research Vx
+Scope Research Vx
 Tool: ChatGPT Project
     ↓
-Planning & Knowledge Compilation Vx
+Implementation Research & Planning Vx
 Tool: Codex / GPT-6 Astra
     ↓
-USER APPROVAL GATE
+Repository inspection + user clarification/revision loop
+(AWAITING_USER_FEEDBACK until material_unknowns = 0)
+    ↓
+EXPLICIT IMPLEMENTATION APPROVAL GATE
 Tool: Human + terminal
     ↓
 Execution Vx
@@ -675,7 +707,7 @@ Tool: Codex / GPT-6 Astra
 PASS / correction / replan / Research Vx+1
 ```
 
-The separation exists because the local Manager/Builder runtime may have no RAG. Codex/Astra therefore compiles global reasoning into durable disk artifacts before execution.
+The separation exists because the local Manager/Builder runtime may have no RAG. ChatGPT defines scope; Codex/Astra converts that scope plus repository reality and user decisions into a deterministic execution package before local execution.
 
 ```text
 context window != project memory
@@ -706,8 +738,8 @@ EXECUTE/
 ├─ docs/raw/                        # durable Research evidence; never auto-clear
 ├─ research/                        # Research Vx artifacts / handoffs
 ├─ reference/                       # durable indexed knowledge
-├─ codex/                           # Codex Planning/Evaluation prompts
-│  ├─ PLANNING_AND_COMPILATION_PROMPT.md
+├─ codex/                           # Codex preparation/Evaluation prompts
+│  ├─ IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
 │  └─ EVALUATION_PROMPT.md
 ├─ compiled/                        # distilled intelligence for local execution
 ├─ plan/                            # plan + approval state
@@ -723,7 +755,7 @@ EXECUTE/
 # Safety rails
 
 - ChatGPT Research does not implement production code or create approved implementation Tasks.
-- Codex/Astra Planning does not approve its own plan.
+- Codex/Astra preparation does not approve its own plan and may not request implementation approval while material unknowns remain.
 - Local Manager/Builder do not silently change approved architecture, scope, or requirements.
 - Execution completion does not equal independent validation.
 - Codex/Astra Evaluation does not silently fix production implementation while evaluating it.

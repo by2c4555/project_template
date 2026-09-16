@@ -1,7 +1,7 @@
 # Project Status
 
 ```yaml
-workflow_version: "4.1.2"
+workflow_version: "4.1.3"
 
 lifecycle_stage: RESEARCH
 project_validation_status: NOT_VALIDATED
@@ -10,7 +10,10 @@ research_version: Research_V1
 research_status: INPUT_REQUIRED
 
 planning_version: none
+planning_revision: none
 planning_status: NOT_CREATED
+material_unknowns: unknown
+implementation_approval_requested: false
 approved_planning_version: none
 
 execution_version: none
@@ -23,7 +26,7 @@ evaluation_status: NOT_STARTED
 latest_evaluation_result: none
 
 next_action: >
-  Complete Research V1 in ChatGPT Project, populate project_details.md and docs/raw/, then run external Codex PLANNING_AND_COMPILATION_PROMPT.md.
+  Complete Research V1 in ChatGPT Project to define scope, populate project_details.md and docs/raw/, then run Codex IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md.
 ```
 
 Disk artifacts are authoritative. Chat history is not project state.

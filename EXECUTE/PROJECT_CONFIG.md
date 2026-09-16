@@ -1,25 +1,52 @@
-# Project Configuration — v4.1
+# Project Configuration — v4.1.3
 
-## Lifecycle
-`Research Vx -> Planning Vx -> USER APPROVAL -> Execution Vx -> Evaluation Vx -> route`
+## Canonical Lifecycle
 
-Evaluation routes to VALIDATED, PHASE 2 correction, Planning Vx+1, or Research Vx+1.
+`Research Vx -> Codex Preparation/Planning Vx -> USER IMPLEMENTATION APPROVAL -> Execution Vx -> Evaluation Vx -> route`
+
+The preparation phase contains a user feedback loop before the implementation approval gate:
+
+```text
+ChatGPT Research (define scope)
+  -> Codex implementation research / repository discovery
+  -> user clarification + plan revision loop
+  -> execution-ready package
+  -> explicit implementation approval request
+  -> Local Manager + Builder execution
+  -> independent Codex Evaluation
+```
 
 ## Intelligence Roles
-- ChatGPT Project: research, requirements, clarification, Research Vx.
-- Codex / GPT-6 Astra: external Planning & Knowledge Compilation and Independent Evaluation.
-- ProjectManager500K: local deterministic orchestration of an approved execution package.
-- Builder100K: local atomic implementation worker.
+- **ChatGPT Project — Scope Definition:** problem research, requirements, scope, success intent, Research Vx.
+- **Codex / GPT-6 Astra — Work Preparation:** repository-level implementation research, user clarification, context compilation, Planning Vx, task packaging, and independent Evaluation Vx.
+- **ProjectManager500K — Execution Orchestration:** deterministic orchestration of one approved execution package.
+- **Builder100K — Implementation:** one bounded approved Task per fresh invocation.
+
+Canonical shorthand:
+
+```text
+ChatGPT Research = Define the scope.
+Codex GPT-6      = Prepare the work.
+Manager          = Manage the work.
+Builder          = Perform the work.
+```
 
 ## Hard Authority Rules
 1. No approved Planning Vx -> no execution.
-2. Execution is bound to one approved Planning Vx.
-3. Local models may not silently change approved architecture/intent.
-4. Material deviation -> REPLAN_REQUIRED.
-5. Local execution complete != project validated.
-6. Only independent Evaluation Vx may validate the implementation iteration.
-7. Evaluation is read-only with respect to production implementation.
-8. Research/Evaluation/Planning history is immutable; current aliases may advance to a new Vx.
+2. Planning feedback/review is not implementation approval.
+3. Codex must resolve material unknowns before requesting implementation approval.
+4. `AWAITING_USER_FEEDBACK` != `AWAITING_USER_APPROVAL`.
+5. Execution is bound to one exact approved Planning Vx.
+6. Local models may not silently change approved architecture/intent/scope.
+7. Missing or conflicting material requirements discovered during execution -> STOP and escalate for Codex/user resolution; do not guess.
+8. Material deviation -> `REPLAN_REQUIRED`.
+9. Local execution complete != project validated.
+10. Only independent Evaluation Vx may validate the implementation iteration.
+11. Evaluation is read-only with respect to production implementation.
+12. Research/Evaluation/approved Planning history is immutable; current aliases may advance to a new Vx.
+
+## Planning Revision Policy
+Pre-approval user feedback normally creates revisions inside the same Planning Vx. Do not increment Planning Vx for every comment. Increment Planning Vx for a materially new planning cycle, especially after an approved plan requires replan or Evaluation returns `REPLAN_REQUIRED`.
 
 ## Model Policy
 ```yaml
@@ -37,13 +64,13 @@ external_intelligence:
 ```
 
 ## No-RAG Local Policy
-Local models receive compiled knowledge, context manifests, repository files named by Tasks, and persisted execution evidence. They must not depend on semantic RAG. Missing knowledge is surfaced as a Task/context defect rather than guessed.
+Local models receive compiled knowledge, context manifests, repository files named by Tasks, and persisted execution evidence. They must not depend on semantic RAG. Missing material knowledge is surfaced as a preparation/context defect and escalated rather than guessed.
 
 ## Planning Approval
-Codex creates Planning Vx with `AWAITING_USER_APPROVAL`. Only explicit user approval changes it to `APPROVED` and binds Execution Vx.
+Codex may set `AWAITING_USER_APPROVAL` only when `material_unknowns: 0` and `implementation_approval_requested: true`. Only explicit user authorization plus `scripts/approve_plan.py` changes the plan to `APPROVED` and binds Execution Vx.
 
 ## Evaluation Results
 Exactly one of: `PASS`, `PASS_WITH_FINDINGS`, `CORRECTION_REQUIRED`, `REPLAN_REQUIRED`, `RESEARCH_REQUIRED`.
 
 ## Environment Safety
-Never guess credentials/external configuration. Production access and destructive database operations are denied unless explicitly authorized in the Task.
+Never guess credentials/external configuration. Production access and destructive database operations are denied unless explicitly authorized in the approved Task.
