@@ -100,7 +100,7 @@ def incomplete_message(config_path, missing):
 
 def main():
     ap = argparse.ArgumentParser(
-        description='Configure v4.1.3 local model bindings from EXECUTE/MODEL_CONFIG.ini. CLI flags optionally override file values.'
+        description='Configure v4.2.0 local model bindings from EXECUTE/MODEL_CONFIG.ini. CLI flags optionally override file values.'
     )
     ap.add_argument('--config', default=str(DEFAULT_CONFIG), help='Path to INI config (default: EXECUTE/MODEL_CONFIG.ini)')
 
@@ -183,7 +183,7 @@ def main():
         pin(ROLES[role][0], qualified)
 
     bindings_path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
-    print('v4.1.3 local model bindings configured.')
+    print('v4.2.0 local model bindings configured.')
     for role in ('ProjectManager500K', 'Builder100K'):
         r = data['roles'][role]
         print(f'  {role}:')

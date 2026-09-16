@@ -1,31 +1,43 @@
-# CHATGPT Prompt Pack — Project Template v4.1.3
+# CHATGPT Prompt Pack — Project Template v4.2.0
 
-This folder is used in the ChatGPT Project **scope-research** workspace. ChatGPT defines the scope; Codex later prepares the implementation against the real repository.
+ChatGPT owns **scope intelligence and product evolution**, not technical incident recovery.
+
+Use this folder for:
+
+- initial project Research V1;
+- next-version/feature Research based on a verified Project Completion Report;
+- true scope/product clarification when Codex Diagnosis proves that implementation cannot proceed without a user/product decision.
 
 ## Setup once
 
 Put the content of `PROJECT_INSTRUCTIONS.txt` into ChatGPT Project Instructions.
-
 Keep `MASTER_RESEARCH_PROMPT.md` available as the governing research contract.
 
 ## Entry prompts
 
-Use only the entry prompt that matches the current case:
+- `START_RESEARCH_PROMPT.md` — initial project scope research -> Research V1.
+- `START_NEXT_VERSION_PROMPT.md` — use a verified `PROJECT_COMPLETION_REPORT_Vx.md` plus new user intent to define Research Vx+1 / a new feature/version scope.
+- `PROCESS_SCOPE_CLARIFICATION_PROMPT.md` — process a Codex-produced `SCOPE_CLARIFICATION_REQUIRED_Vx.md` when a product/scope decision is genuinely required.
 
-- `START_RESEARCH_PROMPT.md` — initial project research -> Research V1
-- `PROCESS_EVALUATION_PROMPT.md` — Evaluation Vx / Research Handoff -> Research Vx+1
-- `PROCESS_ISSUE_PROMPT.md` — error, bug, runtime issue, feedback, external change -> Research Vx+1 when knowledge changes
+## Deliberately NOT handled here
 
-## Principle
+Do not send ordinary runtime errors, failed Tasks, stack traces, or blocking Evaluation findings directly to ChatGPT.
 
-Inputs from evaluation/issues are evidence first.
+Technical failures must first go through:
 
-They must be investigated before becoming authoritative knowledge or requirements.
+```text
+Codex / External Agent
+EXECUTE/codex/ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md
+```
 
-The ChatGPT Project outputs:
+Only a proven `SCOPE_AMBIGUITY` returns to ChatGPT/User.
+
+## Outputs
+
+ChatGPT owns:
 
 - `EXECUTE/project_details.md`
 - `EXECUTE/docs/raw/**`
 - `EXECUTE/research/Research_Vx.md`
 
-The next phase is Codex / GPT-6 Astra Implementation Research & Planning.
+Codex then owns repository-level technical preparation, planning, recovery, diagnosis, and evaluation.

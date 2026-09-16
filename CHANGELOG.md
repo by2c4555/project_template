@@ -1,5 +1,53 @@
 # Changelog
 
+## v4.2.0 — Recovery, Diagnosis, Evaluation Integrity & Project Learning
+
+### Lifecycle architecture
+- Expanded the canonical lifecycle to **Research -> Plan -> Execute -> Recover -> Evaluate -> Learn -> Evolve**.
+- Formalized responsibility ownership: ChatGPT owns WHAT/WHY/SCOPE/product evolution; Codex owns HOW/Planning/Tasks/Diagnosis/Recovery/Evaluation; Manager owns execution control; Builder owns bounded implementation; User owns approval/product decisions.
+- Removed direct normal routing of runtime issues and blocking Evaluation findings to ChatGPT Research. Technical failures now route to Codex Diagnosis first.
+
+### Local execution incident recovery
+- Added mandatory execution pause semantics for Builder failures that exceed bounded local repair.
+- Added durable Issue forensic handoff contract with evidence pointers, reproduction, failure signature, safe baseline, attempts ruled out, and resume lock.
+- Added execution states: `ISSUE_DETECTED`, `PAUSED_FOR_DIAGNOSIS`, `PAUSED_FOR_EXTERNAL_REPAIR`, `RECOVERY_VERIFICATION`, and `READY_TO_RESUME`.
+- Added `ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md` for Codex or compatible external recovery agents.
+- Added `PASS_RECOVERED` Task status so recovered incidents remain visible to final Evaluation.
+- Added `scripts/recovery_gate.py` so local Manager resume is based on verified disk artifacts, not chat claims.
+
+### Diagnosis and routing
+- Added `EXECUTE/diagnostics/**` with durable Diagnosis artifacts.
+- Standardized root-cause classifications: `IMPLEMENTATION_DEFECT`, `TASK_DEFECT`, `PLAN_DEFECT`, `EVALUATION_DEFECT`, `SCOPE_AMBIGUITY`, `EXTERNAL_BLOCKER`, `UNKNOWN`.
+- Added explicit false-evaluation handling: preserve prior Evaluation, create Evaluation Review, and re-evaluate without unnecessary code changes.
+- Added `SCOPE_CLARIFICATION_REQUIRED_Vx.md` as the rare technical-to-product escalation artifact.
+
+### Resolution knowledge base
+- Added `EXECUTE/knowledge/KNOWLEDGE_INDEX.md` and `knowledge/resolutions/RESOLUTION_NNNN.md`.
+- Every material successful execution recovery now records symptoms, root cause, trigger conditions, failed approaches, correct fix, verification, prevention rules, regression protection, and future detection signals.
+- Codex Planning, Manager context selection, and Codex Evaluation are required to consume relevant verified resolution knowledge.
+- Clarified the distinction between `reference/KNOWLEDGE_INDEX.md` (prepared project knowledge) and `knowledge/KNOWLEDGE_INDEX.md` (verified incident/recovery learning).
+
+### Evaluation redesign
+- Simplified terminal Evaluation results to `PASS`, `PASS_WITH_FINDINGS`, or `DIAGNOSIS_REQUIRED`.
+- Blocking findings no longer self-classify the correction route; Codex Diagnosis determines whether code, Task, Plan, Evaluation, scope, or an external dependency is defective.
+- Recovered Tasks are mandatory high-attention regression areas during Evaluation.
+
+### Full post-implementation handoff
+- Added `PROJECT_COMPLETION_REPORT_Vx.md` contract/template.
+- `PASS` and `PASS_WITH_FINDINGS` now require a detailed full-system report describing delivered behavior, final architecture, repository map, interfaces/data, decisions, plan deviations, recovery history, verification, limitations, technical debt, risks, critical invariants, extension points, and the verified baseline.
+- The Completion Report becomes the preferred baseline input for ChatGPT next-version/feature Research.
+
+### ChatGPT prompt pack
+- Refocused ChatGPT on initial Research, next-version Research, and true scope clarification.
+- Added `START_NEXT_VERSION_PROMPT.md` and `PROCESS_SCOPE_CLARIFICATION_PROMPT.md`.
+- Removed obsolete direct `PROCESS_ISSUE_PROMPT.md` and `PROCESS_EVALUATION_PROMPT.md` technical routing entry points.
+
+### Validation and documentation
+- Updated model-binding metadata to v4.2.0 and expanded Codex technical-authority responsibilities.
+- Reworked README around the complete happy path, incident path, false-evaluation path, safe resume, knowledge reuse, and future-version loop.
+- Expanded template validation to enforce the new recovery/diagnosis/completion contracts and reject obsolete v4.1 routing states.
+
+
 ## v4.1.3 — Codex Preparation & Approval Loop Patch
 
 ### Role architecture

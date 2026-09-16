@@ -1,11 +1,11 @@
-# Knowledge Index
+# Prepared Project Knowledge Index
 
 Knowledge status: NOT_REFINED
 Knowledge revision: 0
 
-This file indexes durable project Knowledge generated/normalized by external Codex Implementation Research & Context Compilation.
+This index stores durable **scope/repository/architecture knowledge compiled by Codex for the current Planning package**.
 
-Do not use this file as a substitute for raw sources.
+It is distinct from `EXECUTE/knowledge/KNOWLEDGE_INDEX.md`, which indexes verified reusable lessons from resolved execution/evaluation incidents.
 
 ## Allowed Status Values
 
@@ -38,7 +38,7 @@ None yet.
 
 - Create stable IDs for important durable facts.
 - Preserve provenance.
-- Do not silently overwrite important contradictory facts.
+- Do not silently overwrite contradictory facts.
 - Mark replaced facts SUPERSEDED when historical reasoning matters.
-- Builders treat Knowledge as read-only.
-- `OPEN_QUESTIONS.md` is created only when blocking questions actually exist.
+- Builders treat this index as read-only.
+- Recovery lessons belong in `EXECUTE/knowledge/**`, not here.

@@ -1,11 +1,7 @@
-# Compatibility Entry Point — v4.1.3
+# Compatibility Entry Point — v4.2.0
 
-The canonical Codex preparation prompt was renamed in v4.1.3 because Codex now performs more than one-shot planning.
+The canonical Codex planning/preparation prompt is:
 
-Use:
+`EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md`
 
-```text
-EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
-```
-
-Codex now owns repository-level implementation research, user clarification loops, context compilation, implementation planning, plan refinement, and the explicit implementation-approval request. This compatibility file is retained so older notes/bookmarks do not fail silently.
+Use that file for initial Planning, plan refinement, and technical replan after a `PLAN_DEFECT` Diagnosis.

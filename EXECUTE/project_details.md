@@ -2,9 +2,9 @@
 
 Status: INCOMPLETE
 
-This file is the authoritative user-maintained project requirement source.
+This file is the current concise authoritative scope/requirement source maintained through the ChatGPT Research layer and explicit user decisions.
 
-Fill it with enough information for Planner512K+ to make architecture decisions.
+Fill it with enough product/scope information for Codex to perform repository-level technical research and architecture/planning without inventing user intent.
 
 Do not store secrets here.
 
@@ -134,6 +134,6 @@ List relevant files placed in `EXECUTE/docs/`.
 
 ## 19. User Decisions
 
-Persist architecture-relevant answers here after Planner asks blocking questions.
+Persist material product/scope decisions here after ChatGPT/Codex clarification loops. Technical implementation decisions belong in Codex compiled/plan artifacts.
 
 - TODO

@@ -1,14 +1,23 @@
 {
-  "schema_version": "4.1.3",
+  "schema_version": "4.2.0",
   "binding_schema_version": 4,
   "provider_qualified_models_required": true,
   "qualified_model_format": "Model Name (vendor)",
   "external_intelligence": {
-    "preparer_evaluator": {
+    "technical_authority": {
       "environment": "codex",
       "model": "GPT-6 Astra",
       "binding": "external/user-managed",
-      "preparation_role": "implementation_research_context_compilation_planning"
+      "responsibilities": [
+        "implementation_research",
+        "context_compilation",
+        "planning",
+        "task_compilation",
+        "diagnosis",
+        "recovery",
+        "evaluation",
+        "project_completion_handoff"
+      ]
     }
   },
   "roles": {

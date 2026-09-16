@@ -8,6 +8,9 @@ evaluates_execution_version: Execution_Vx
 evaluator_environment: Codex
 evaluator_model: GPT-6 Astra
 result: PENDING
+blocking_findings: 0
+recovered_tasks_reviewed: []
+resolved_issues_reviewed: []
 ```
 
 ## Executive Summary
@@ -22,9 +25,15 @@ result: PENDING
 
 ## Architecture / Decision Compliance
 
+## Interface / Data Compatibility
+
 ## Security / Reliability
 
 ## Test Adequacy and Regression Risk
+
+## Recovery-History Verification
+
+Review all `PASS_RECOVERED` Tasks and relevant `RESOLUTION_NNNN` knowledge. Add targeted checks where prior incidents indicate regression risk.
 
 ## Performance / Operability
 
@@ -35,26 +44,35 @@ result: PENDING
 ## Findings
 
 ### EVAL-001
+
 ```yaml
 severity: high
-category: example
 status: confirmed
-classification: implementation_bug
+blocking: true
+category: implementation_or_contract_failure
 related_requirement: none
 related_decision: none
 related_task: none
-recommended_route: CORRECTION_REQUIRED
+evidence_strength: confirmed
+requires_diagnosis: true
 ```
-Evidence:
-Expected behavior:
-Actual behavior:
-Root cause / bounded hypothesis:
 
-## Research Gaps
+**Evidence:**
 
-## Required Corrections
+**Expected behavior:**
 
-## Recommended Route
+**Actual behavior:**
+
+**Bounded hypothesis (optional, not authoritative diagnosis):**
+
+## Non-Blocking Findings / Technical Debt
 
 ## Final Status
-Exactly one: PASS / PASS_WITH_FINDINGS / CORRECTION_REQUIRED / REPLAN_REQUIRED / RESEARCH_REQUIRED
+
+Choose exactly one:
+
+- `PASS`
+- `PASS_WITH_FINDINGS`
+- `DIAGNOSIS_REQUIRED`
+
+Do not route a blocking finding directly to ChatGPT Research. Blocking findings go to Codex Diagnosis first.

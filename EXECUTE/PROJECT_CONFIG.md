@@ -1,54 +1,105 @@
-# Project Configuration — v4.1.3
+# Project Configuration — v4.2.0
 
 ## Canonical Lifecycle
 
-`Research Vx -> Codex Preparation/Planning Vx -> USER IMPLEMENTATION APPROVAL -> Execution Vx -> Evaluation Vx -> route`
-
-The preparation phase contains a user feedback loop before the implementation approval gate:
-
 ```text
-ChatGPT Research (define scope)
-  -> Codex implementation research / repository discovery
-  -> user clarification + plan revision loop
-  -> execution-ready package
-  -> explicit implementation approval request
-  -> Local Manager + Builder execution
-  -> independent Codex Evaluation
+Research Vx
+  -> Codex Technical Preparation / Planning Vx
+  -> User Implementation Approval
+  -> Local Execution Vx
+       -> Issue? Codex/External Recovery -> Resume
+  -> Codex Evaluation Vx
+       -> blocking finding? Codex Diagnosis -> repair/replan/re-evaluate/scope clarification
+       -> PASS? Project Completion Report
+  -> ChatGPT next-version scope research or close
 ```
+
+The compact philosophy is:
+
+> Research -> Plan -> Execute -> Recover -> Evaluate -> Learn -> Evolve
 
 ## Intelligence Roles
-- **ChatGPT Project — Scope Definition:** problem research, requirements, scope, success intent, Research Vx.
-- **Codex / GPT-6 Astra — Work Preparation:** repository-level implementation research, user clarification, context compilation, Planning Vx, task packaging, and independent Evaluation Vx.
-- **ProjectManager500K — Execution Orchestration:** deterministic orchestration of one approved execution package.
-- **Builder100K — Implementation:** one bounded approved Task per fresh invocation.
 
-Canonical shorthand:
-
-```text
-ChatGPT Research = Define the scope.
-Codex GPT-6      = Prepare the work.
-Manager          = Manage the work.
-Builder          = Perform the work.
-```
+- **ChatGPT Project — Scope/Product Evolution:** WHAT, WHY, SCOPE, future feature/version Research, true product clarification.
+- **Codex / GPT-6 Astra — Technical Truth:** repository research, architecture, Planning, Task compilation, Diagnosis, Recovery, Replan, independent Evaluation, Completion Report.
+- **ProjectManager500K — Execution Control:** state-aware dispatch of approved Tasks; opens/records execution issues and pauses safely.
+- **Builder100K — Implementation:** one bounded approved Task per fresh invocation, including only bounded local repair attempts.
+- **External Recovery Agent — Optional:** may replace Codex for direct technical recovery if it obeys the same recovery artifact contract.
+- **User — Authority:** implementation approval and product/scope decisions.
 
 ## Hard Authority Rules
-1. No approved Planning Vx -> no execution.
-2. Planning feedback/review is not implementation approval.
-3. Codex must resolve material unknowns before requesting implementation approval.
-4. `AWAITING_USER_FEEDBACK` != `AWAITING_USER_APPROVAL`.
-5. Execution is bound to one exact approved Planning Vx.
-6. Local models may not silently change approved architecture/intent/scope.
-7. Missing or conflicting material requirements discovered during execution -> STOP and escalate for Codex/user resolution; do not guess.
-8. Material deviation -> `REPLAN_REQUIRED`.
-9. Local execution complete != project validated.
-10. Only independent Evaluation Vx may validate the implementation iteration.
-11. Evaluation is read-only with respect to production implementation.
-12. Research/Evaluation/approved Planning history is immutable; current aliases may advance to a new Vx.
 
-## Planning Revision Policy
-Pre-approval user feedback normally creates revisions inside the same Planning Vx. Do not increment Planning Vx for every comment. Increment Planning Vx for a materially new planning cycle, especially after an approved plan requires replan or Evaluation returns `REPLAN_REQUIRED`.
+1. No approved Planning Vx -> no local execution.
+2. Planning review/feedback is not implementation approval.
+3. Codex resolves material technical unknowns before requesting approval.
+4. Execution is bound to one exact approved Planning Vx.
+5. Local agents may not silently change approved architecture/intent/scope.
+6. Builder failure beyond bounded repair -> mandatory Issue + hard execution pause.
+7. Normal technical failures route to Codex Diagnosis/Recovery, not ChatGPT.
+8. External repair may modify broader repository scope only when Diagnosis proves it is required and approved contracts are preserved.
+9. A recovered Task becomes `PASS_RECOVERED`, not ordinary PASS.
+10. No resume until recovery verification fully passes and `resume_authorized: true` is persisted.
+11. Every material resolved execution Issue must produce durable Resolution knowledge.
+12. Evaluation is read-only and may not silently fix production code.
+13. Blocking Evaluation findings route to Codex Diagnosis; Evaluation does not assume its own finding is infallible.
+14. `EVALUATION_DEFECT` must be handled by review + re-evaluation, not unnecessary code change.
+15. Only proven `SCOPE_AMBIGUITY` returns to User/ChatGPT scope clarification.
+16. Only Evaluation may validate the implementation iteration.
+17. PASS/PASS_WITH_FINDINGS requires a full `PROJECT_COMPLETION_REPORT_Vx.md`.
+18. Completion Report is the preferred verified baseline for ChatGPT next-version Research.
+19. Historical Research/Planning/Issue/Diagnosis/Resolution/Evaluation artifacts are immutable records; current aliases/state may advance.
+20. Disk artifacts are authoritative; chat memory is disposable.
+
+## Local Execution State Machine
+
+Primary states:
+
+```text
+LOCKED
+READY
+IN_PROGRESS
+ISSUE_DETECTED
+PAUSED_FOR_DIAGNOSIS
+PAUSED_FOR_EXTERNAL_REPAIR
+RECOVERY_VERIFICATION
+READY_TO_RESUME
+COMPLETE
+AWAITING_EVALUATION
+```
+
+Normal Builder dispatch is forbidden while execution is paused for recovery.
+
+## Root-Cause Classifications
+
+Codex Diagnosis chooses exactly one primary classification:
+
+- `IMPLEMENTATION_DEFECT`
+- `TASK_DEFECT`
+- `PLAN_DEFECT`
+- `EVALUATION_DEFECT`
+- `SCOPE_AMBIGUITY`
+- `EXTERNAL_BLOCKER`
+- `UNKNOWN`
+
+## Evaluation Results
+
+Exactly one:
+
+- `PASS`
+- `PASS_WITH_FINDINGS`
+- `DIAGNOSIS_REQUIRED`
+
+## Recovery Knowledge
+
+```text
+ISSUE = what failed
+DIAGNOSIS = why it failed / who owns correction
+RESOLUTION = how it was correctly fixed + verified
+KNOWLEDGE INDEX = what future agents should reuse
+```
 
 ## Model Policy
+
 ```yaml
 local_models:
   ProjectManager500K:
@@ -60,17 +111,20 @@ local_models:
 external_intelligence:
   environment: Codex
   recommended_model: GPT-6 Astra
-  binding: user-managed
+  responsibilities:
+    - implementation_research
+    - planning
+    - task_compilation
+    - diagnosis
+    - recovery
+    - evaluation
+    - completion_handoff
 ```
 
 ## No-RAG Local Policy
-Local models receive compiled knowledge, context manifests, repository files named by Tasks, and persisted execution evidence. They must not depend on semantic RAG. Missing material knowledge is surfaced as a preparation/context defect and escalated rather than guessed.
 
-## Planning Approval
-Codex may set `AWAITING_USER_APPROVAL` only when `material_unknowns: 0` and `implementation_approval_requested: true`. Only explicit user authorization plus `scripts/approve_plan.py` changes the plan to `APPROVED` and binds Execution Vx.
-
-## Evaluation Results
-Exactly one of: `PASS`, `PASS_WITH_FINDINGS`, `CORRECTION_REQUIRED`, `REPLAN_REQUIRED`, `RESEARCH_REQUIRED`.
+Local models receive compiled knowledge, Task context manifests, explicitly surfaced relevant Resolution knowledge, repository files named by Tasks, and persisted execution evidence. Missing material knowledge is surfaced as a preparation/recovery defect rather than guessed.
 
 ## Environment Safety
-Never guess credentials/external configuration. Production access and destructive database operations are denied unless explicitly authorized in the approved Task.
+
+Never guess credentials or external configuration. Production access and destructive operations require explicit approved authority.
