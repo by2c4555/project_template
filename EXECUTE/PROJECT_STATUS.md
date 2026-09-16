@@ -1,32 +1,29 @@
 # Project Status
 
 ```yaml
-workflow_version: "4.0.1"
+workflow_version: "4.1.0"
 
-project_status: ACTIVE
-phase: INITIALIZE
-stage: INPUT_VALIDATION
-planning_transaction: PT1_INPUT_KNOWLEDGE
+lifecycle_stage: RESEARCH
+project_validation_status: NOT_VALIDATED
 
-knowledge_revision: 0
-plan_revision: 0
+research_version: Research_V1
+research_status: INPUT_REQUIRED
 
-active_phase: none
-phase_authorized: false
+planning_version: none
+planning_status: NOT_CREATED
+approved_planning_version: none
 
+execution_version: none
+execution_status: LOCKED
+execution_bound_planning_version: none
 active_task: none
-recommended_agent: Planner512K
 
-active_issue: none
-
-last_completed: none
-latest_history: none
-latest_result_capsule: none
+evaluation_version: none
+evaluation_status: NOT_STARTED
+latest_evaluation_result: none
 
 next_action: >
-  Invoke Planner512K as a fresh isolated subagent for PT1_INPUT_KNOWLEDGE.
+  Complete Research V1 in ChatGPT Project, populate project_details.md and docs/raw/, then run external Codex PLANNING_AND_COMPILATION_PROMPT.md.
 ```
 
-This file is the compact global workflow router.
-Disk artifacts are authoritative; chat history is not.
-Do not place long logs, Plan content, Knowledge content, diffs, or secrets here.
+Disk artifacts are authoritative. Chat history is not project state.

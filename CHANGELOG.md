@@ -1,40 +1,30 @@
 # Changelog
 
-## v4.0.1 — Context Isolation Correction
+## v4.1.0 — External Intelligence / Closed Evaluation Loop
 
-v4.0.1 fixes the principal context-accumulation defect in v4.0.0.
+### Architecture
+- Replaced the VS Code Planner512K role with external Codex / GPT-6 Astra Planning & Knowledge Compilation.
+- Added explicit `Research Vx -> Planning Vx -> Approval -> Execution Vx -> Evaluation Vx` lifecycle.
+- Added independent read-only Codex/Astra Evaluation after local execution.
+- Evaluation can route to correction, replanning, or Research Vx+1.
 
-### Changed
+### Local execution
+- Added `ProjectManager500K` local orchestration role (minimum 512000 tokens).
+- Added `Builder100K` bounded local implementation role (minimum 102400 tokens).
+- Local roles are explicitly no-RAG compatible and consume compiled context manifests.
+- `Execution COMPLETE` now transitions to `Evaluation REQUIRED`, never directly to project validation.
 
-- ProjectManager is now the only user-facing agent and uses the VS Code `agent` tool to invoke named Planner/Builder custom agents as isolated subagents.
-- Every Builder Task, retry, escalation, and Integration Gate requires a fresh subagent invocation.
-- Planning is checkpointed into five transactions; every transaction uses a fresh Planner invocation.
-- Planner and Builders have `agents: []` and cannot recursively spawn subagents.
-- Tool surfaces are explicitly limited by role.
-- Result Capsules replace transcript/log forwarding between agents.
-- Added local command/search/log/diff output budgets.
-- Added deterministic `scripts/context_guard.py` preflight for Task-listed context.
-- Task template now declares context and output budgets.
-- Validator now checks structural, architecture, and policy invariants rather than file presence only.
-- Conversation history is explicitly non-authoritative; disk artifacts are persistent project memory.
+### Knowledge preservation
+- Added compiled intelligence layer: project brief, architecture, decisions, global constraints, interfaces, data model, known risks.
+- Task template now requires self-contained context manifests, decision/requirement provenance, invariants, out-of-scope boundaries, and evidence output.
+- Added immutable Planning/Evaluation history structure.
 
-### Runtime model note
+### Evaluation feedback
+- Added `Evaluation_Vx.md` and `RESEARCH_HANDOFF_Vx.md` contracts.
+- Added findings classification/routing for implementation bugs, plan defects, research gaps, architecture violations, test gaps, security/performance risks, and technical debt.
 
-The template enforces minimum documented capacities in policy/instructions:
-- Planner512K >= 524288 tokens
-- Builder128K >= 131072 tokens
-- Builder256K >= 262144 tokens
-
-Provider-specific model names are not guessed because identifiers vary by Copilot/provider configuration. Run `scripts/configure_models.py` with the exact model identifiers and trusted documented capacities. The script pins `model:` into each role agent and writes `EXECUTE/MODEL_BINDINGS.json`. Unknown/unbound capacity blocks execution.
-
-### Breaking behavior
-
-`PASS` may auto-continue workflow routing, but it never permits reuse of the prior Task context. A retry also starts fresh and receives only persisted Task/Issue evidence.
-
-
-### Provider-qualified model binding hardening
-- `MODEL_BINDINGS.json` now records `base_model`, `provider`, exact qualified `model`, and documented context separately.
-- `configure_models.py` requires `--*-provider` and pins `Model Name (vendor)` into role agent frontmatter.
-- `validate_v4.py` rejects bound bare model names and provider/frontmatter mismatches.
-- Bound roles prohibit silent cross-provider fallback.
-- `customendpoint` same-name/same-vendor ambiguity is surfaced as a warning instead of being treated as deterministic.
+### Breaking changes from v4.0.1
+- `Planner512K`, `Builder128K`, and `Builder256K` are no longer the v4.1 runtime roles.
+- Planning is not performed by ProjectManager or local VS Code agents.
+- User approval is required for each Planning Vx before execution.
+- The project cannot be declared validated solely from local Task completion.

@@ -1,12 +1,11 @@
-# Execute Project
+# Execute Approved Project — v4.1
 
-Use the `ProjectManager` custom agent as the only user-facing entry point.
+Use `ProjectManager500K` as the only VS Code user-facing execution agent.
 
-Read `EXECUTE/PROJECT_STATUS.md` first and resume only from persisted project state.
-Do not preload project details, Knowledge, Plan, Tasks, history, Issues, source files, or logs in the main chat.
+Read `EXECUTE/PROJECT_STATUS.md` first.
+Do not perform planning locally.
+Do not begin implementation unless a Planning Vx is explicitly APPROVED and Execution Vx is bound to that exact version.
 
-ProjectManager must invoke Planner/Builder work through isolated custom subagents.
-One Builder Task or Integration Gate equals one fresh subagent invocation.
-One Planner transaction equals one fresh subagent invocation.
+Each Builder Task must run as one fresh `Builder100K` subagent invocation using its compiled context manifest.
 
-Never reconstruct authoritative project state from chat history.
+When all Tasks pass, transition to `EVALUATION` / `REQUIRED` and STOP. Project validation must be performed externally with `EXECUTE/codex/EVALUATION_PROMPT.md` using Codex / GPT-6 Astra.

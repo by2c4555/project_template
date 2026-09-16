@@ -1,198 +1,49 @@
-# Project Configuration
+# Project Configuration — v4.1
 
-Static workflow policy for v4.0.1. Runtime state lives in `PROJECT_STATUS.md`.
-Hard model/context requirements must not be silently overridden.
+## Lifecycle
+`Research Vx -> Planning Vx -> USER APPROVAL -> Execution Vx -> Evaluation Vx -> route`
+
+Evaluation routes to VALIDATED, PHASE 2 correction, Planning Vx+1, or Research Vx+1.
+
+## Intelligence Roles
+- ChatGPT Project: research, requirements, clarification, Research Vx.
+- Codex / GPT-6 Astra: external Planning & Knowledge Compilation and Independent Evaluation.
+- ProjectManager500K: local deterministic orchestration of an approved execution package.
+- Builder100K: local atomic implementation worker.
+
+## Hard Authority Rules
+1. No approved Planning Vx -> no execution.
+2. Execution is bound to one approved Planning Vx.
+3. Local models may not silently change approved architecture/intent.
+4. Material deviation -> REPLAN_REQUIRED.
+5. Local execution complete != project validated.
+6. Only independent Evaluation Vx may validate the implementation iteration.
+7. Evaluation is read-only with respect to production implementation.
+8. Research/Evaluation/Planning history is immutable; current aliases may advance to a new Vx.
 
 ## Model Policy
-
 ```yaml
-models:
-  planner:
-    minimum_context_tokens: 524288
-    context_override_allowed: false
-    controlled_context_target_tokens: 262144
-    controlled_context_max_tokens: 307200
-
-  builders:
-    minimum_context_tokens: 131072
-    context_override_allowed: false
-    profiles:
-      Builder128K:
-        minimum_context_tokens: 131072
-        controlled_context_target_tokens: 49152
-        controlled_context_max_tokens: 65536
-      Builder256K:
-        minimum_context_tokens: 262144
-        controlled_context_target_tokens: 98304
-        controlled_context_max_tokens: 131072
+local_models:
+  ProjectManager500K:
+    minimum_context_tokens: 512000
+  Builder100K:
+    minimum_context_tokens: 102400
+    controlled_target_tokens: 40000
+    controlled_max_tokens: 52000
+external_intelligence:
+  environment: Codex
+  recommended_model: GPT-6 Astra
+  binding: user-managed
 ```
 
-Provider-specific model names are not guessed by the template. Before execution, run `scripts/configure_models.py` with trusted documented capacities. It updates `EXECUTE/MODEL_BINDINGS.json` and pins `model:` in the three role agents. An unbound or undersized role is not runtime-ready.
+## No-RAG Local Policy
+Local models receive compiled knowledge, context manifests, repository files named by Tasks, and persisted execution evidence. They must not depend on semantic RAG. Missing knowledge is surfaced as a Task/context defect rather than guessed.
 
+## Planning Approval
+Codex creates Planning Vx with `AWAITING_USER_APPROVAL`. Only explicit user approval changes it to `APPROVED` and binds Execution Vx.
 
-provider_binding:
-  provider_qualified_model_required: true
-  qualified_model_format: "Model Name (vendor)"
-  bind_provider_separately: true
-  silent_cross_provider_fallback_allowed: false
-  verify_runtime_selection_when_available: true
-  customendpoint_same_vendor_group_disambiguation_guaranteed: false
+## Evaluation Results
+Exactly one of: `PASS`, `PASS_WITH_FINDINGS`, `CORRECTION_REQUIRED`, `REPLAN_REQUIRED`, `RESEARCH_REQUIRED`.
 
-A bound execution role MUST identify both the model display name and its VS Code provider/vendor identifier. Examples: `Claude Opus 4.7 (copilot)` and `Claude Opus 4.7 (openrouter)`. The provider suffix is part of the execution contract. A bare model name is not accepted for a bound role.
-
-If multiple same-name models are registered under the same vendor (especially `customendpoint`), current qualified-name routing might still be ambiguous because the qualified form does not encode group/id. Treat that setup as non-deterministic unless runtime diagnostics prove the intended model was selected.
-
-## Context Isolation Policy
-
-```yaml
-context_isolation:
-  task_is_fresh_subagent_invocation: true
-  planner_transaction_is_fresh_subagent_invocation: true
-  integration_gate_is_fresh_subagent_invocation: true
-  retry_is_fresh_subagent_invocation: true
-  conversation_history_authoritative: false
-  cross_task_full_context_inheritance: false
-  inter_agent_handoff: result_capsule_only
-```
-
-Invariant:
-`1 Task = 1 execution contract = 1 isolated subagent invocation = 1 fresh context window.`
-
-Disk artifacts are persistent memory. Model context is temporary working memory.
-
-## Agent Routing Policy
-
-```yaml
-routing:
-  user_entry_agent: ProjectManager
-  planner_agent: Planner512K
-  default_builder: Builder128K
-  escalation_builder: Builder256K
-  builders_may_spawn_subagents: false
-  planner_may_spawn_subagents: false
-  project_manager_may_spawn:
-    - Planner512K
-    - Builder128K
-    - Builder256K
-```
-
-## Execution Policy
-
-```yaml
-execution:
-  prefer_task_split_before_escalation: true
-  stop_on_non_pass: true
-  repair_attempts: 2
-  same_approach_repeats: 1
-  phase_auto_continue_on_pass: true
-  fresh_context_per_retry: true
-```
-
-Builder256K remains an execution role, not an architecture role.
-
-## Local Output Budget
-
-```yaml
-local_output_budget:
-  max_command_output_chars_into_model: 12000
-  max_search_results_into_model: 100
-  max_log_excerpt_lines_into_model: 200
-  max_diff_lines_into_model: 400
-  max_test_failure_excerpt_lines_into_model: 250
-```
-
-Full raw output should remain in terminal or be persisted to an ignored/local file. Only summaries or focused excerpts should enter model context.
-
-## Context Estimation Policy
-
-```yaml
-context_estimation:
-  estimator: scripts/context_guard.py
-  chars_per_token_estimate: 4
-  include_task_contract: true
-  include_listed_write_read_test_files: true
-  expected_tool_output_reserve_tokens:
-    Builder128K: 6000
-    Builder256K: 12000
-  decisions:
-    within_target: PASS
-    over_target_under_max: WARN
-    over_max: SPLIT_REQUIRED
-```
-
-This is a conservative deterministic preflight, not a tokenizer-accurate measurement. It exists to block obviously oversized Task packs before their files are injected into model context.
-
-## Interaction Policy
-
-```yaml
-interaction:
-  task_completion_mode: auto
-  phase_completion_mode: ask
-  executor_escalation_mode: ask
-```
-
-The user authorizes at Phase boundaries. PASS may auto-route to the next Task, but never reuses the previous Task context.
-
-## Planning Policy
-
-```yaml
-planning:
-  require_project_details: true
-  require_knowledge_validation: true
-  require_plan_validation: true
-  require_task_pack_validation: true
-  architecture_critical_unknowns_block: true
-  persist_blocking_questions: true
-  checkpoint_transactions:
-    - PT1_INPUT_KNOWLEDGE
-    - PT2_ARCHITECTURE_PLAN
-    - PT3_RISK_PHASES
-    - PT4_TASK_COMPILATION
-    - PT5_TASK_PACK_VALIDATION
-```
-
-## Knowledge Policy
-
-```yaml
-knowledge:
-  execution_access: read_only
-  planner_write_only: true
-  require_provenance: true
-```
-
-## Environment Policy
-
-```yaml
-environment:
-  user_env: ".env.user"
-  execute_env: "EXECUTE/.env.execute"
-  required_placeholder: "__REQUIRED__"
-  production_access_default: false
-  database_write_default: false
-  never_guess_external_configuration: true
-```
-
-`.env.user` is human-owned and must never be committed. `EXECUTE/.env.execute` must never contain secrets.
-
-## Release Policy
-
-```yaml
-release:
-  require_system_test: true
-  require_package: true
-  require_clean_install: true
-  require_release_gate: true
-```
-
-## Default External I/O Policy
-
-```yaml
-external_io_defaults:
-  repeated_equivalent_calls: 2
-  transient_retries_per_operation: 2
-  api_pages: 3
-  api_requests: 8
-  api_items_per_page: 100
-  db_queries: 8
-  db_rows_per_query: 100
-```
+## Environment Safety
+Never guess credentials/external configuration. Production access and destructive database operations are denied unless explicitly authorized in the Task.
