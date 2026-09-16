@@ -6,7 +6,7 @@ if STATE_PATH.exists():
     raise SystemExit(f"INIT_V43: BLOCKED\n{STATE_PATH} already exists")
 state = initial_state()
 save_state(state)
-append_transition("WORKFLOW_INITIALIZED", actor="python:init_v43", cycle_id=None, details={"version": "4.3.0"})
+append_transition("WORKFLOW_INITIALIZED", actor="python:init_v43", cycle_id=None, details={"version": "4.3.1"})
 print("INIT_V43: PASS")
 print("State: AWAITING_SCOPE_IMPORT")
 print("Next: import external scope, then run python scripts/start_cycle.py --scope <Research_Vx-or-scope-ref>")

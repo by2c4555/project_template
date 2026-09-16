@@ -31,7 +31,7 @@ class V43WorkflowRegression(unittest.TestCase):
         cls.root = Path(cls.tmp.name) / 'repo'
         shutil.copytree(
             SOURCE_ROOT, cls.root,
-            ignore=shutil.ignore_patterns('__pycache__', '*.pyc', 'project_template-v4.3.0.zip')
+            ignore=shutil.ignore_patterns('__pycache__', '*.pyc', 'project_template-v4.3.1.zip')
         )
 
     @classmethod

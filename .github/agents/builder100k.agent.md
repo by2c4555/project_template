@@ -7,7 +7,7 @@ agents: []
 user-invocable: false
 ---
 
-# Builder100K — v4.3.0
+# Builder100K — v4.3.1
 
 Use `.github/skills/builder-task-execution/SKILL.md`.
 

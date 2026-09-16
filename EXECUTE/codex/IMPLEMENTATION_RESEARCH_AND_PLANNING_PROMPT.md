@@ -1,4 +1,4 @@
-# Codex Implementation Research & Planning — v4.3.0
+# Codex Implementation Research & Planning — v4.3.1
 
 Role: external technical research/planning authority inside the VS Code/repository control boundary.
 

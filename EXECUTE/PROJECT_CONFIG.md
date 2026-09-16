@@ -1,4 +1,4 @@
-# Project Configuration — v4.3.0
+# Project Configuration — v4.3.1
 
 ## Controlled boundary
 

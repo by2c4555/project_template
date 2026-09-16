@@ -1,4 +1,4 @@
-# Codex Independent Evaluation & Completion Handoff — v4.3.0
+# Codex Independent Evaluation & Completion Handoff — v4.3.1
 
 Role: independent evaluator. Read-only with respect to production implementation and approved planning artifacts.
 

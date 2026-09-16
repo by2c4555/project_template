@@ -1,6 +1,16 @@
 # Changelog
 
-## v4.3.0 — Machine-Governed Workflow & Token-Safety Architecture
+## v4.3.1 — Vendor-Neutral External Research UX Patch
+
+### External research simplification
+- Replaced the ChatGPT-only `EXECUTE/chatgpt/**` prompt pack with vendor-neutral `EXECUTE/external_research/**`.
+- Added one durable `RESEARCH_PROTOCOL.md` knowledge/resource file containing the full scope-research contract.
+- Added separate ChatGPT Project instructions and a generic Web-AI instruction file deliberately kept below 1,000 characters.
+- Collapsed Initial Research, Next-Version/Feature/Post-validation Debug Research, and Scope Clarification entry prompts into one `RUN_RESEARCH.md`; the external AI infers the mode from supplied artifacts.
+- Made the handoff portable: supported web AIs may create files directly; otherwise they return exact-path copyable artifacts.
+- Kept the external research layer outside the machine-governed VS Code runtime; no v4.3 execution authority or approval semantics changed.
+
+## v4.3.1 — Machine-Governed Workflow & Token-Safety Architecture
 
 ### Authority / state-machine redesign
 - Added authoritative `EXECUTE/control/STATE.json` plus append-only `TRANSITIONS.jsonl`; Markdown status files are generated views.

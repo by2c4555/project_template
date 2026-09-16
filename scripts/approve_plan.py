@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HUMAN/OPERATOR-ONLY interactive implementation approval gate for v4.3.0."""
+"""HUMAN/OPERATOR-ONLY interactive implementation approval gate for v4.3.1."""
 from __future__ import annotations
 from workflow_state import (
     CONTROL, active_cycle, append_transition, approval_path_for, build_package_manifest,

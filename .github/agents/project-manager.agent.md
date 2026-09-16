@@ -7,7 +7,7 @@ agents: ['Builder100K']
 user-invocable: true
 ---
 
-# ProjectManager500K — v4.3.0
+# ProjectManager500K — v4.3.1
 
 You orchestrate **only an already approved execution package**. Python scripts own authoritative state transitions.
 

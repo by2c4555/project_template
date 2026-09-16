@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared machine-state and integrity helpers for Project Template v4.3.0.
+"""Shared machine-state and integrity helpers for Project Template v4.3.1.
 
 STATE.json is the authoritative workflow state. Human-readable Markdown status files are
 views generated from it; agents must not grant themselves authority by editing Markdown.
@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "EXECUTE" / "control"
 STATE_PATH = CONTROL / "STATE.json"
 LEDGER_PATH = CONTROL / "TRANSITIONS.jsonl"
-WORKFLOW_VERSION = "4.3.0"
+WORKFLOW_VERSION = "4.3.1"
 SCHEMA_VERSION = 1
 
 PACKAGE_STATIC = [

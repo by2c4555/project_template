@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Structural/invariant validator for Project Template v4.3.0."""
+"""Structural/invariant validator for Project Template v4.3.1."""
 from __future__ import annotations
 import json, py_compile, re, sys
 from pathlib import Path
@@ -16,22 +16,39 @@ def read(rel):
     p=req(rel); return p.read_text(encoding='utf-8',errors='replace') if p.is_file() else ''
 
 version=read('VERSION').strip()
-if version!='4.3.0': errors.append(f'VERSION must be 4.3.0, found {version!r}')
+if version!='4.3.1': errors.append(f'VERSION must be 4.3.1, found {version!r}')
 
 required=[
  'README.md','CHANGELOG.md','EXECUTE/PROJECT_CONFIG.md','EXECUTE/control/STATE.json','EXECUTE/control/TRANSITIONS.jsonl',
  'EXECUTE/plan/PLANNING_CONTROL.md','EXECUTE/plan/PLANNING_STATUS.md','EXECUTE/execution/EXECUTION_STATE.md','EXECUTE/evaluation/EVALUATION_STATUS.md',
  'EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md','EXECUTE/codex/ISSUE_DIAGNOSIS_PROMPT.md','EXECUTE/codex/RECOVERY_PROMPT.md','EXECUTE/codex/EVALUATION_PROMPT.md',
+ 'EXECUTE/external_research/README.md','EXECUTE/external_research/RESEARCH_PROTOCOL.md','EXECUTE/external_research/RUN_RESEARCH.md',
+ 'EXECUTE/external_research/chatgpt/PROJECT_INSTRUCTIONS.txt','EXECUTE/external_research/generic/INSTRUCTIONS_1000.txt',
  '.github/agents/project-manager.agent.md','.github/agents/builder100k.agent.md','.github/skills/builder-task-execution/SKILL.md',
  'scripts/workflow_state.py','scripts/start_cycle.py','scripts/planning_gate.py','scripts/approve_plan.py','scripts/execution_gate.py','scripts/reset_manager_batch.py',
  'scripts/diagnosis_gate.py','scripts/approve_recovery.py','scripts/recovery_gate.py','scripts/resume_execution.py','scripts/start_replan.py','scripts/start_evaluation.py','scripts/finalize_evaluation.py','scripts/safe_exec.py','scripts/context_guard.py'
 ]
 for r in required: req(r)
 
+
+# Vendor-neutral external research pack.
+external_protocol=read('EXECUTE/external_research/RESEARCH_PROTOCOL.md')
+external_run=read('EXECUTE/external_research/RUN_RESEARCH.md')
+generic_instruction=read('EXECUTE/external_research/generic/INSTRUCTIONS_1000.txt').strip()
+chatgpt_instruction=read('EXECUTE/external_research/chatgpt/PROJECT_INSTRUCTIONS.txt').strip()
+if len(generic_instruction)>1000: errors.append(f'generic external instruction must be <=1000 characters, found {len(generic_instruction)}')
+for marker in ['INITIAL_RESEARCH','NEXT_VERSION_RESEARCH','SCOPE_CLARIFICATION','project_details.md','Research_Vx.md','new change cycle']:
+    if marker.lower() not in external_protocol.lower(): errors.append(f'RESEARCH_PROTOCOL missing marker: {marker}')
+for marker in ['Infer the correct mode','exact paths']:
+    if marker.lower() not in external_run.lower(): errors.append(f'RUN_RESEARCH missing marker: {marker}')
+if 'RESEARCH_PROTOCOL.md' not in generic_instruction or 'RESEARCH_PROTOCOL.md' not in chatgpt_instruction:
+    errors.append('platform instructions must delegate detailed behavior to RESEARCH_PROTOCOL.md')
+if (ROOT/'EXECUTE/chatgpt').exists(): errors.append('obsolete EXECUTE/chatgpt directory must not exist in v4.3.1')
+
 # Machine state schema / clean-template state.
 try:
     st=json.loads(read('EXECUTE/control/STATE.json'))
-    if st.get('workflow_version')!='4.3.0': errors.append('STATE workflow_version must be 4.3.0')
+    if st.get('workflow_version')!='4.3.1': errors.append('STATE workflow_version must be 4.3.1')
     if st.get('schema_version')!=1: errors.append('STATE schema_version must be 1')
     for key in ['project_state','active_cycle','counters','runtime_policy','cycles']:
         if key not in st: errors.append(f'STATE missing {key}')
@@ -107,7 +124,7 @@ for p in sorted((ROOT/'scripts').glob('*.py')):
 # Model-binding readiness is a warning, not template invalidity.
 try:
     mb=json.loads(read('EXECUTE/MODEL_BINDINGS.json'))
-    if mb.get('schema_version')!='4.3.0': errors.append('MODEL_BINDINGS schema_version must be 4.3.0')
+    if mb.get('schema_version')!='4.3.1': errors.append('MODEL_BINDINGS schema_version must be 4.3.1')
     unready=[]
     for role in ['ProjectManager500K','Builder100K']:
         r=(mb.get('roles') or {}).get(role,{})
@@ -121,5 +138,5 @@ if errors:
     print('TEMPLATE_VALID: FAIL')
     for e in errors: print('FAIL:',e)
     raise SystemExit(1)
-print('TEMPLATE_VALID: PASS (v4.3.0)')
+print('TEMPLATE_VALID: PASS (v4.3.1)')
 print('Machine-governed state, human phase gates, package integrity, recovery split and cycle boundaries validated.')

@@ -1,7 +1,7 @@
-# Project Template v4.3.0
+# Project Template v4.3.1
 ## Machine-Governed Workflow & Token-Safety Architecture
 
-Project Template v4.3.0 is a controlled, restartable engineering workflow for large AI-assisted software projects operated primarily inside **VS Code + Codex**.
+Project Template v4.3.1 is a controlled, restartable engineering workflow for large AI-assisted software projects operated primarily inside **VS Code + Codex**.
 
 The v4.3 design goal is not merely “better prompts”. It is to reduce the blast radius of an agent misunderstanding by moving workflow authority into Python state transitions and explicit human gates.
 
@@ -77,7 +77,22 @@ A validated Cycle is never reopened for new work. New feature/version/refactor/n
 | **Other Models / BYOK / Ollama / OpenRouter** | Optional local Manager/Builder model provider |
 | **Python 3** | Authoritative workflow gates and validators |
 | **Git** | Strongly recommended for baselines, diff review and audit |
-| External scope/research UI (optional) | Product/scope definition outside the controlled runtime |
+| **ChatGPT Project or other Web AI (optional)** | External product/scope research using `EXECUTE/external_research/**` |
+
+## External research setup (outside controlled runtime)
+
+The external research layer is vendor-neutral in v4.3.1. Use:
+
+```text
+EXECUTE/external_research/RESEARCH_PROTOCOL.md
+EXECUTE/external_research/chatgpt/PROJECT_INSTRUCTIONS.txt       # ChatGPT Project
+EXECUTE/external_research/generic/INSTRUCTIONS_1000.txt          # other Web AI
+EXECUTE/external_research/RUN_RESEARCH.md                        # one universal entry prompt
+```
+
+Upload `RESEARCH_PROTOCOL.md` as project knowledge/resource, paste the instruction file appropriate for the platform, then use `RUN_RESEARCH.md` for Initial Research, Next-Version/Feature/Post-validation Debug Research, or Codex Scope Clarification. The AI infers the mode from the supplied inputs.
+
+The generic instruction is deliberately under 1,000 characters; detailed rules live in the resource file so platforms with small instruction limits remain usable. See `EXECUTE/external_research/README.md`.
 
 Local model bindings are configured with:
 
@@ -735,7 +750,7 @@ python -m unittest discover -s test/regression -p 'test_*.py'
 A clean template should report:
 
 ```text
-TEMPLATE_VALID: PASS (v4.3.0)
+TEMPLATE_VALID: PASS (v4.3.1)
 ```
 
 `validate_v4.py` checks structural v4.3 invariants, state schema, required scripts/prompts, human TTY gate markers, generated Task contract rules, package-integrity infrastructure and deprecated combined-recovery protection.
@@ -765,4 +780,4 @@ NEW EXTERNAL SCOPE -> NEW CYCLE.
 NO APPROVAL CROSSES A CYCLE BOUNDARY.
 ```
 
-These rules are the architectural center of Project Template v4.3.0.
+These rules are the architectural center of Project Template v4.3.1.

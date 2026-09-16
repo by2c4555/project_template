@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Machine-governed planning interaction and package-expansion gate for v4.3.0."""
+"""Machine-governed planning interaction and package-expansion gate for v4.3.1."""
 from __future__ import annotations
 import argparse
 from copy import deepcopy

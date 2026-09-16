@@ -1,4 +1,4 @@
-# Codex Issue Diagnosis — v4.3.0
+# Codex Issue Diagnosis — v4.3.1
 
 Role: technical diagnostician. **Read/analyze/propose only. No production repair in this invocation.**
 

@@ -1,4 +1,4 @@
-# Planning & Approval Control Contract — v4.3.0
+# Planning & Approval Control Contract — v4.3.1
 
 `EXECUTE/control/STATE.json` is authoritative. Markdown status files are generated views.
 

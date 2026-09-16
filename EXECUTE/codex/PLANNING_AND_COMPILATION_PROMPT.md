@@ -1,4 +1,4 @@
-# Planning & Compilation Compatibility Entry — v4.3.0
+# Planning & Compilation Compatibility Entry — v4.3.1
 
 Use `EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md` as the canonical planning prompt.
 
