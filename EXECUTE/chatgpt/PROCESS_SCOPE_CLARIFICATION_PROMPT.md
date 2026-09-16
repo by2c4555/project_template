@@ -1,6 +1,6 @@
 # PROCESS CODEX SCOPE CLARIFICATION
 
-Run Project Template v4.2.1 research in `SCOPE_CLARIFICATION` mode using `MASTER_RESEARCH_PROMPT.md`.
+Run Project Template v4.3.0 research in `SCOPE_CLARIFICATION` mode using `MASTER_RESEARCH_PROMPT.md`.
 
 Required input:
 - `EXECUTE/scope/SCOPE_CLARIFICATION_REQUIRED_Vx.md`

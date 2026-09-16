@@ -2,17 +2,19 @@
 
 ```yaml
 diagnosis_version: Diagnosis_Vx
-source_type: ISSUE | EVALUATION_FINDING
-source_issue: ISSUE_NNNN | none
+cycle_id: CYCLE_NNN
+source_type: ISSUE
+source_issue: ISSUE_NNNN
 source_evaluation: Evaluation_Vx | none
-source_finding: EVAL-NNN | none
 source_task: TASK_NNN | none
-status: IN_PROGRESS
+status: COMPLETE
 classification: UNKNOWN
 root_cause_confirmed: false
 repair_authorized: false
 next_route: CONTINUE_DIAGNOSIS
 ```
+
+> Diagnosis never grants repair authority. `repair_authorized` remains `false` in this artifact. For `IMPLEMENTATION_DEFECT`, only `scripts/approve_recovery.py` can authorize the separate Recovery invocation.
 
 ## Trigger
 
@@ -24,7 +26,7 @@ next_route: CONTINUE_DIAGNOSIS
 
 ## Root Cause
 
-State the narrowest evidence-supported cause. Separate confirmed fact from bounded hypothesis.
+State the narrowest evidence-supported cause. Separate confirmed facts from bounded hypotheses.
 
 ## Affected Scope
 
@@ -34,11 +36,15 @@ State the narrowest evidence-supported cause. Separate confirmed fact from bound
 
 ## Approved Decisions / Contracts Involved
 
+## Proposed Repair / Replan Scope
+
+List concrete components/files likely required, why, expected verification, and whether the scope crosses the original Task boundary.
+
 ## Risk of Repair
 
 ## Classification
 
-Choose exactly one primary classification:
+Choose exactly one:
 
 - `IMPLEMENTATION_DEFECT`
 - `TASK_DEFECT`
@@ -48,24 +54,11 @@ Choose exactly one primary classification:
 - `EXTERNAL_BLOCKER`
 - `UNKNOWN`
 
-## Authority Decision
-
-```yaml
-direct_repair_allowed: false
-requires_replan: false
-requires_scope_clarification: false
-requires_external_action: false
-requires_re_evaluation: false
-```
-
 ## Required Next Action
 
-One concrete route:
-
-- `DIRECT_REPAIR`
-- `TASK_REVISION`
+- `AWAIT_RECOVERY_APPROVAL`
 - `REPLAN`
-- `INVALIDATE_EVALUATION_FINDING`
+- `RE_EVALUATE`
 - `SCOPE_CLARIFICATION`
 - `EXTERNAL_ACTION`
 - `CONTINUE_DIAGNOSIS`

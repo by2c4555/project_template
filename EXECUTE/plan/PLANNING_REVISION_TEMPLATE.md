@@ -3,25 +3,21 @@
 ```yaml
 planning_version: Planning_Vx
 planning_revision: Revision_N
-based_on_research_version: Research_Vx
+based_on_scope: Research_Vx | path/to/external/scope
 status: IN_PROGRESS
 material_unknowns: unknown
-feedback_reason: none
-plan_review_status: NOT_STARTED
 package_status: NOT_COMPILED
 supersedes_revision: none
 ```
 
 ## Trigger
-Why this revision exists: initial draft, user feedback, clarification answer, repository finding, plan-review change, or evaluation/replan input.
+Why this revision exists: initial planning, user feedback, clarification answer, repository finding, or replan input.
 
 ## User Feedback / Decisions Incorporated
 - ...
 
 ## Decision Provenance
-For each material decision, record the user message/decision source and the technical consequence.
-
-- ...
+For each material decision, record the user message/decision source and technical consequence.
 
 ## Repository Findings Incorporated
 - ...
@@ -32,9 +28,7 @@ For each material decision, record the user message/decision source and the tech
 ## Material Unknowns
 List only unknowns capable of changing scope, architecture, public behavior, data compatibility, dependency strategy, security, migration behavior, or acceptance criteria.
 
-Do **not** initialize this section to `None` until research and user-decision checks actually prove zero material unknowns.
-
-- unknown at revision creation
+Do not claim zero until repository research and user decisions prove it.
 
 ## Plan Impact
 - architecture:
@@ -43,9 +37,10 @@ Do **not** initialize this section to `None` until research and user-decision ch
 - testing/validation:
 - risks:
 
-## Review State
-- `AWAITING_USER_FEEDBACK` + `MATERIAL_DECISION`: stop the current invocation; do not expand Tasks/package.
-- `AWAITING_USER_FEEDBACK` + `PLAN_REVIEW`: compiled draft presented; stop the current invocation and wait for review.
-- `AWAITING_USER_APPROVAL`: only after plan review is accepted, `material_unknowns: 0`, and explicit implementation permission is being requested.
+## v4.3 State Rule
 
-Do not treat this revision record as implementation authorization.
+- material unknowns > 0 -> call `planning_gate.py hold-material-feedback` and **STOP**;
+- material unknowns = 0 -> call `planning_gate.py set-material-zero`, then `authorize-expansion` before compiling Tasks;
+- compiled package ready -> call `planning_gate.py mark-plan-ready` and **STOP**;
+- any later chat message is feedback/question only; it can cause a new revision but never implementation approval;
+- only the human-operated `scripts/approve_plan.py` can cross `PLAN_READY -> APPROVED`.

@@ -1,6 +1,6 @@
 # START NEXT VERSION / FEATURE RESEARCH
 
-Run Project Template v4.2.1 research in `NEXT_VERSION_RESEARCH` mode using `MASTER_RESEARCH_PROMPT.md`.
+Run Project Template v4.3.0 research in `NEXT_VERSION_RESEARCH` mode using `MASTER_RESEARCH_PROMPT.md`.
 
 Required baseline input:
 - latest verified `EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md`

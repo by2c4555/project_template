@@ -1,174 +1,128 @@
 #!/usr/bin/env python3
-"""Planning interaction/cost-control gate for Project Template v4.2.1."""
+"""Machine-governed planning interaction and package-expansion gate for v4.3.0."""
 from __future__ import annotations
-
-from pathlib import Path
 import argparse
-import re
-import sys
-
-ROOT = Path(__file__).resolve().parents[1]
-STATUS_PATH = ROOT / 'EXECUTE/plan/PLANNING_STATUS.md'
-
-
-def read_text(path: Path) -> str:
-    if not path.is_file():
-        raise SystemExit(f'PLANNING_GATE: FAIL\nmissing: {path.relative_to(ROOT)}')
-    return path.read_text(encoding='utf-8', errors='replace')
+from copy import deepcopy
+from workflow_state import (
+    active_cycle, append_transition, build_package_manifest, load_state, next_id,
+    save_state, write_json, CONTROL,
+)
 
 
-def value_of(text: str, key: str):
-    m = re.search(rf'^\s*{re.escape(key)}:\s*(.*?)\s*$', text, re.M)
-    return m.group(1).strip().strip('"\'') if m else None
-
-
-def replace_value(text: str, key: str, value: str) -> str:
-    pat = rf'^(\s*{re.escape(key)}:\s*).*$'
-    if not re.search(pat, text, re.M):
-        raise SystemExit(f'PLANNING_GATE: FAIL\nPLANNING_STATUS missing field: {key}')
-    return re.sub(pat, rf'\g<1>{value}', text, count=1, flags=re.M)
-
-
-def parse_unknowns(raw):
-    if raw is None or raw.lower() == 'unknown':
-        return None
-    try:
-        n = int(raw)
-    except ValueError:
-        return None
-    return n if n >= 0 else None
-
-
-def require_identity(status: str, planning: str, revision: str):
-    errors = []
-    if value_of(status, 'planning_version') != planning:
-        errors.append(f'planning_version must be {planning}')
-    if value_of(status, 'planning_revision') != revision:
-        errors.append(f'planning_revision must be {revision}')
-    return errors
-
-
-def generated_task_paths():
-    task_dir = ROOT / 'EXECUTE/tasks'
-    if not task_dir.exists():
-        return []
-    return sorted(p for p in task_dir.glob('TASK_*.md') if p.name not in {'TASK_INDEX.md', 'TASK_TEMPLATE.md'} and re.fullmatch(r'TASK_\d+.*\.md', p.name))
-
-
-def task_plan(path: Path):
-    return value_of(read_text(path), 'planning_version')
-
-
-def check_no_current_tasks(planning: str):
-    bad = []
-    for p in generated_task_paths():
-        pv = task_plan(p)
-        if pv in {planning, None, '', 'none'}:
-            bad.append(str(p.relative_to(ROOT)))
-    return bad
-
-
-def cmd_authorize(a):
-    status = read_text(STATUS_PATH)
-    errors = require_identity(status, a.planning, a.revision)
-    if value_of(status, 'planning_status') != 'IN_PROGRESS':
-        errors.append('planning_status must be IN_PROGRESS')
-    if parse_unknowns(value_of(status, 'material_unknowns')) != 0:
-        errors.append('material_unknowns must be exactly 0')
-    if value_of(status, 'interaction_gate') != 'NONE':
-        errors.append('interaction_gate must be NONE')
-    if value_of(status, 'invocation_stop_required') != 'false':
-        errors.append('invocation_stop_required must be false')
-    if value_of(status, 'implementation_approval_requested') != 'false':
-        errors.append('implementation_approval_requested must be false')
-    if value_of(status, 'execution_locked') != 'true':
-        errors.append('execution_locked must be true')
-    if errors:
-        print('PLANNING_GATE: FAIL')
-        for e in errors:
-            print('FAIL:', e)
-        return 1
-    status = replace_value(status, 'task_expansion_allowed', 'true')
-    STATUS_PATH.write_text(status, encoding='utf-8')
-    print('PLANNING_GATE: PASS')
-    print(f'Expansion authorized for {a.planning} {a.revision}; material_unknowns=0.')
-    return 0
-
-
-def cmd_hold_material(a):
-    if a.unknowns < 1:
-        print('PLANNING_GATE: FAIL\nFAIL: --unknowns must be >= 1 for MATERIAL_DECISION')
-        return 1
-    status = read_text(STATUS_PATH)
-    errors = require_identity(status, a.planning, a.revision)
-    current_tasks = check_no_current_tasks(a.planning)
-    if current_tasks:
-        errors.append('current-Planning Tasks already exist while material decisions remain: ' + ', '.join(current_tasks))
-    if errors:
-        print('PLANNING_GATE: FAIL')
-        for e in errors:
-            print('FAIL:', e)
-        return 1
-    updates = {
-        'planning_status': 'AWAITING_USER_FEEDBACK',
-        'material_unknowns': str(a.unknowns),
-        'feedback_reason': 'MATERIAL_DECISION',
-        'plan_review_status': 'NOT_STARTED',
-        'package_status': 'NOT_COMPILED',
-        'interaction_gate': 'USER_FEEDBACK_REQUIRED',
-        'invocation_stop_required': 'true',
-        'task_expansion_allowed': 'false',
-        'implementation_approval_requested': 'false',
-        'execution_locked': 'true',
-    }
-    for k, v in updates.items():
-        status = replace_value(status, k, v)
-    STATUS_PATH.write_text(status, encoding='utf-8')
-    print('PLANNING_GATE: PASS')
-    print('HARD_STOP_REQUIRED: true')
-    print('Reason: MATERIAL_DECISION. Ask focused questions and end the current invocation.')
-    return 0
+def planning(state):
+    cid, cycle = active_cycle(state)
+    if cycle.get('status') not in {'PLANNING'}:
+        raise SystemExit(f'PLANNING_GATE: BLOCKED\ncycle {cid} status {cycle.get("status")} is not PLANNING')
+    return cid, cycle, cycle['planning']
 
 
 def cmd_status(_a):
-    status = read_text(STATUS_PATH)
-    keys = [
-        'planning_version', 'planning_revision', 'planning_status', 'material_unknowns',
-        'feedback_reason', 'plan_review_status', 'package_status', 'interaction_gate',
-        'invocation_stop_required', 'task_expansion_allowed', 'implementation_approval_requested',
-        'execution_locked'
-    ]
-    print('PLANNING_GATE: STATUS')
-    for key in keys:
-        print(f'{key}: {value_of(status, key)}')
+    state = load_state(); cid, cycle, p = planning(state)
+    for k in ['version','revision_label','status','material_unknowns','package_status','task_expansion_allowed','interaction_gate','invocation_stop_required','candidate_package_digest']:
+        print(f'{k}: {p.get(k)}')
+    print(f'cycle_id: {cid}')
+    return 0
+
+
+def cmd_hold(a):
+    if a.unknowns < 1:
+        raise SystemExit('PLANNING_GATE: FAIL\n--unknowns must be >= 1')
+    state = load_state(); cid, cycle, p = planning(state)
+    p.update({
+        'status':'AWAITING_MATERIAL_FEEDBACK', 'material_unknowns':a.unknowns,
+        'package_status':'NOT_COMPILED', 'task_expansion_allowed':False,
+        'interaction_gate':'USER_FEEDBACK_REQUIRED', 'invocation_stop_required':True,
+        'candidate_package_digest':None,
+    })
+    cycle['next_action'] = 'USER_FEEDBACK_THEN_RESUME_PLANNING'
+    save_state(state); append_transition('PLANNING_MATERIAL_FEEDBACK_REQUIRED', actor='agent:planning_gate', cycle_id=cid, details={'unknowns':a.unknowns})
+    print('PLANNING_GATE: PASS\nHARD_STOP_REQUIRED: true\nReason: material decisions remain. Ask focused questions and end the invocation.')
+    return 0
+
+
+def cmd_resume(_a):
+    state = load_state(); cid, cycle, p = planning(state)
+    if p.get('status') not in {'AWAITING_MATERIAL_FEEDBACK','PLAN_READY'}:
+        raise SystemExit(f'PLANNING_GATE: BLOCKED\nresume-feedback not valid from {p.get("status")}')
+    p.update({'status':'IN_PROGRESS','interaction_gate':'NONE','invocation_stop_required':False,'task_expansion_allowed':False,'package_status':'NOT_COMPILED','candidate_package_digest':None})
+    cycle['next_action']='RUN_CODEX_PLANNING'
+    save_state(state); append_transition('PLANNING_FEEDBACK_RESUMED', actor='agent:planning_gate', cycle_id=cid)
+    print('PLANNING_GATE: PASS\nstate: IN_PROGRESS\nTask expansion remains locked until authorize-expansion.')
+    return 0
+
+
+def cmd_revision(a):
+    state = load_state(); cid, cycle, p = planning(state)
+    if cycle.get('approval'):
+        raise SystemExit('PLANNING_GATE: BLOCKED\napproved planning cannot be revised in place; use start_replan.py')
+    cycle.setdefault('planning_history', []).append(deepcopy(p))
+    p['revision'] = int(p.get('revision',1)) + 1
+    p['revision_label'] = f'Revision_{p["revision"]}'
+    p.update({'status':'IN_PROGRESS','material_unknowns':None,'package_status':'NOT_COMPILED','task_expansion_allowed':False,'interaction_gate':'NONE','invocation_stop_required':False,'candidate_package_digest':None})
+    cycle['next_action']='RUN_CODEX_PLANNING'
+    save_state(state); append_transition('PLANNING_REVISION_STARTED', actor='agent:planning_gate', cycle_id=cid, details={'revision':p['revision_label'],'reason':a.reason})
+    print('PLANNING_GATE: PASS')
+    print(f'planning_revision: {p["revision_label"]}')
+    print('Old draft is historical; regenerate all current package artifacts with the new revision metadata.')
+    return 0
+
+
+def cmd_zero(_a):
+    state = load_state(); cid, cycle, p = planning(state)
+    if p.get('status') != 'IN_PROGRESS':
+        raise SystemExit(f'PLANNING_GATE: BLOCKED\nset-material-zero requires IN_PROGRESS, found {p.get("status")}')
+    p['material_unknowns'] = 0
+    save_state(state); append_transition('PLANNING_MATERIAL_UNKNOWNS_ZERO', actor='agent:planning_gate', cycle_id=cid)
+    print('PLANNING_GATE: PASS\nmaterial_unknowns: 0')
+    return 0
+
+
+def cmd_authorize(_a):
+    state = load_state(); cid, cycle, p = planning(state)
+    errors=[]
+    if p.get('status') != 'IN_PROGRESS': errors.append('planning status must be IN_PROGRESS')
+    if p.get('material_unknowns') != 0: errors.append('material_unknowns must be exactly 0')
+    if p.get('interaction_gate') != 'NONE': errors.append('interaction gate must be NONE')
+    if errors:
+        raise SystemExit('PLANNING_GATE: FAIL\n'+'\n'.join('FAIL: '+e for e in errors))
+    p['task_expansion_allowed']=True
+    save_state(state); append_transition('PLANNING_PACKAGE_EXPANSION_AUTHORIZED', actor='python:planning_gate', cycle_id=cid, details={'planning':p['version'],'revision':p['revision_label']})
+    print('PLANNING_GATE: PASS\nTask/package compilation is authorized for the current Planning revision only.')
+    return 0
+
+
+def cmd_ready(_a):
+    state = load_state(); cid, cycle, p = planning(state)
+    if p.get('status') != 'IN_PROGRESS' or p.get('material_unknowns') != 0 or not p.get('task_expansion_allowed'):
+        raise SystemExit('PLANNING_GATE: BLOCKED\nrequires IN_PROGRESS + material_unknowns=0 + task_expansion_allowed=true')
+    try:
+        manifest = build_package_manifest(p['version'], p['revision_label'])
+    except ValueError as exc:
+        raise SystemExit('PLANNING_GATE: FAIL\n'+str(exc))
+    candidate = CONTROL / 'manifests' / f'{cid}_{p["version"]}_{p["revision_label"]}_CANDIDATE.json'
+    write_json(candidate, manifest)
+    p.update({'status':'PLAN_READY','package_status':'READY_FOR_APPROVAL','task_expansion_allowed':False,'interaction_gate':'USER_REVIEW_OR_APPROVAL','invocation_stop_required':True,'candidate_package_digest':manifest['package_digest']})
+    cycle['next_action']='REVIEW_PLAN_OR_RUN_APPROVE_PLAN'
+    save_state(state); append_transition('PLAN_READY', actor='python:planning_gate', cycle_id=cid, details={'planning':p['version'],'revision':p['revision_label'],'package_digest':manifest['package_digest'],'task_count':manifest['task_count']})
+    print('PLANNING_GATE: PASS')
+    print('planning_status: PLAN_READY')
+    print(f'package_digest: {manifest["package_digest"]}')
+    print(f'task_count: {manifest["task_count"]}')
+    print('HARD_STOP_REQUIRED: true')
+    print('Any chat message is feedback/question only. Implementation requires the user to run scripts/approve_plan.py manually.')
     return 0
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Machine-checkable planning interaction and cost-control gate.')
-    sub = ap.add_subparsers(dest='command', required=True)
+    ap=argparse.ArgumentParser(description='v4.3 planning state/cost gate')
+    sub=ap.add_subparsers(dest='cmd',required=True)
+    s=sub.add_parser('status'); s.set_defaults(func=cmd_status)
+    h=sub.add_parser('hold-material-feedback'); h.add_argument('--unknowns',type=int,required=True); h.set_defaults(func=cmd_hold)
+    r=sub.add_parser('resume-feedback'); r.set_defaults(func=cmd_resume)
+    n=sub.add_parser('begin-revision'); n.add_argument('--reason',required=True); n.set_defaults(func=cmd_revision)
+    z=sub.add_parser('set-material-zero'); z.set_defaults(func=cmd_zero)
+    e=sub.add_parser('authorize-expansion'); e.set_defaults(func=cmd_authorize)
+    m=sub.add_parser('mark-plan-ready'); m.set_defaults(func=cmd_ready)
+    a=ap.parse_args(); return a.func(a)
 
-    s = sub.add_parser('status')
-    s.set_defaults(func=cmd_status)
-
-    e = sub.add_parser('authorize-expansion')
-    e.add_argument('--planning', required=True)
-    e.add_argument('--revision', required=True)
-    e.set_defaults(func=cmd_authorize)
-
-    h = sub.add_parser('hold-material-feedback')
-    h.add_argument('--planning', required=True)
-    h.add_argument('--revision', required=True)
-    h.add_argument('--unknowns', required=True, type=int)
-    h.set_defaults(func=cmd_hold_material)
-
-    a = ap.parse_args()
-    if getattr(a, 'planning', None) and not re.fullmatch(r'Planning_V[1-9][0-9]*', a.planning):
-        raise SystemExit('PLANNING_GATE: FAIL\ninvalid --planning')
-    if getattr(a, 'revision', None) and not re.fullmatch(r'Revision_[1-9][0-9]*', a.revision):
-        raise SystemExit('PLANNING_GATE: FAIL\ninvalid --revision')
-    return a.func(a)
-
-
-if __name__ == '__main__':
-    raise SystemExit(main())
+if __name__=='__main__': raise SystemExit(main())

@@ -7,16 +7,6 @@ planning_revision: none
 
 # Task Index
 
-No approved Tasks yet.
+No compiled Tasks yet.
 
-## Allowed Task Status Values
-
-- `PENDING`
-- `READY`
-- `IN_PROGRESS`
-- `PASS`
-- `BLOCKED`
-- `PASS_RECOVERED`
-- `SUPERSEDED`
-
-`PASS_RECOVERED` means the Task previously blocked local execution and was later repaired/verified through the external Recovery contract. Final Evaluation must treat it as a high-attention regression area.
+Task **contracts are immutable after approval**. Runtime states (`PENDING`, `IN_PROGRESS`, `PASS`, `BLOCKED`, `PASS_RECOVERED`) are machine state in `EXECUTE/control/STATE.json`, not fields in Task markdown.

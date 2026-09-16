@@ -1,4 +1,4 @@
-# CHATGPT Prompt Pack — Project Template v4.2.1
+# CHATGPT Prompt Pack — Project Template v4.3.0
 
 ChatGPT owns **scope intelligence and product evolution**, not technical incident recovery.
 
@@ -27,7 +27,7 @@ Technical failures must first go through:
 
 ```text
 Codex / External Agent
-EXECUTE/codex/ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md
+EXECUTE/codex/ISSUE_DIAGNOSIS_PROMPT.md
 ```
 
 Only a proven `SCOPE_AMBIGUITY` returns to ChatGPT/User.
@@ -41,3 +41,7 @@ ChatGPT owns:
 - `EXECUTE/research/Research_Vx.md`
 
 Codex then owns repository-level technical preparation, planning, recovery, diagnosis, and evaluation.
+
+## v4.3 handoff note
+
+ChatGPT/external scope work is outside the controlled VS Code runtime. After copying a new Research/scope package into the repository, the user starts the controlled change cycle manually with `python scripts/start_cycle.py --scope <Research_Vx-or-scope-ref>`. No prior implementation approval carries into that cycle.

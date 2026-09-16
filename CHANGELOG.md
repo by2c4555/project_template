@@ -1,5 +1,42 @@
 # Changelog
 
+## v4.3.0 — Machine-Governed Workflow & Token-Safety Architecture
+
+### Authority / state-machine redesign
+- Added authoritative `EXECUTE/control/STATE.json` plus append-only `TRANSITIONS.jsonl`; Markdown status files are generated views.
+- Adopted the invariant **agents produce work/evidence; Python grants authority**.
+- Added Change Cycles so implementation approval is cycle-scoped; validated cycles are immutable and new feature/version/post-validation debug scope starts a new cycle with no inherited authority.
+
+### Planning / approval
+- Removed the duplicated v4.2.1 `PLAN_REVIEW -> AWAITING_USER_APPROVAL` conversational approval sequence.
+- Added single `PLAN_READY` boundary: all Codex chat remains feedback/question input until the user manually runs `approve_plan.py`.
+- Replaced static CLI confirmation phrase with interactive-TTY challenge approval.
+- Approval now binds Cycle + Planning Vx + Revision + Task count + exact SHA-256 package manifest.
+- Split Task contracts from runtime Task state so approved Task files remain immutable.
+
+### Execution token controls
+- Added `execution_gate.py` for one-time Task dispatch, machine-counted local repair attempts, PASS/failure transitions, Issue creation and execution completion.
+- Added default 10-Task Manager dispatch batch circuit breaker plus human `reset_manager_batch.py` to force a fresh Manager conversation.
+- Added `safe_exec.py` to persist full verbose command output while returning bounded output to agents.
+
+### Recovery safety
+- Split Diagnosis and Recovery into separate Codex prompts/invocations.
+- Deprecated the combined Diagnosis+Recovery prompt as a hard-stop compatibility file.
+- Added immutable Diagnosis registration/routing, interactive `approve_recovery.py`, machine `recovery_gate.py`, and interactive `resume_execution.py`.
+- Recovery verification can no longer authorize its own execution resume.
+
+### Evaluation safety
+- Added interactive `start_evaluation.py`; one authorization covers one Evaluation attempt.
+- Added `finalize_evaluation.py` as the only machine transition for PASS/blocked Evaluation results.
+- Evaluation DIAGNOSIS_REQUIRED creates a durable Evaluation-origin Issue. Re-evaluation is never automatic.
+
+### Replan / next version
+- Added `start_replan.py` so TASK/PLAN defects supersede old execution authority and require a new Planning approval within the same open Cycle.
+- Added `start_cycle.py` so next-version and post-validation debug work receives a clean approval namespace.
+
+### Validation
+- Expanded validator and regression coverage around state schema, package immutability, Task runtime separation, human-gate structure, duplicate dispatch/repair limits, recovery split and cycle boundaries.
+
 ## v4.2.1 — Planning Interaction Gate & Token-Cost Hardening
 
 ### Critical planning-gate fix

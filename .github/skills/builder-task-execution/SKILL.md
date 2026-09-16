@@ -1,90 +1,17 @@
 ---
 name: builder-task-execution
-description: v4.2 bounded execution kernel for local Builder100K.
+description: v4.3 machine-gated single-Task execution kernel for Builder100K.
 ---
 
-# Builder Task Execution v4.2
+# Builder Task Execution v4.3
 
-Execute exactly one Task per fresh invocation.
+1. Confirm `STATE.json` names exactly one active `IN_PROGRESS` Task.
+2. Run `context_guard.py` before loading implementation context.
+3. Load only Task mandatory context first; expand context only via NEED -> JUSTIFICATION -> BUDGET -> LOAD.
+4. Implement only the immutable Task contract and allowed file scope.
+5. Run deterministic verification, preferably through `safe_exec.py` when output may be large.
+6. After a failed verification, call `execution_gate.py authorize-repair TASK_NNN` **before each repair attempt**. No gate PASS -> no repair.
+7. Persist durable evidence regardless of outcome.
+8. Return one Result Capsule and STOP. Never begin another Task.
 
-## 1. Gate
-
-Read compact project/execution status, active Task metadata, global constraints, model binding, and only Manager-surfaced relevant recovery knowledge.
-
-Confirm:
-- approved Planning Vx binding;
-- Task dependencies;
-- execution state permits Builder work;
-- no external-recovery pause is active.
-
-Run `python scripts/context_guard.py <TASK_FILE>` before loading implementation files.
-
-## 2. Load Compiled Context
-
-Load only Task `mandatory` context first. `useful` context is optional and must remain within budget.
-
-Never recursively load `docs/raw/**` or `knowledge/**` merely because they exist.
-
-Context expansion requires:
-
-`NEED -> JUSTIFICATION -> BUDGET -> LOAD`
-
-Missing architectural/requirement knowledge is a Task-pack defect, not permission to invent.
-
-## 3. Implement Within Contract
-
-Honor objective, allowed files, required changes, invariants, decisions, must-preserve rules, out-of-scope list, acceptance criteria, and supplied verified prior-resolution guardrails.
-
-Material contradiction/scope expansion -> persist evidence -> BLOCKED -> STOP.
-
-## 4. Verify + Bounded Local Repair
-
-Run exact Task verification first.
-
-If it fails:
-
-1. inspect evidence;
-2. perform at most two evidence-driven repair attempts unless Task states a stricter limit;
-3. never repeat an equivalent failed action without new evidence;
-4. remain inside Task authority.
-
-If verification still fails or safe repair requires wider authority:
-
-- mark invocation `BLOCKED`/`FAIL`;
-- persist the last confirmed failure;
-- record attempts ruled out;
-- return `external_recovery_required: true`;
-- STOP.
-
-Do not become an open-ended recovery agent.
-
-## 5. Persist Evidence
-
-Write `EXECUTE/execution/evidence/<TASK_ID>.md` containing concise reproducible evidence.
-
-For failure include enough forensic information for Manager to create an Issue and for Codex/external recovery to isolate the problem.
-
-## 6. Return Capsule and Stop
-
-Success:
-
-```yaml
-result_capsule:
-  task: TASK_NNN
-  status: PASS
-  evidence: EXECUTE/execution/evidence/TASK_NNN.md
-  external_recovery_required: false
-```
-
-Failure:
-
-```yaml
-result_capsule:
-  task: TASK_NNN
-  status: BLOCKED
-  evidence: EXECUTE/execution/evidence/TASK_NNN.md
-  external_recovery_required: true
-  last_confirmed_failure: <concise>
-```
-
-Never start the next Task. Disk artifacts are authoritative.
+The Builder cannot grant PASS, open/close Issues, authorize Recovery, resume Execution, or start Evaluation. Those are machine/user transitions outside Builder authority.

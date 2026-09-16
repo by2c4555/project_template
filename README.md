@@ -1,420 +1,338 @@
-# Project Template v4.2.1
-## Research → Plan → Execute → Recover → Evaluate → Learn → Evolve
+# Project Template v4.3.0
+## Machine-Governed Workflow & Token-Safety Architecture
 
-Project Template v4.2.1 is a controlled, restartable engineering workflow for projects that use:
+Project Template v4.3.0 is a controlled, restartable engineering workflow for large AI-assisted software projects operated primarily inside **VS Code + Codex**.
 
-- **ChatGPT Project** for product/scope research and future-version evolution;
-- **Codex / GPT-6 Astra** as the external technical authority for repository research, planning, diagnosis, recovery, evaluation, and completion handoff;
-- **VS Code custom agents** for deterministic local execution;
-- optional **external recovery agents** that can temporarily take over the repository when a local Builder is blocked.
+The v4.3 design goal is not merely “better prompts”. It is to reduce the blast radius of an agent misunderstanding by moving workflow authority into Python state transitions and explicit human gates.
 
-The major v4.2.1 change is that a project no longer has only a happy-path Research → Planning → Execution → Evaluation flow. It now has a durable **technical recovery and project-learning loop**.
+> **Agents produce work and evidence. Python grants authority. Natural-language chat never unlocks an expensive phase.**
 
-The core principle is:
-
-> **ChatGPT defines what should exist. Codex owns how it should exist and technical truth. Local agents execute it. Codex/external recovery resolves incidents. Codex independently evaluates the result. Verified lessons are persisted for future planning/execution/evaluation. A full Completion Report returns post-build truth to ChatGPT for the next version.**
-
-Disk artifacts are authoritative. Chat history and agent memory are disposable.
+Disk state is authoritative. Chat history is disposable.
 
 ---
 
-# 1. Responsibility model
+# 1. Controlled boundary
+
+ChatGPT Web UI or another external research surface may still be used to define product scope, future-version scope, or post-validation debug scope. That layer is intentionally manual and is **outside** the v4.3 controlled runtime.
 
 ```text
-ChatGPT
-= WHAT / WHY / SCOPE / PRODUCT EVOLUTION
-
-Codex
-= HOW / REPOSITORY RESEARCH / PLAN / TASK / DIAGNOSIS / RECOVERY / EVALUATION
-
-ProjectManager500K
-= EXECUTION CONTROL / STATE / TASK DISPATCH / INCIDENT OPENING / SAFE RESUME
-
-Builder100K
-= ONE BOUNDED IMPLEMENTATION TASK
-
-External Recovery Agent
-= OPTIONAL TECHNICAL RESOLVER UNDER THE SAME RECOVERY CONTRACT
-
-User
-= IMPLEMENTATION APPROVAL / PRODUCT-SCOPE DECISIONS
+External Research / New Scope / Debug Scope
+                │
+                │ manual user handoff
+                ▼
+════════════════════════════════════════════
+          v4.3 VS Code / Codex boundary
+════════════════════════════════════════════
+                │
+          Change Cycle N
+                │
+          Codex Planning
+                │
+             PLAN_READY
+                │
+      human approve_plan.py
+                │
+        Local Execution
+   Manager -> fresh Builder/Task
+                │
+        issue? hard pause
+                │
+      Codex Diagnosis only
+                │
+   human approve_recovery.py
+                │
+       Codex Recovery only
+                │
+       recovery_gate.py
+                │
+ human resume_execution.py
+                │
+       execution complete
+                │
+ human start_evaluation.py
+                │
+       Codex Evaluation
+                │
+   finalize_evaluation.py
+                │
+        CLOSED_VALIDATED
+════════════════════════════════════════════
+                │
+        new external scope
+                ▼
+          Change Cycle N+1
 ```
 
-After Codex begins technical preparation, normal runtime/build/test/evaluation problems do **not** go directly back to ChatGPT.
-
-They go first to Codex Diagnosis.
-
-ChatGPT re-enters the lifecycle mainly in two cases:
-
-1. the current version is validated and a full `PROJECT_COMPLETION_REPORT_Vx.md` is used to define a new feature/version scope;
-2. Codex Diagnosis proves a real `SCOPE_AMBIGUITY` that requires a user/product decision.
+A validated Cycle is never reopened for new work. New feature/version/refactor/newly discovered post-validation bug starts a new Cycle and receives a new Planning package and new approval.
 
 ---
 
 # 2. Required tools
 
-| Tool | Required? | Primary use |
-|---|---:|---|
-| **ChatGPT Project** | Yes | Initial scope Research, next-version Research, true scope clarification |
-| **Codex** with the project-designated high-capability model (**GPT-6 Astra** in this template) | Yes | Technical preparation, Planning, Diagnosis, Recovery, Evaluation, Completion Report |
-| **Visual Studio Code** | Yes | Local repository/workspace and terminal |
-| **VS Code Chat / GitHub Copilot Chat custom-agent support** | Yes for local execution | Runs `ProjectManager500K` and `Builder100K` |
-| **Other Models / BYOK provider in VS Code** | Yes when using external/local runtime models | Supplies Manager/Builder models, e.g. OpenRouter or Ollama |
-| **Python 3** | Yes | Configuration, validation, approval, context guard, recovery gate |
-| **Git** | Strongly recommended | Baselines, diff review, rollback, audit history |
+| Tool | Use |
+|---|---|
+| **Visual Studio Code** | Repository/workspace, terminal, Manager/Builder agents |
+| **Codex** | Repository research, Planning, Diagnosis, Recovery, Evaluation |
+| **VS Code Chat / Copilot custom-agent support** | `ProjectManager500K`, `Builder100K` |
+| **Other Models / BYOK / Ollama / OpenRouter** | Optional local Manager/Builder model provider |
+| **Python 3** | Authoritative workflow gates and validators |
+| **Git** | Strongly recommended for baselines, diff review and audit |
+| External scope/research UI (optional) | Product/scope definition outside the controlled runtime |
 
-## Provider-specific notes
-
-### OpenRouter
-
-Configure the provider through VS Code's language-model setup. Do not store API keys in this repository or `EXECUTE/MODEL_CONFIG.ini`.
-
-### Ollama
-
-Install Ollama and make the intended model available to VS Code. Record the exact VS Code-visible model identity and documented context size.
-
-### VS Code model identity
-
-Use:
-
-```text
-Chat model picker
-  -> Manage Language Models
-```
-
-or Command Palette:
-
-```text
-Chat: Manage Language Models
-```
-
-Record:
-
-- provider/API `model_id`;
-- `vscode_model_name`;
-- `vendor`;
-- context size.
-
-The template stores both provider provenance and the VS Code qualified model name.
-
----
-
-# 3. One-time local runtime setup
-
-This setup is separate from the project lifecycle.
-
-## Setup A — Open the project
-
-Open the repository root in VS Code and confirm:
-
-```text
-.github/agents/project-manager.agent.md
-.github/agents/builder100k.agent.md
-EXECUTE/
-scripts/
-```
-
-## Setup B — Configure local Manager/Builder models
-
-Edit:
-
-```text
-EXECUTE/MODEL_CONFIG.ini
-```
-
-Example shape:
-
-```ini
-[manager]
-model_id = YOUR_MANAGER_MODEL_ID
-vscode_model_name = YOUR_MANAGER_VSCODE_MODEL_NAME
-vendor = YOUR_MANAGER_VENDOR
-context = 512000
-
-[builder]
-model_id = YOUR_BUILDER_MODEL_ID
-vscode_model_name = YOUR_BUILDER_VSCODE_MODEL_NAME
-vendor = YOUR_BUILDER_VENDOR
-context = 102400
-```
-
-Minimum context floors:
-
-```text
-ProjectManager500K : 512000
-Builder100K        : 102400
-```
-
-Then run:
+Local model bindings are configured with:
 
 ```bash
 python scripts/configure_models.py
 python scripts/validate_v4.py
 ```
 
-A clean template should report:
+Minimum documented context floors:
 
 ```text
-TEMPLATE_VALID: PASS (v4.2.1)
-```
-
-`RUNTIME_READY` remains `NO` until real local model bindings are configured.
-
----
-
-# 4. Lifecycle at a glance
-
-```text
-Step 1  Initial Scope Research
-        Tool: ChatGPT Project
-             ↓
-Step 2  Technical Research + Planning
-        Tool: Codex / GPT-6 Astra
-        Loop: inspect repo -> ask user -> revise until material_unknowns = 0
-             ↓
-Step 3  Explicit Implementation Approval
-        Tool: User + scripts/approve_plan.py
-             ↓
-Step 4  Local Execution
-        Tool: VS Code ProjectManager500K -> fresh Builder100K per Task
-             │
-             ├── Task failure beyond bounded local repair
-             │        ↓
-             │    Issue + hard pause
-             │        ↓
-             │    Codex / External Recovery
-             │        ↓
-             │    PASS_RECOVERED + Resolution Knowledge
-             │        ↓
-             │    READY_TO_RESUME -> Local Manager continues
-             │
-             └── all Tasks complete
-                      ↓
-Step 5  Independent Evaluation
-        Tool: Codex / GPT-6 Astra
-             │
-             ├── DIAGNOSIS_REQUIRED
-             │       ↓
-             │   Codex Diagnosis
-             │       ↓
-             │   repair / task revision / replan / re-evaluate / scope clarification
-             │
-             └── PASS / PASS_WITH_FINDINGS
-                     ↓
-Step 6  Full Project Completion Report
-        Tool: Codex
-             ↓
-Step 7  New Feature / Version Scope
-        Tool: ChatGPT Project + User
-        Input: latest PROJECT_COMPLETION_REPORT_Vx.md
+ProjectManager500K : 512000
+Builder100K        : 102400
 ```
 
 ---
 
-# 5. Step 1 — Initial Research V1
+# 3. Authoritative state
 
-**Tool:** ChatGPT Project
-
-Do not use the local Manager/Builder yet.
-
-## 5.1 Configure ChatGPT Project
-
-Copy:
+The single authoritative workflow state is:
 
 ```text
-EXECUTE/chatgpt/PROJECT_INSTRUCTIONS.txt
+EXECUTE/control/STATE.json
 ```
 
-into ChatGPT Project Instructions.
-
-Keep available:
+Every authoritative transition is appended to:
 
 ```text
-EXECUTE/chatgpt/MASTER_RESEARCH_PROMPT.md
+EXECUTE/control/TRANSITIONS.jsonl
 ```
 
-## 5.2 Start Research
-
-Use:
+Human-readable files such as:
 
 ```text
-EXECUTE/chatgpt/START_RESEARCH_PROMPT.md
+EXECUTE/PROJECT_STATUS.md
+EXECUTE/plan/PLANNING_STATUS.md
+EXECUTE/execution/EXECUTION_STATE.md
+EXECUTE/evaluation/EVALUATION_STATUS.md
 ```
 
-Expected outputs:
+are **generated views**. Editing those Markdown files does not grant authority.
 
-```text
-EXECUTE/project_details.md
-EXECUTE/docs/raw/**
-EXECUTE/research/Research_V1.md
-```
-
-ChatGPT owns product/scope intelligence, not implementation architecture.
-
-Research should define:
-
-- intended outcome;
-- in-scope behavior;
-- non-goals;
-- user-visible requirements;
-- constraints;
-- success intent;
-- user decisions;
-- known/unknown domain facts.
-
-When scope is sufficiently defined for technical investigation, move to Codex.
+Never hand-edit `STATE.json` to bypass a gate.
 
 ---
 
-# 6. Step 2 — Codex Technical Research & Planning
+# 4. Human gates vs machine gates
 
-**Tool:** Codex / GPT-6 Astra
+v4.3 intentionally does **not** ask the user to approve every Task. Routine transitions remain automated, but expensive phase boundaries require an explicit operator action.
 
-Use:
+## Human-operated hard gates
+
+| Boundary | Script |
+|---|---|
+| `PLAN_READY -> implementation authorized` | `python scripts/approve_plan.py` |
+| Manager context batch exhausted -> fresh Manager | `python scripts/reset_manager_batch.py` |
+| confirmed implementation defect -> broad Recovery authorized | `python scripts/approve_recovery.py` |
+| verified execution recovery -> local Execution resume | `python scripts/resume_execution.py` |
+| execution complete / re-evaluation -> one Evaluation attempt | `python scripts/start_evaluation.py` |
+
+These scripts require a live interactive terminal challenge. There is no `--yes` flag and no static phrase such as `I_APPROVE_IMPLEMENTATION` that an agent can copy from source and submit non-interactively.
+
+This is an accidental-flow/token-runaway barrier, not a security sandbox against a malicious process with full local-machine control.
+
+## Machine gates
+
+| Purpose | Script |
+|---|---|
+| Planning interaction / expansion / PLAN_READY | `planning_gate.py` |
+| Task dispatch / repair counter / PASS / Issue / execution completion | `execution_gate.py` |
+| Diagnosis registration + routing | `diagnosis_gate.py` |
+| Recovery verification | `recovery_gate.py` |
+| Evaluation result + Cycle close/Issue creation | `finalize_evaluation.py` |
+| Builder context preflight | `context_guard.py` |
+| Bounded command output | `safe_exec.py` |
+| Template/state/invariant validation | `validate_v4.py` |
+
+---
+
+# 5. Initial template state
+
+A fresh v4.3 package already contains initialized:
+
+```text
+EXECUTE/control/STATE.json
+project_state = AWAITING_SCOPE_IMPORT
+```
+
+`init_v43.py` exists only to reconstruct state if creating a template manually; do not run it over an existing state file.
+
+After external scope/research is copied into the repository, start the first Cycle:
+
+```bash
+python scripts/start_cycle.py --scope Research_V1 --title "Initial implementation"
+```
+
+For a later version:
+
+```bash
+python scripts/start_cycle.py --scope Research_V2 --title "Feature/version scope"
+```
+
+A new Cycle can start only when the previous active Cycle is `CLOSED_VALIDATED`.
+
+---
+
+# 6. Step 1 — Codex Planning
+
+**Tool:** Codex
+
+Run:
 
 ```text
 EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
 ```
 
-Codex must also obey:
+Codex researches the repository and current external scope.
 
-```text
-EXECUTE/plan/PLANNING_CONTROL.md
-```
+## Material decision gate
 
-v4.2.1 treats user interaction as a hard workflow boundary. Codex is not expected to finish all Planning phases in one invocation. Reaching a user gate and stopping is a successful result.
-
-It owns repository discovery, architecture/dependency/interface/data analysis, compatibility/migration analysis, technical clarification, context compilation, plan construction, atomic Task compilation, and relevant Resolution-knowledge review.
-
-## 6.1 Material-decision hard stop
-
-If any material decision remains, Codex must persist:
-
-```yaml
-planning_status: AWAITING_USER_FEEDBACK
-material_unknowns: <positive integer>
-feedback_reason: MATERIAL_DECISION
-interaction_gate: USER_FEEDBACK_REQUIRED
-invocation_stop_required: true
-task_expansion_allowed: false
-implementation_approval_requested: false
-execution_locked: true
-```
-
-Then it asks only the focused questions needed and **ends the current invocation immediately**.
-
-While material unknowns remain, Codex must not create conditional atomic Tasks, expand every unresolved branch, or build a current-Planning execution package. The governing rule is:
-
-> **NO USER DECISION -> NO TASK EXPANSION.**
-
-The next Planning iteration happens only after a new user message supplies feedback.
-
-## 6.2 Expansion authorization
-
-Only after `material_unknowns: 0` and no interaction gate is active may Codex authorize expensive package expansion:
+If one or more material decisions remain:
 
 ```bash
-python scripts/planning_gate.py authorize-expansion --planning Planning_V1 --revision Revision_1
+python scripts/planning_gate.py hold-material-feedback --unknowns N
 ```
 
-The command must print `PLANNING_GATE: PASS` before current-Planning `compiled/**`, `IMPLEMENTATION_PLAN.md`, `TASK_INDEX.md`, or `TASK_NNN.md` expansion begins.
+Codex asks focused questions and **ends the invocation**.
 
-## 6.3 Recovery knowledge consumption
+When the user later replies in Codex chat:
 
-Before finalizing a plan Codex inspects `EXECUTE/knowledge/KNOWLEDGE_INDEX.md` and only relevant verified `RESOLUTION_*.md` files. Applicable lessons become constraints, Task invariants, regression requirements, or known failed approaches to avoid.
+```bash
+python scripts/planning_gate.py resume-feedback
+```
 
-## 6.4 Planning output
+If the existing draft must change materially:
 
-After expansion authorization, Codex compiles at least:
+```bash
+python scripts/planning_gate.py begin-revision --reason "user feedback"
+```
+
+## Compile only after zero material unknowns
+
+```bash
+python scripts/planning_gate.py set-material-zero
+python scripts/planning_gate.py authorize-expansion
+```
+
+Codex then compiles:
 
 ```text
-EXECUTE/reference/KNOWLEDGE_INDEX.md
-EXECUTE/compiled/PROJECT_BRIEF.md
-EXECUTE/compiled/ARCHITECTURE.md
-EXECUTE/compiled/DECISIONS.md
-EXECUTE/compiled/GLOBAL_CONSTRAINTS.md
-EXECUTE/compiled/INTERFACES.md
-EXECUTE/compiled/DATA_MODEL.md
-EXECUTE/compiled/KNOWN_RISKS.md
+EXECUTE/compiled/**
 EXECUTE/plan/IMPLEMENTATION_PLAN.md
-EXECUTE/plan/PLANNING_STATUS.md
 EXECUTE/tasks/TASK_INDEX.md
 EXECUTE/tasks/TASK_NNN.md
-EXECUTE/history/planning/**
 ```
 
-Generated package artifacts identify the Planning version/revision that produced them.
+Each generated Task is an **immutable contract**, not runtime state.
 
-## 6.5 Mandatory plan-review barrier
-
-The first complete execution-ready draft is presented to the user for plan review, not implementation approval. Codex sets:
-
-```yaml
-planning_status: AWAITING_USER_FEEDBACK
-material_unknowns: 0
-feedback_reason: PLAN_REVIEW
-plan_review_status: AWAITING_USER_FEEDBACK
-package_status: DRAFT_READY_FOR_REVIEW
-interaction_gate: USER_FEEDBACK_REQUIRED
-invocation_stop_required: true
-implementation_approval_requested: false
-execution_locked: true
-```
-
-Codex then stops the invocation. It must not present the plan and immediately self-continue into implementation authorization.
-
-If the user requests changes, Codex revises/researches and presents another review. If a change reopens a material decision, Task expansion is relocked and the flow returns to §6.1.
-
-## 6.6 Explicit implementation-approval barrier
-
-After a later user message accepts the reviewed plan, Codex may transition to:
-
-```yaml
-planning_status: AWAITING_USER_APPROVAL
-material_unknowns: 0
-plan_review_status: ACCEPTED
-package_status: READY_FOR_APPROVAL
-interaction_gate: USER_APPROVAL_REQUIRED
-invocation_stop_required: true
-task_expansion_allowed: true
-implementation_approval_requested: true
-execution_locked: true
-```
-
-Codex explicitly asks whether implementation is authorized and **stops again**. Plan acceptance and implementation authorization are deliberately separate.
-
-Codex/external planning agents are forbidden from running `approve_plan.py` themselves.
-
----
-
-# 7. Step 3 — Explicit implementation approval
-
-**Tool owner:** User/operator
-
-Only after the user explicitly authorizes implementation of the exact reviewed Planning package, the user/operator runs:
-
-```bash
-python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1 --confirm-explicit-user-approval I_APPROVE_IMPLEMENTATION
-```
-
-The confirmation token makes accidental or implicit approval harder. The script additionally verifies the Planning state, accepted plan review, zero material unknowns, package readiness, execution lock, and generated Plan/Task package before binding Execution.
-
-Expected transition:
+Runtime fields such as:
 
 ```text
-Planning_V1 / reviewed Revision_N
-AWAITING_USER_APPROVAL
-        ↓ explicit user authorization + user/operator approval command
-APPROVED
-        ↓
-Execution_V1 = READY
+PENDING
+IN_PROGRESS
+PASS
+BLOCKED
+PASS_RECOVERED
+repair_attempts
+dispatch_count
 ```
+
+exist only in `STATE.json` after approval.
+
+## PLAN_READY
+
+When compilation is complete:
+
+```bash
+python scripts/planning_gate.py mark-plan-ready
+```
+
+This validates package metadata, creates a candidate SHA-256 manifest, changes state to `PLAN_READY`, and requires Codex to STOP.
+
+### Important semantic change from v4.2.1
+
+There is no separate:
+
+```text
+PLAN_REVIEW -> user accepts -> AWAITING_USER_APPROVAL
+```
+
+loop.
+
+Instead:
+
+```text
+PLAN_READY
+  ├─ user chat -> feedback/question/revision only
+  └─ user runs approve_plan.py -> APPROVED
+```
+
+Even messages such as:
+
+```text
+approved
+go ahead
+looks good
+implement it
+continue
+start now
+```
+
+remain ordinary feedback and carry **zero execution authority**.
 
 ---
 
-# 8. Step 4 — Local Execution
+# 7. Step 2 — Human implementation approval
 
-**Tool:** VS Code Chat custom agent `ProjectManager500K`
+**Tool:** VS Code terminal / user
+
+Run manually:
+
+```bash
+python scripts/approve_plan.py
+```
+
+The script displays:
+
+- active Cycle;
+- Planning version/revision;
+- Task count;
+- exact package SHA-256;
+- random interactive challenge.
+
+On success it creates immutable approval/manifest records under:
+
+```text
+EXECUTE/control/approvals/
+EXECUTE/control/manifests/
+```
+
+Approval is bound to one exact Cycle and package.
+
+Before every later execution/recovery/evaluation transition, the package digest is rechecked. If an approved Plan/Task/compiled artifact changes:
+
+```text
+PACKAGE_INTEGRITY: FAIL
+```
+
+and work stops.
+
+---
+
+# 8. Step 3 — Local Execution
+
+**Tool:** VS Code `ProjectManager500K`
 
 Use:
 
@@ -422,160 +340,162 @@ Use:
 EXECUTE_PROJECT_PROMPT.md
 ```
 
-The Manager dispatches one fresh `Builder100K` invocation per Task.
+Manager first runs:
+
+```bash
+python scripts/execution_gate.py status
+```
+
+For each ready Task:
+
+```bash
+python scripts/execution_gate.py begin-task TASK_001
+python scripts/context_guard.py EXECUTE/tasks/TASK_001.md
+```
+
+Then Manager invokes exactly one **fresh Builder100K**.
+
+## Task success
+
+Builder writes:
 
 ```text
-TASK_001 -> Builder100K -> STOP
-TASK_002 -> new Builder100K -> STOP
-TASK_003 -> new Builder100K -> STOP
+EXECUTE/execution/evidence/TASK_001.md
 ```
 
-No chat transcript is the execution state.
+Manager checks evidence, then:
 
-## 8.1 Normal Task success
-
-Builder runs Task acceptance criteria and writes:
-
-```text
-EXECUTE/execution/evidence/TASK_NNN.md
+```bash
+python scripts/execution_gate.py complete-task TASK_001 \
+  --evidence EXECUTE/execution/evidence/TASK_001.md
 ```
 
-A normal Task becomes:
+Only Python records PASS.
 
-```text
-PASS
+## Local repair budget
+
+After failed verification, Builder must obtain one repair authorization per code-repair attempt:
+
+```bash
+python scripts/execution_gate.py authorize-repair TASK_001
 ```
 
-## 8.2 Bounded local repair
+The machine counter enforces the Task's repair limit. A denied repair token is a hard stop.
 
-Builder may perform at most the Task-defined local repair budget, default:
+## Ordinary dispatch is one-time
 
-```yaml
-max_evidence_driven_repair_attempts: 2
-```
-
-This is only for bounded repairs inside the approved Task authority.
-
-Builder is not an open-ended project recovery agent.
+An approved Task may be ordinarily dispatched only once. Recovery uses the separate Recovery contract rather than spawning repeated ordinary Builders for the same Task.
 
 ---
 
-# 9. When a local Builder gets stuck
+# 9. Manager context circuit breaker
 
-This is a major v4.2.1 workflow.
+Even though Builders are fresh, a Manager chat can accumulate context across many Tasks.
 
-If Task verification still fails after bounded local repair:
+Default policy:
 
 ```text
-TASK_017
-   ↓
-Builder BLOCKED
-   ↓
-Manager creates ISSUE_0042
-   ↓
-Local execution pauses
+manager_max_task_dispatches_per_batch = 10
 ```
 
-The Manager must persist a state equivalent to:
+When the batch is exhausted, `begin-task` returns:
 
-```yaml
-execution_status: PAUSED_FOR_EXTERNAL_REPAIR
-active_task: TASK_017
-active_issue: ISSUE_0042
-
-recovery:
-  status: REQUIRED
-  owner: CODEX_OR_EXTERNAL_AGENT
-  resume_authorized: false
+```text
+MANAGER_CONTEXT_RESET_REQUIRED
 ```
 
-The Manager must then STOP.
+Manager must STOP.
 
-It must not dispatch `TASK_018`.
+User then ends the old Manager conversation, manually runs:
+
+```bash
+python scripts/reset_manager_batch.py
+```
+
+and starts a **fresh** ProjectManager500K conversation.
+
+This is not a new implementation approval. It is a token/context circuit breaker.
+
+Policy is stored in:
+
+```text
+EXECUTE/control/STATE.json -> runtime_policy
+```
 
 ---
 
-# 10. Issue artifact: what failed
+# 10. Bounded tool output
 
-Created under:
-
-```text
-EXECUTE/issues/ISSUE_NNNN.md
-```
-
-The Issue is a forensic handoff package. It should contain:
-
-- origin Task/Execution;
-- expected behavior;
-- observed behavior;
-- exact reproduction;
-- failure signature;
-- evidence pointers;
-- relevant files/symbols/tests;
-- attempts already made;
-- approaches ruled out;
-- affected/unaffected scope;
-- safe repository baseline;
-- recovery control state.
-
-Large raw logs stay in:
-
-```text
-EXECUTE/execution/evidence/**
-```
-
-The Issue points to them.
-
-The Issue does **not** decide the authoritative root cause.
-
----
-
-# 11. How to invoke Codex / an External Agent for recovery
+Large build/test/compiler logs can consume context even when file input is well controlled.
 
 Use:
 
-```text
-EXECUTE/codex/ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md
+```bash
+python scripts/safe_exec.py --label TASK_001_TEST -- pytest -vv
 ```
 
-A short invocation is enough:
+Full output is persisted under:
 
 ```text
-Use EXECUTE/codex/ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md
-and recover the currently active blocked Issue.
-Diagnose and repair the repository until the blocked Task passes
-its original acceptance criteria. Persist all required Diagnosis,
-Resolution Knowledge, verification, and recovery state artifacts.
-Do not authorize Local Manager resume unless recovery verification fully passes.
+EXECUTE/execution/logs/TASK_001_TEST.log
 ```
 
-Because disk state stores the active Issue/Task, you do not need to manually reconstruct the incident from chat history.
+The agent receives only a bounded head/tail summary plus exit code and log path.
 
-The same prompt contract may be used by:
-
-- Codex;
-- another external coding agent;
-- a human-guided technical agent.
-
-The resolver identity is less important than the durable output contract.
+Agents should load the full log only when evidence justifies it.
 
 ---
 
-# 12. Diagnosis: why it failed
+# 11. Step 4 — Execution incident
 
-Recovery creates:
+If Builder cannot complete after the machine-counted local repair budget, Manager calls:
+
+```bash
+python scripts/execution_gate.py fail-task TASK_017 \
+  --evidence EXECUTE/execution/evidence/TASK_017.md \
+  --reason "verified failure summary"
+```
+
+Python:
+
+- marks runtime Task BLOCKED;
+- allocates `ISSUE_NNNN`;
+- sets execution `PAUSED_FOR_DIAGNOSIS`;
+- blocks all normal dispatch;
+- routes to Codex Diagnosis.
+
+Manager then STOPs.
+
+---
+
+# 12. Step 5 — Diagnosis only
+
+**Tool:** Codex
+
+Run:
+
+```text
+EXECUTE/codex/ISSUE_DIAGNOSIS_PROMPT.md
+```
+
+Diagnosis may reproduce, inspect, analyze and propose. It **must not repair production code**.
+
+Create immutable:
 
 ```text
 EXECUTE/diagnostics/Diagnosis_Vx.md
 ```
 
-and updates:
+Then register:
 
-```text
-EXECUTE/diagnostics/DIAGNOSIS_STATUS.md
+```bash
+python scripts/diagnosis_gate.py \
+  --issue ISSUE_NNNN \
+  --diagnosis EXECUTE/diagnostics/Diagnosis_Vx.md \
+  --classification IMPLEMENTATION_DEFECT
 ```
 
-Codex/external recovery classifies exactly one primary root cause:
+Classifications:
 
 ```text
 IMPLEMENTATION_DEFECT
@@ -587,260 +507,112 @@ EXTERNAL_BLOCKER
 UNKNOWN
 ```
 
-## 12.1 IMPLEMENTATION_DEFECT
-
-Approved scope/plan/task intent is sound; implementation is wrong.
-
-Codex/external resolver may repair the repository directly while preserving approved contracts.
-
-## 12.2 TASK_DEFECT
-
-The compiled Task is defective/incomplete, but higher-level technical intent remains sound.
-
-Codex revises/recompiles the affected Task set. Material plan change escalates to `PLAN_DEFECT`.
-
-## 12.3 PLAN_DEFECT
-
-The approved implementation strategy is materially wrong.
-
-Return to:
-
-```text
-EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
-```
-
-Create a new Planning Vx and obtain explicit implementation approval again.
-
-## 12.4 EVALUATION_DEFECT
-
-Used mainly for False Evaluation cases. The evaluator made an invalid/unsupported finding.
-
-Do not modify correct production code just to satisfy the false finding.
-
-## 12.5 SCOPE_AMBIGUITY
-
-Technical investigation proves that a real user/product decision is missing.
-
-Only this class normally returns to ChatGPT/User scope clarification.
-
-## 12.6 EXTERNAL_BLOCKER
-
-Credential, service, permission, external dependency, production action, or other outside condition blocks progress.
-
-## 12.7 UNKNOWN
-
-Not enough evidence for a safe correction. Remain blocked.
+The old combined `ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md` is deliberately deprecated and hard-stops.
 
 ---
 
-# 13. External repair authority
+# 13. Step 6 — Human Recovery approval
 
-The ordinary Builder is intentionally narrow.
-
-The external recovery agent may need to modify broader repository scope if the confirmed root cause crosses components.
-
-That broader authority is allowed only when:
-
-- Diagnosis confirms it is necessary;
-- approved product scope remains unchanged;
-- approved public/data/security contracts remain intact;
-- the expanded change is documented;
-- recovery verification covers the impact.
-
-This allows a blocked Task to be repaired correctly without pretending that every cross-component defect fits inside the original Builder WRITE list.
-
----
-
-# 14. Recovery verification
-
-A repair is not complete because an error disappears.
-
-For a local execution Issue, recovery must verify as applicable:
-
-1. original failure no longer reproduces;
-2. every applicable original Task acceptance criterion passes;
-3. targeted regression checks pass;
-4. affected integration/build/runtime/static checks pass;
-5. approved invariants/contracts remain intact.
-
-Allowed recovery result:
-
-```text
-RECOVERY_PASS
-RECOVERY_FAIL
-```
-
-Partial success never unlocks execution.
-
----
-
-# 15. PASS_RECOVERED
-
-After successful external recovery the original blocked Task becomes:
-
-```yaml
-status: PASS_RECOVERED
-
-recovery:
-  issue: ISSUE_0042
-  diagnosis: Diagnosis_V3
-  resolution: RESOLUTION_0042
-  resolver: CODEX_OR_EXTERNAL_AGENT
-```
-
-`PASS_RECOVERED` is intentionally different from ordinary `PASS`.
-
-It tells final Evaluation:
-
-> This area previously caused a material execution incident. Inspect its Issue/Diagnosis/Resolution and perform targeted regression verification.
-
----
-
-# 16. Resolution Knowledge: how it was fixed
-
-Every successfully resolved material execution Issue must create:
-
-```text
-EXECUTE/knowledge/resolutions/RESOLUTION_NNNN.md
-```
-
-The Resolution stores reusable engineering knowledge:
-
-- symptoms;
-- confirmed root cause;
-- trigger conditions;
-- incorrect assumptions;
-- correct solution;
-- files/components changed;
-- verification;
-- failed/rejected approaches;
-- do-not-repeat/prevention rules;
-- regression protection;
-- future detection signals;
-- applicability/tags;
-- confidence.
-
-Then update:
-
-```text
-EXECUTE/knowledge/KNOWLEDGE_INDEX.md
-```
-
-The durable chain is:
-
-```text
-ISSUE_NNNN
-= what failed
-
-Diagnosis_Vx
-= why it failed / who owns correction
-
-RESOLUTION_NNNN
-= how it was correctly fixed and verified
-
-KNOWLEDGE_INDEX
-= what future agents should reuse
-```
-
----
-
-# 17. Safe resume after external recovery
-
-Successful recovery must set disk state equivalent to:
-
-```yaml
-execution_status: READY_TO_RESUME
-active_issue: none
-last_resolved_issue: ISSUE_0042
-
-recovery:
-  status: VERIFIED
-  diagnosis: Diagnosis_V3
-  resolution: RESOLUTION_0042
-  verification: PASS
-  resume_authorized: true
-  recovery_baseline: <verified baseline>
-  next_task: TASK_018
-```
-
-Before Manager continues, run:
+For confirmed `IMPLEMENTATION_DEFECT`, user manually runs:
 
 ```bash
-python scripts/recovery_gate.py
+python scripts/approve_recovery.py
 ```
 
-The gate checks that:
+Approval binds to the immutable Diagnosis digest and active Issue.
 
-- execution is `READY_TO_RESUME`;
-- resume is authorized in disk state;
-- resolved Issue exists and is `RESOLVED`;
-- original Task is `PASS_RECOVERED`;
-- Diagnosis reference exists;
-- Resolution reference exists;
-- recovery verification passed;
-- recovery baseline exists.
+Only then may Codex run:
 
-If the gate fails, local execution remains stopped.
+```text
+EXECUTE/codex/RECOVERY_PROMPT.md
+```
 
-The Manager must never resume merely because a user/agent says “fixed”.
+Recovery performs the minimum complete root-cause repair and durable Resolution knowledge.
+
+When verified:
+
+```bash
+python scripts/recovery_gate.py \
+  --issue ISSUE_NNNN \
+  --resolution EXECUTE/knowledge/resolutions/RESOLUTION_NNNN.md \
+  --baseline "<verified baseline>" \
+  --verification RECOVERY_PASS
+```
+
+Recovery verification **does not** set `resume_authorized: true`.
+
+For an execution-origin issue, user manually runs:
+
+```bash
+python scripts/resume_execution.py
+```
+
+then starts a fresh Manager conversation.
+
+For an evaluation-origin issue, successful Recovery returns to `AWAITING_EVALUATION_AUTHORIZATION`; it does not resume local Task execution.
 
 ---
 
-# 18. Execution continues after recovery
+# 14. TASK_DEFECT / PLAN_DEFECT
 
-Once `recovery_gate.py` passes:
+A defect in an approved Task/Plan cannot be silently patched into the approved package.
 
-```text
-ISSUE_0042 RESOLVED
-       ↓
-TASK_017 PASS_RECOVERED
-       ↓
-READY_TO_RESUME
-       ↓
-ProjectManager500K rereads disk state
-       ↓
-TASK_018
+Diagnosis routes to replan. Run:
+
+```bash
+python scripts/start_replan.py
 ```
 
-This makes agent restarts safe. The original Builder can disappear completely; the next Manager session can reconstruct state from disk.
+This:
+
+- archives/supersedes old approval/execution authority;
+- creates a new `Planning_Vx` inside the same open Cycle;
+- returns to Codex Planning;
+- requires a brand-new `approve_plan.py` after the new package reaches PLAN_READY.
+
+Any approved package mutation therefore invalidates old execution authority by design.
 
 ---
 
-# 19. Step 5 — Independent Evaluation
+# 15. Step 7 — Execution complete
 
-When all approved Tasks are `PASS` or `PASS_RECOVERED`, Manager writes:
+When all approved Tasks are machine-state `PASS` or `PASS_RECOVERED`, Manager updates the Execution Summary and runs:
 
-```text
-EXECUTE/execution/EXECUTION_SUMMARY.md
+```bash
+python scripts/execution_gate.py finalize-execution
 ```
 
-and transitions to Evaluation.
+Result:
 
-Then use Codex with:
+```text
+execution_status: AWAITING_EVALUATION
+cycle: EXECUTION_COMPLETE
+HARD STOP
+```
+
+Manager cannot start Evaluation.
+
+---
+
+# 16. Step 8 — Human Evaluation authorization
+
+User manually runs:
+
+```bash
+python scripts/start_evaluation.py
+```
+
+One authorization creates exactly one Evaluation version/attempt.
+
+Then run Codex with:
 
 ```text
 EXECUTE/codex/EVALUATION_PROMPT.md
 ```
 
-Evaluation is independent and read-only with respect to production implementation.
+Evaluation is read-only with respect to production code and approved Planning artifacts.
 
-It must inspect:
-
-- approved Research/Plan/Tasks;
-- source/tests;
-- execution evidence;
-- recovered Tasks;
-- Issues;
-- Diagnoses;
-- relevant Resolution knowledge.
-
-Recovered Tasks are mandatory high-attention regression areas.
-
----
-
-# 20. Evaluation results in v4.2.1
-
-The evaluator chooses exactly one:
+Allowed results:
 
 ```text
 PASS
@@ -848,553 +620,149 @@ PASS_WITH_FINDINGS
 DIAGNOSIS_REQUIRED
 ```
 
-v4.2.1 intentionally removes the old direct evaluator routing such as:
+Evaluation creates the authorized report and, for PASS/PASS_WITH_FINDINGS, a detailed Project Completion Report.
 
-```text
-Evaluation -> ChatGPT Research
+Then it calls the **machine** finalizer:
+
+```bash
+python scripts/finalize_evaluation.py \
+  --evaluation Evaluation_Vx \
+  --completion-report EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md
 ```
 
-A blocking finding is not assumed to prove what is wrong.
+## PASS
 
-It first goes to Diagnosis.
+The finalizer closes the Cycle:
+
+```text
+CLOSED_VALIDATED
+AWAITING_NEW_SCOPE
+```
+
+The approval is recorded as consumed historical authority.
+
+## DIAGNOSIS_REQUIRED
+
+The finalizer creates an Evaluation-origin Issue and hard-stops to Diagnosis. There is no automatic repair or automatic re-evaluation chain.
+
+After any correction, every new Evaluation attempt again requires the user to run `start_evaluation.py`.
 
 ---
 
-# 21. Blocking Evaluation finding
+# 17. Next version / post-validation debug
 
-Example:
+After Cycle N passes Evaluation, do **not** modify/reopen its Planning/Execution history.
+
+Bring the new external scope into the repo, then:
+
+```bash
+python scripts/start_cycle.py \
+  --scope Research_V2 \
+  --title "Next version"
+```
+
+or for a bug discovered after validation:
+
+```bash
+python scripts/start_cycle.py \
+  --scope docs/post_validation_bug_scope.md \
+  --title "Post-validation defect fix"
+```
+
+The new Cycle begins with:
 
 ```text
-Evaluation_V1
-     ↓
-EVAL-004 blocking
-     ↓
-DIAGNOSIS_REQUIRED
-     ↓
-Codex Diagnosis
+approval = none
+execution = none
+planning = new Planning_Vx
 ```
+
+No approval or execution authority carries forward.
+
+This distinction is critical:
+
+```text
+Evaluation has not passed yet -> stay in same Cycle through Diagnosis/Recovery/Replan/Re-evaluate
+Evaluation already passed      -> new scope/debug = new Cycle
+```
+
+---
+
+# 18. Package integrity model
+
+At `PLAN_READY`, Python computes a candidate manifest from:
+
+```text
+EXECUTE/compiled/**
+EXECUTE/plan/IMPLEMENTATION_PLAN.md
+EXECUTE/tasks/TASK_INDEX.md
+all generated EXECUTE/tasks/TASK_NNN.md
+```
+
+At approval, the exact manifest is stored under `EXECUTE/control/manifests/` and bound to the approval record.
+
+Package integrity is checked before Task execution, recovery verification, resume and evaluation.
+
+Task contracts therefore must not contain mutable runtime fields.
+
+---
+
+# 19. Durable learning
+
+Material execution/evaluation implementation defects preserve:
+
+```text
+ISSUE
+  -> Diagnosis
+  -> human Recovery approval
+  -> verified Resolution
+  -> Knowledge Index
+```
+
+History is evidence for future Planning/Evaluation, not permission to bypass current-cycle gates.
+
+---
+
+# 20. Validation and regression tests
 
 Run:
 
-```text
-EXECUTE/codex/ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md
+```bash
+python scripts/validate_v4.py
+python -m unittest discover -s test/regression -p 'test_*.py'
 ```
 
-in Evaluation-finding mode.
-
-Diagnosis can determine:
+A clean template should report:
 
 ```text
-IMPLEMENTATION_DEFECT -> repair -> re-evaluate
-TASK_DEFECT           -> task revision/execution -> re-evaluate
-PLAN_DEFECT           -> Planning Vx+1 -> user approval -> execution -> re-evaluate
-EVALUATION_DEFECT     -> Evaluation Review -> re-evaluate
-SCOPE_AMBIGUITY       -> ChatGPT/User clarification -> replan -> execute -> re-evaluate
-EXTERNAL_BLOCKER      -> external action
-UNKNOWN               -> remain blocked / investigate
+TEMPLATE_VALID: PASS (v4.3.0)
 ```
+
+`validate_v4.py` checks structural v4.3 invariants, state schema, required scripts/prompts, human TTY gate markers, generated Task contract rules, package-integrity infrastructure and deprecated combined-recovery protection.
+
+Regression tests exercise the machine state/package/gate helpers in isolated temporary copies rather than consuming the live project state.
 
 ---
 
-# 22. False Evaluation handling
-
-This is a first-class v4.2.1 case.
-
-Suppose Evaluation says:
+# 21. Core v4.3 rules
 
 ```text
-FAIL: API must return field X
+LLM MAY PRODUCE WORK.
+LLM MAY PRODUCE EVIDENCE.
+LLM MAY NOT GRANT ITSELF AUTHORITY.
+
+CHAT != APPROVAL.
+
+NO VALID PACKAGE DIGEST -> NO EXECUTION.
+NO EXECUTION GATE -> NO BUILDER.
+NO REPAIR TOKEN -> NO LOCAL REPAIR.
+NO RECOVERY APPROVAL -> NO BROAD RECOVERY.
+NO RESUME APPROVAL -> NO CONTINUATION AFTER EXECUTION INCIDENT.
+NO EVALUATION AUTHORIZATION -> NO EVALUATION.
+
+CLOSED CYCLE -> IMMUTABLE HISTORY.
+NEW EXTERNAL SCOPE -> NEW CYCLE.
+NO APPROVAL CROSSES A CYCLE BOUNDARY.
 ```
 
-but Diagnosis proves field X was never part of approved scope/Task/contract.
-
-Classification:
-
-```text
-EVALUATION_DEFECT
-```
-
-Required behavior:
-
-1. preserve the original `Evaluation_V1.md`;
-2. create `Evaluation_Review_Vx.md`;
-3. identify the invalid finding and authoritative evidence;
-4. do not change correct production code;
-5. run a new immutable Evaluation version.
-
-This keeps evaluator mistakes separate from implementation defects.
-
----
-
-# 23. True scope ambiguity during recovery
-
-ChatGPT does not receive raw logs/errors by default.
-
-Codex must first prove that the technical problem cannot be resolved without a product decision.
-
-Then create:
-
-```text
-EXECUTE/scope/SCOPE_CLARIFICATION_REQUIRED_Vx.md
-```
-
-Example question:
-
-```text
-Does offline mode require write operations?
-
-A. Read-only offline
-B. Full offline editing
-```
-
-Codex includes why the choice changes architecture/behavior.
-
-Then use ChatGPT Project with:
-
-```text
-EXECUTE/chatgpt/PROCESS_SCOPE_CLARIFICATION_PROMPT.md
-```
-
-ChatGPT/User resolves the product scope, updates Research if necessary, then returns the clarified scope to Codex.
-
----
-
-# 24. Evaluation PASS requires a Full Completion Report
-
-A passing Evaluation is not finished with a short validation summary.
-
-For:
-
-```text
-PASS
-PASS_WITH_FINDINGS
-```
-
-Codex must create:
-
-```text
-EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md
-```
-
-using:
-
-```text
-EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_TEMPLATE.md
-```
-
-The Completion Report is the verified **post-implementation truth package**.
-
-It should explain the actual final system in enough detail for future ChatGPT scope research to understand the current baseline without reconstructing implementation from old chat sessions.
-
-Required content includes:
-
-- original scope/goals;
-- delivered capabilities;
-- actual workflows;
-- final architecture;
-- repository/implementation map;
-- interfaces/contracts;
-- data/persistence model;
-- dependencies/runtime environment;
-- major technical decisions;
-- differences from the approved plan;
-- material execution/recovery history;
-- verification summary;
-- known limitations;
-- technical debt;
-- known risks;
-- critical invariants;
-- extension points;
-- non-blocking findings;
-- verified final baseline;
-- context needed for future-version research.
-
-Codex transfers facts, not product recommendations.
-
-It should not decide which feature the user should build next.
-
----
-
-# 25. Step 7 — New feature/version Research
-
-When the user wants the next feature/version, create/continue a ChatGPT Project session and use:
-
-```text
-EXECUTE/chatgpt/START_NEXT_VERSION_PROMPT.md
-```
-
-Primary baseline input:
-
-```text
-latest EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md
-```
-
-Then add the user's new intent.
-
-ChatGPT should understand:
-
-```text
-what already exists
-+ how the completed system behaves
-+ critical invariants
-+ limitations/debt/risks
-+ extension boundaries
-+ user's new desired scope
-```
-
-and create the next `Research_Vx`.
-
-Then Codex performs new technical research/planning.
-
-This closes the evolution loop:
-
-```text
-Completion Report V1
-       ↓
-ChatGPT Research V2
-       ↓
-Codex Planning V2
-       ↓
-Execution V2
-       ↓
-Recovery if needed
-       ↓
-Evaluation V2
-       ↓
-Completion Report V2
-```
-
----
-
-# 26. Two kinds of durable project memory
-
-v4.2.1 deliberately separates **execution memory** from **engineering knowledge**.
-
-## Execution memory
-
-Stored mainly in:
-
-```text
-EXECUTE/PROJECT_STATUS.md
-EXECUTE/execution/EXECUTION_STATE.md
-EXECUTE/issues/**
-```
-
-Answers:
-
-- where is execution now?
-- which Task is blocked?
-- which Issue is active?
-- who owns recovery?
-- may the Manager resume?
-- what is the next Task?
-
-## Engineering knowledge
-
-Stored mainly in:
-
-```text
-EXECUTE/diagnostics/**
-EXECUTE/knowledge/**
-```
-
-Answers:
-
-- why did the problem happen?
-- what correctly fixed it?
-- what approaches failed?
-- what should future agents avoid/reuse?
-- what regression checks should be preserved?
-
-Do not mix these purposes.
-
----
-
-# 27. Knowledge base consumption
-
-A knowledge base that is never consumed is just an archive.
-
-v4.2.1 explicitly requires reuse.
-
-## Codex Planning
-
-Before finalizing future plans:
-
-```text
-KNOWLEDGE_INDEX
-   ↓
-identify relevant past resolution
-   ↓
-read only matching RESOLUTION_NNNN
-   ↓
-compile guardrail/test/invariant into new plan/tasks
-```
-
-## Local Manager
-
-Before dispatching a Task touching a known risk area, surface only relevant verified resolution guidance.
-
-## Codex Evaluation
-
-Recovered Tasks and relevant prior resolutions drive targeted regression checks.
-
----
-
-# 28. Status routing table
-
-| Current disk state | Owner / next tool | Required action |
-|---|---|---|
-| Research input required | ChatGPT Project | `START_RESEARCH_PROMPT.md` |
-| Planning / technical preparation | Codex | `IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md` |
-| Awaiting user feedback | User + Codex | answer/revise inside same Planning Vx |
-| Awaiting implementation approval | User | explicitly authorize, then `approve_plan.py` |
-| Execution READY / IN_PROGRESS | ProjectManager500K | `EXECUTE_PROJECT_PROMPT.md` |
-| Builder blocked | ProjectManager500K | create Issue, persist hard pause, STOP |
-| `PAUSED_FOR_EXTERNAL_REPAIR` | Codex / external recovery agent | `ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md` |
-| `READY_TO_RESUME` | ProjectManager500K | run `recovery_gate.py`, then resume |
-| Execution complete | Codex | `EVALUATION_PROMPT.md` |
-| Evaluation `DIAGNOSIS_REQUIRED` | Codex | Diagnosis/Recovery prompt in evaluation mode |
-| Diagnosis `PLAN_DEFECT` | Codex | new Planning Vx + new user approval |
-| Diagnosis `EVALUATION_DEFECT` | Codex | Evaluation Review + new Evaluation |
-| Diagnosis `SCOPE_AMBIGUITY` | ChatGPT/User after Codex handoff | `PROCESS_SCOPE_CLARIFICATION_PROMPT.md` |
-| Evaluation PASS/PASS_WITH_FINDINGS | Codex | full Completion Report |
-| Validated version + new feature request | ChatGPT Project | `START_NEXT_VERSION_PROMPT.md` |
-
----
-
-# 29. Key artifacts and their meanings
-
-```text
-Research_Vx
-= what the product/version should accomplish
-
-Planning_Vx
-= how Codex intends to implement that scope
-
-TASK_NNN
-= one bounded local implementation contract
-
-Execution Evidence
-= what Builder actually did/tested
-
-ISSUE_NNNN
-= what failed and where the evidence is
-
-Diagnosis_Vx
-= why it failed and which authority owns the correction
-
-RESOLUTION_NNNN
-= how it was correctly fixed and verified
-
-Resolution KNOWLEDGE_INDEX
-= reusable lessons future agents should consider
-
-Evaluation_Vx
-= independent validation findings
-
-Evaluation_Review_Vx
-= correction of a false/defective evaluation finding
-
-PROJECT_COMPLETION_REPORT_Vx
-= full verified post-implementation system baseline for future scope evolution
-
-SCOPE_CLARIFICATION_REQUIRED_Vx
-= rare Codex handoff proving a genuine product decision is missing
-```
-
----
-
-# 30. Directory map
-
-```text
-project_template-v4.2.1/
-│
-├── .github/
-│   ├── agents/
-│   │   ├── project-manager.agent.md
-│   │   └── builder100k.agent.md
-│   └── skills/
-│       └── builder-task-execution/
-│           └── SKILL.md
-│
-├── EXECUTE/
-│   ├── chatgpt/
-│   │   ├── PROJECT_INSTRUCTIONS.txt
-│   │   ├── MASTER_RESEARCH_PROMPT.md
-│   │   ├── START_RESEARCH_PROMPT.md
-│   │   ├── START_NEXT_VERSION_PROMPT.md
-│   │   └── PROCESS_SCOPE_CLARIFICATION_PROMPT.md
-│   │
-│   ├── codex/
-│   │   ├── IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
-│   │   ├── PLANNING_AND_COMPILATION_PROMPT.md
-│   │   ├── ISSUE_DIAGNOSIS_AND_RECOVERY_PROMPT.md
-│   │   └── EVALUATION_PROMPT.md
-│   │
-│   ├── compiled/
-│   ├── plan/
-│   ├── tasks/
-│   │
-│   ├── execution/
-│   │   ├── EXECUTION_STATE.md
-│   │   ├── EXECUTION_SUMMARY.md
-│   │   └── evidence/
-│   │
-│   ├── issues/
-│   │   ├── ISSUE_INDEX.md
-│   │   └── ISSUE_TEMPLATE.md
-│   │
-│   ├── diagnostics/
-│   │   ├── DIAGNOSIS_STATUS.md
-│   │   └── DIAGNOSIS_TEMPLATE.md
-│   │
-│   ├── knowledge/
-│   │   ├── KNOWLEDGE_INDEX.md
-│   │   ├── resolutions/
-│   │   │   └── RESOLUTION_TEMPLATE.md
-│   │   ├── patterns/
-│   │   └── decisions/
-│   │
-│   ├── evaluation/
-│   │   ├── EVALUATION_STATUS.md
-│   │   ├── EVALUATION_REPORT_TEMPLATE.md
-│   │   ├── EVALUATION_REVIEW_TEMPLATE.md
-│   │   └── PROJECT_COMPLETION_REPORT_TEMPLATE.md
-│   │
-│   ├── scope/
-│   │   └── SCOPE_CLARIFICATION_REQUIRED_TEMPLATE.md
-│   │
-│   ├── reference/
-│   │   └── KNOWLEDGE_INDEX.md
-│   │
-│   ├── research/
-│   ├── docs/raw/
-│   ├── history/
-│   │   ├── planning/
-│   │   ├── evaluation/
-│   │   ├── diagnostics/
-│   │   ├── recovery/
-│   │   └── completion/
-│   │
-│   ├── PROJECT_STATUS.md
-│   ├── PROJECT_CONFIG.md
-│   ├── MODEL_CONFIG.ini
-│   └── MODEL_BINDINGS.json
-│
-├── scripts/
-│   ├── configure_models.py
-│   ├── validate_v4.py
-│   ├── approve_plan.py
-│   ├── context_guard.py
-│   └── recovery_gate.py
-│
-├── EXECUTE_PROJECT_PROMPT.md
-├── README.md
-├── CHANGELOG.md
-└── VERSION
-```
-
----
-
-# 31. Why there are two Knowledge Index files
-
-They intentionally represent different knowledge layers.
-
-## `EXECUTE/reference/KNOWLEDGE_INDEX.md`
-
-Codex-prepared knowledge for the current Planning package:
-
-- scope facts;
-- repository facts;
-- architecture facts;
-- user decisions;
-- technical constraints.
-
-## `EXECUTE/knowledge/KNOWLEDGE_INDEX.md`
-
-Verified incident/recovery learning:
-
-- known failure patterns;
-- root causes;
-- proven resolutions;
-- do-not-repeat guidance;
-- regression protection.
-
-Do not merge them casually. One describes the planned/current system knowledge; the other records validated lessons from real failures.
-
----
-
-# 32. Core safety/consistency invariants
-
-1. **No approved plan, no local implementation.**
-2. **No unresolved material unknowns before approval request.**
-3. **One Task = one fresh Builder invocation.**
-4. **Builder is bounded; open-ended repair belongs to external Recovery.**
-5. **Task failure beyond repair budget creates a durable Issue and pauses execution.**
-6. **No future Task while an Issue is active.**
-7. **No resume without durable recovery verification.**
-8. **Recovered Task remains visibly `PASS_RECOVERED`.**
-9. **Every material successful recovery creates Resolution knowledge.**
-10. **Technical failures go to Codex Diagnosis before any scope escalation.**
-11. **False Evaluation is repaired as evaluation history, not by corrupting correct code.**
-12. **Only true scope ambiguity returns to ChatGPT/User.**
-13. **Evaluation is independent and read-only.**
-14. **Evaluation PASS requires a Full Completion Report.**
-15. **Future feature/version Research starts from the verified Completion Report, not old chat memory.**
-
----
-
-# 33. Migration from v4.1.3
-
-The conceptual changes are material enough that v4.2.1 should be treated as a new workflow version, not a small prompt patch.
-
-Important differences:
-
-```text
-v4.1.3
-Evaluation/Issue could route directly toward ChatGPT Research
-
-v4.2.1
-Issue/Evaluation blocking finding -> Codex Diagnosis first
-```
-
-```text
-v4.1.3
-Local Builder failure could stop without a complete standardized recovery/resume contract
-
-v4.2.1
-mandatory Issue -> Diagnosis -> Resolution -> Recovery Verification -> READY_TO_RESUME
-```
-
-```text
-v4.1.3
-PASS primarily produced Evaluation output
-
-v4.2.1
-PASS also requires a full post-implementation Project Completion Report for future ChatGPT scope evolution
-```
-
-```text
-v4.1.3
-project knowledge mainly came from Research/Planning
-
-v4.2.1
-verified execution failures become a durable reusable Resolution Knowledge Base
-```
-
----
-
-# 34. Recommended operating habit
-
-At any moment, ask only:
-
-```text
-What does disk state say is the current lifecycle stage?
-Who owns that stage?
-Which exact prompt/agent is authorized now?
-What artifact must be produced before the next stage unlocks?
-```
-
-Do not reconstruct workflow state from memory.
-
-That discipline is what makes v4.2.1 restartable across ChatGPT sessions, Codex sessions, VS Code agent sessions, external recovery agents, and human intervention.
+These rules are the architectural center of Project Template v4.3.0.

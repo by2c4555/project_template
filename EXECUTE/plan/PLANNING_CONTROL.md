@@ -1,127 +1,50 @@
-# Planning Interaction & Cost-Control Contract — v4.2.1
+# Planning & Approval Control Contract — v4.3.0
 
-This file defines machine-checkable safety rules for external technical planning agents such as Codex, Claude, or another compatible high-capability agent.
+`EXECUTE/control/STATE.json` is authoritative. Markdown status files are generated views.
 
-The planning agent is powerful but is **not** the authority to cross a human interaction boundary. Reaching a human gate and stopping is a successful completion of the current invocation.
+## Core invariants
 
-## Core Invariants
+1. **Chat is feedback, never implementation authority.**
+2. **No material decision -> no speculative Task/package expansion.**
+3. `AWAITING_MATERIAL_FEEDBACK` and `PLAN_READY` are terminal states for the current Codex invocation.
+4. The planning agent may call machine planning gates, but may never call human approval gates.
+5. `approve_plan.py` is interactive-TTY only and binds approval to the exact Cycle, Planning revision, Task count, manifest, and SHA-256 package digest.
+6. Task contracts are immutable after approval. Runtime Task state is stored only in `STATE.json`.
+7. Any approved-package mutation blocks every later Task dispatch until a new Planning package is approved.
+8. Closed validated cycles are immutable; new external scope starts a new cycle with no inherited execution authority.
 
-1. **No user decision -> no speculative task expansion.**
-2. If `material_unknowns` is unknown or greater than zero, current-Planning execution-package expansion is locked.
-3. `AWAITING_USER_FEEDBACK` is a terminal state for the current agent invocation.
-4. `AWAITING_USER_APPROVAL` is a terminal state for the current agent invocation.
-5. A plan review response is not implementation approval.
-6. The planning agent must never execute `scripts/approve_plan.py` itself.
-7. Only the user/operator may run the approval command after explicitly authorizing implementation.
-8. Local Manager/Builder execution remains locked until the approval script records the exact Planning-to-Execution binding.
+## Planning flow
 
-## Planning Interaction States
-
-### `IN_PROGRESS`
-
-The agent may inspect/research/revise. Expensive package expansion is still forbidden unless all of these are true:
-
-```yaml
-material_unknowns: 0
-interaction_gate: NONE
-invocation_stop_required: false
-task_expansion_allowed: true
+```text
+IN_PROGRESS
+  ├─ material unknowns > 0 -> AWAITING_MATERIAL_FEEDBACK -> STOP
+  │                           user chat -> resume/revise
+  └─ material unknowns = 0 -> authorize-expansion
+                              -> compile Plan/Tasks/compiled context
+                              -> mark-plan-ready
+                              -> PLAN_READY -> STOP
+                                    ├─ chat feedback -> resume/revise
+                                    └─ human runs approve_plan.py -> APPROVED
 ```
 
-`task_expansion_allowed: true` must be established through `scripts/planning_gate.py authorize-expansion`.
-
-### `AWAITING_USER_FEEDBACK`
-
-The current invocation must stop after persisting state and asking focused questions/review feedback.
-
-Two feedback reasons are supported:
-
-- `MATERIAL_DECISION` — one or more material unknowns remain. Current-Planning task/package expansion is forbidden.
-- `PLAN_REVIEW` — material unknowns are zero and a compiled draft package has been presented for user review. The current invocation still stops; implementation approval may not be inferred from silence or ordinary feedback.
-
-While this state is active:
-
-```yaml
-interaction_gate: USER_FEEDBACK_REQUIRED
-invocation_stop_required: true
-implementation_approval_requested: false
-```
-
-### `AWAITING_USER_APPROVAL`
-
-The plan review has been accepted and the exact execution-ready package is ready for explicit implementation authorization.
-
-Required shape:
-
-```yaml
-planning_status: AWAITING_USER_APPROVAL
-material_unknowns: 0
-feedback_reason: none
-plan_review_status: ACCEPTED
-package_status: READY_FOR_APPROVAL
-interaction_gate: USER_APPROVAL_REQUIRED
-invocation_stop_required: true
-task_expansion_allowed: true
-implementation_approval_requested: true
-execution_locked: true
-```
-
-The agent asks for implementation approval and **stops**. It must not execute the approval script.
-
-### `APPROVED`
-
-Only `scripts/approve_plan.py`, run by the user/operator with an explicit confirmation argument, may create this transition.
-
-## Expansion Lock
-
-Before creating or materially expanding any current-Planning execution package artifact, run:
+## Machine commands
 
 ```bash
-python scripts/planning_gate.py authorize-expansion --planning Planning_Vx --revision Revision_N
+python scripts/planning_gate.py status
+python scripts/planning_gate.py hold-material-feedback --unknowns N
+python scripts/planning_gate.py resume-feedback
+python scripts/planning_gate.py begin-revision --reason "..."
+python scripts/planning_gate.py set-material-zero
+python scripts/planning_gate.py authorize-expansion
+python scripts/planning_gate.py mark-plan-ready
 ```
 
-The command fails unless the active Planning state has zero material unknowns and no human interaction gate is active.
-
-Execution-package artifacts include:
-
-- `EXECUTE/compiled/**`
-- `EXECUTE/plan/IMPLEMENTATION_PLAN.md`
-- `EXECUTE/tasks/TASK_INDEX.md`
-- any `EXECUTE/tasks/TASK_NNN.md`
-
-Repository research notes, Planning revision records, questions, and status updates are not execution-package expansion.
-
-## Hard Stop Rule
-
-When the agent asks the user a question that is required before safely continuing, or asks the user to review/approve a plan:
-
-1. persist the appropriate status;
-2. ask only the necessary user-facing question/request;
-3. do not continue into a later phase;
-4. do not perform speculative work "while waiting";
-5. end the current invocation.
-
-A later invocation may resume only because a new user message supplies the requested feedback or authorization.
-
-## Cost-Control Rule
-
-The following are prohibited while material unknowns remain:
-
-- conditional implementation plans that attempt to cover every unresolved branch;
-- speculative architecture variants expanded into executable detail;
-- atomic Task generation;
-- exhaustive file-by-file implementation decomposition;
-- test matrices derived from unresolved product decisions;
-- broad context compilation whose content depends on unresolved decisions.
-
-Bounded alternatives may be presented only to help the user make the unresolved decision. They must remain concise and must not be expanded into execution Tasks.
-
-## Validation
-
-Run:
+## Human gate
 
 ```bash
-python scripts/validate_v4.py
+python scripts/approve_plan.py
 ```
 
-The validator checks planning-state invariants and rejects illegal current-Planning task/package artifacts where mechanically detectable.
+The approval script intentionally accepts no `--yes`, no static confirmation token, and no approval phrase from chat. It requires a live interactive terminal challenge.
+
+This is an accidental-flow/token-runaway barrier, not a security boundary against a malicious process with full control of the user's local machine.

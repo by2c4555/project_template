@@ -1,82 +1,92 @@
-# Project Configuration — v4.2.1
+# Project Configuration — v4.3.0
 
-## Canonical Lifecycle
+## Controlled boundary
 
-```text
-Research Vx
-  -> Codex Technical Preparation / Planning Vx
-  -> User Implementation Approval
-  -> Local Execution Vx
-       -> Issue? Codex/External Recovery -> Resume
-  -> Codex Evaluation Vx
-       -> blocking finding? Codex Diagnosis -> repair/replan/re-evaluate/scope clarification
-       -> PASS? Project Completion Report
-  -> ChatGPT next-version scope research or close
-```
-
-The compact philosophy is:
-
-> Research -> Plan -> Execute -> Recover -> Evaluate -> Learn -> Evolve
-
-## Intelligence Roles
-
-- **ChatGPT Project — Scope/Product Evolution:** WHAT, WHY, SCOPE, future feature/version Research, true product clarification.
-- **Codex / GPT-6 Astra — Technical Truth:** repository research, architecture, Planning, Task compilation, Diagnosis, Recovery, Replan, independent Evaluation, Completion Report.
-- **ProjectManager500K — Execution Control:** state-aware dispatch of approved Tasks; opens/records execution issues and pauses safely.
-- **Builder100K — Implementation:** one bounded approved Task per fresh invocation, including only bounded local repair attempts.
-- **External Recovery Agent — Optional:** may replace Codex for direct technical recovery if it obeys the same recovery artifact contract.
-- **User — Authority:** implementation approval and product/scope decisions.
-
-## Hard Authority Rules
-
-1. **Human planning gates are terminal invocation boundaries.** `AWAITING_USER_FEEDBACK` or `AWAITING_USER_APPROVAL` means the external planning agent stops immediately.
-2. **No user decision -> no Task expansion.** Material unknowns lock current-Planning execution-package expansion.
-3. Expansion requires `scripts/planning_gate.py authorize-expansion` to pass.
-4. Plan review and implementation approval are separate user interactions.
-5. Codex/external planning agents may not run `scripts/approve_plan.py`; only the user/operator may perform the approval transition.
-6. No approved Planning Vx -> no local execution.
-7. Planning review/feedback is not implementation approval.
-8. Codex resolves material technical unknowns before requesting approval.
-9. Execution is bound to one exact approved Planning Vx.
-10. Local agents may not silently change approved architecture/intent/scope.
-11. Builder failure beyond bounded repair -> mandatory Issue + hard execution pause.
-12. Normal technical failures route to Codex Diagnosis/Recovery, not ChatGPT.
-13. External repair may modify broader repository scope only when Diagnosis proves it is required and approved contracts are preserved.
-14. A recovered Task becomes `PASS_RECOVERED`, not ordinary PASS.
-15. No resume until recovery verification fully passes and `resume_authorized: true` is persisted.
-16. Every material resolved execution Issue must produce durable Resolution knowledge.
-17. Evaluation is read-only and may not silently fix production code.
-18. Blocking Evaluation findings route to Codex Diagnosis; Evaluation does not assume its own finding is infallible.
-19. `EVALUATION_DEFECT` must be handled by review + re-evaluation, not unnecessary code change.
-20. Only proven `SCOPE_AMBIGUITY` returns to User/ChatGPT scope clarification.
-21. Only Evaluation may validate the implementation iteration.
-22. PASS/PASS_WITH_FINDINGS requires a full `PROJECT_COMPLETION_REPORT_Vx.md`.
-23. Completion Report is the preferred verified baseline for ChatGPT next-version Research.
-24. Historical Research/Planning/Issue/Diagnosis/Resolution/Evaluation artifacts are immutable records; current aliases/state may advance.
-25. Disk artifacts are authoritative; chat memory is disposable.
-
-## Local Execution State Machine
-
-Primary states:
+v4.3 controls only work after external scope/research is manually handed into the VS Code repository. ChatGPT Web UI is outside this runtime and remains a manual scope/product layer.
 
 ```text
-LOCKED
-READY
-IN_PROGRESS
-ISSUE_DETECTED
-PAUSED_FOR_DIAGNOSIS
-PAUSED_FOR_EXTERNAL_REPAIR
-RECOVERY_VERIFICATION
-READY_TO_RESUME
-COMPLETE
-AWAITING_EVALUATION
+External scope / Research
+        │ manual handoff
+        ▼
+════════ v4.3 controlled boundary ════════
+Change Cycle -> Codex Planning -> Human Plan Approval
+             -> Manager/Builder Execution
+             -> Diagnosis -> Human Recovery Approval -> Recovery -> Human Resume
+             -> Human Evaluation Start -> Codex Evaluation -> Machine Finalize
+             -> CLOSED_VALIDATED
+═══════════════════════════════════════════
+        │ new external scope
+        ▼
+New Change Cycle (no inherited approval)
 ```
 
-Normal Builder dispatch is forbidden while execution is paused for recovery.
+## Authority model
 
-## Root-Cause Classifications
+- **External scope layer:** WHAT / WHY / product decisions / next-version or post-validation debug scope.
+- **Codex Planning:** repository research, HOW, architecture, immutable Plan/Task compilation; stops at PLAN_READY.
+- **ProjectManager500K:** local orchestration only; cannot mutate authoritative workflow state directly.
+- **Builder100K:** one bounded immutable Task; cannot mark PASS or dispatch future Tasks.
+- **Codex Diagnosis:** root-cause analysis only; cannot repair in the same invocation.
+- **Codex Recovery:** repair only after a human recovery approval.
+- **Codex Evaluation:** one authorized read-only evaluation attempt.
+- **Python control layer:** owns authoritative state transitions, integrity checks, counters, and transition ledger.
+- **User/operator:** owns high-cost human gates.
 
-Codex Diagnosis chooses exactly one primary classification:
+## Fundamental invariants
+
+1. `EXECUTE/control/STATE.json` is authoritative. Markdown status files are generated views.
+2. Agents may produce artifacts/evidence; agents may not grant themselves authority.
+3. Natural-language chat never counts as implementation approval, recovery approval, resume approval, or evaluation authorization.
+4. Expensive phase boundaries require interactive human scripts.
+5. Routine within-phase transitions use machine gates without user interaction.
+6. Approval is bound to one exact Change Cycle, Planning version/revision, manifest, Task count, and SHA-256 package digest.
+7. Approved package mutation -> execution hard stop.
+8. Task contracts are immutable; Task runtime status/counters live in machine state.
+9. Ordinary Task dispatch is one-time. Local repair attempts are machine-counted.
+10. Manager context accumulation is bounded by a dispatch batch; reaching the limit forces a fresh Manager conversation.
+11. Builder failure beyond bounded repair -> Issue + hard stop.
+12. Diagnosis and Recovery are separate invocations.
+13. Recovery verification never authorizes resume by itself.
+14. Evaluation authorization is one-attempt only; re-evaluation requires a new user gate.
+15. A validated Cycle is immutable. New feature/version/post-validation debug scope always starts a new Cycle.
+16. No approval/execution authority carries across a Cycle boundary.
+
+## Human-operated gates
+
+```text
+PLAN_READY                         -> scripts/approve_plan.py
+Manager batch limit                -> scripts/reset_manager_batch.py
+IMPLEMENTATION_DEFECT diagnosis    -> scripts/approve_recovery.py
+verified execution recovery        -> scripts/resume_execution.py
+execution complete / re-evaluation -> scripts/start_evaluation.py
+```
+
+These scripts require an interactive TTY challenge and intentionally do not accept `--yes` or a static confirmation phrase.
+
+## Machine gates
+
+```text
+planning interaction/package -> planning_gate.py
+task dispatch/repair/pass/fail/completion -> execution_gate.py
+diagnosis registration/routing -> diagnosis_gate.py
+recovery verification -> recovery_gate.py
+evaluation result/close or Issue creation -> finalize_evaluation.py
+package/context/template integrity -> validate_v4.py / context_guard.py
+bounded command output -> safe_exec.py
+```
+
+## Change-cycle semantics
+
+One Cycle represents one externally scoped change until independently validated.
+
+- Evaluation PASS/PASS_WITH_FINDINGS -> `CLOSED_VALIDATED`.
+- A later feature/version/refactor/newly discovered bug supplied as new scope -> new Cycle.
+- Evaluation failure before validation stays in the same Cycle through Diagnosis/Recovery/Replan/Re-evaluation.
+- TASK/PLAN defect may create a new Planning Vx inside the same open Cycle; old approval is superseded and a new approval is mandatory.
+
+## Root-cause classifications
+
+Exactly one primary classification:
 
 - `IMPLEMENTATION_DEFECT`
 - `TASK_DEFECT`
@@ -86,24 +96,19 @@ Codex Diagnosis chooses exactly one primary classification:
 - `EXTERNAL_BLOCKER`
 - `UNKNOWN`
 
-## Evaluation Results
+## Token-safety controls
 
-Exactly one:
+- unresolved material decisions block Task expansion;
+- exact approved-package digest checked on execution/recovery/evaluation transitions;
+- Builder context preflight target/hard limit;
+- machine-counted local repair budget;
+- ordinary Task can be dispatched only once;
+- Manager dispatch-batch context reset (default 10 Tasks);
+- verbose command output stored in full logs while agent-visible output is bounded;
+- no diagnosis+repair chain in a single invocation;
+- no automatic re-evaluation loop.
 
-- `PASS`
-- `PASS_WITH_FINDINGS`
-- `DIAGNOSIS_REQUIRED`
-
-## Recovery Knowledge
-
-```text
-ISSUE = what failed
-DIAGNOSIS = why it failed / who owns correction
-RESOLUTION = how it was correctly fixed + verified
-KNOWLEDGE INDEX = what future agents should reuse
-```
-
-## Model Policy
+## Model policy
 
 ```yaml
 local_models:
@@ -116,20 +121,8 @@ local_models:
 external_intelligence:
   environment: Codex
   recommended_model: GPT-6 Astra
-  responsibilities:
-    - implementation_research
-    - planning
-    - task_compilation
-    - diagnosis
-    - recovery
-    - evaluation
-    - completion_handoff
 ```
 
-## No-RAG Local Policy
+## Safety scope
 
-Local models receive compiled knowledge, Task context manifests, explicitly surfaced relevant Resolution knowledge, repository files named by Tasks, and persisted execution evidence. Missing material knowledge is surfaced as a preparation/recovery defect rather than guessed.
-
-## Environment Safety
-
-Never guess credentials or external configuration. Production access and destructive operations require explicit approved authority.
+Interactive human gates are designed to prevent accidental agent flow and token/cost runaway in the normal tool workflow. They are not a security sandbox against a malicious process with full control of the user's local machine.

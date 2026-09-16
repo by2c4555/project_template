@@ -1,31 +1,12 @@
+---
+artifact_kind: EXECUTION_SUMMARY
+artifact_status: PLACEHOLDER
+execution_version: none
+cycle_id: none
+---
+
 # Execution Summary
 
 Not generated yet.
 
-When generated after all approved Tasks are complete, include:
-
-## Identity
-- Execution Vx
-- bound approved Planning Vx
-
-## Task Results
-- PASS Tasks
-- PASS_RECOVERED Tasks
-
-## Material Execution Incidents
-For each recovered material incident:
-- ISSUE_NNNN
-- Diagnosis_Vx
-- RESOLUTION_NNNN
-- recovered Task
-- recovery baseline
-
-## Integration / Final Local Verification
-
-## Deviations From Plan
-Only verified execution deviations; do not rewrite the approved plan.
-
-## Known Risks / Outstanding Non-Blocking Notes
-
-## Handoff to Independent Evaluation
-State that local execution completion is not project validation and point to relevant evidence/recovery artifacts.
+Before `execution_gate.py finalize-execution`, Manager must replace this placeholder with `artifact_status: COMPLETE`, the active Execution Vx/Cycle, Task results, material incidents/recoveries, final local integration verification, verified deviations, known non-blocking risks, and evidence pointers.

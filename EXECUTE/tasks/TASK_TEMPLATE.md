@@ -1,8 +1,9 @@
 ---
 task_id: TASK_NNN
+artifact_status: COMPILED
 planning_version: Planning_Vx
+planning_revision: Revision_N
 phase: PHASE_NN
-status: PENDING
 builder: Builder100K
 depends_on: []
 decision_refs: []
@@ -11,6 +12,8 @@ recovery_refs: []
 ---
 
 # TASK_NNN — Title
+
+> **Immutable approved contract.** Runtime status, dispatch counters, repair counters, and recovery status live only in `EXECUTE/control/STATE.json` and must never be written into this Task file after approval.
 
 ## Objective
 
@@ -58,8 +61,6 @@ Only facts required to execute safely, with provenance.
 
 ## Prior Resolution Guardrails
 
-Only relevant verified reusable lessons preselected by Codex/Manager.
-
 - none
 
 ## Required Change
@@ -87,6 +88,8 @@ Exact behavior; no unresolved project-wide design decisions.
 
 Expected: PASS
 
+For potentially verbose commands use `python scripts/safe_exec.py --label <TASK>_<CHECK> -- <command>` so full logs are durable but agent-visible output is bounded.
+
 ## Local Repair Budget
 
 ```yaml
@@ -94,7 +97,7 @@ max_evidence_driven_repair_attempts: 2
 open_ended_recovery_allowed: false
 ```
 
-If the Task remains failing after the bounded repair budget, Builder must persist evidence and return `external_recovery_required: true`.
+Each post-failure code-repair attempt requires `python scripts/execution_gate.py authorize-repair TASK_NNN` first. When the machine counter is exhausted, persist evidence and return BLOCKED.
 
 ## Context Budget
 
@@ -114,14 +117,9 @@ preflight: python scripts/context_guard.py EXECUTE/tasks/TASK_NNN.md
 - context exceeds budget;
 - verification cannot be made deterministic enough;
 - safe repair requires broader repository authority than this Task permits;
+- `execution_gate.py` denies dispatch/repair;
 - bounded repair attempts are exhausted.
 
 ## Evidence Output
 
 Persist `EXECUTE/execution/evidence/TASK_NNN.md` with changed files, AC mapping, verification, deviations, assumptions, risks, and failure/repair evidence when applicable.
-
-## Allowed Final Status
-
-- `PASS`
-- `BLOCKED`
-- `PASS_RECOVERED` — may only be assigned by verified external Recovery, never by ordinary Builder execution.

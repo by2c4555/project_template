@@ -1,5 +1,5 @@
 {
-  "schema_version": "4.2.1",
+  "schema_version": "4.3.0",
   "binding_schema_version": 4,
   "provider_qualified_models_required": true,
   "qualified_model_format": "Model Name (vendor)",
