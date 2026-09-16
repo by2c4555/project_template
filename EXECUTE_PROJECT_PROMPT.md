@@ -1,4 +1,4 @@
-# Execute / Resume Approved Project — v4.2.0
+# Execute / Resume Approved Project — v4.2.1
 
 Use `ProjectManager500K` as the only VS Code user-facing local execution agent.
 

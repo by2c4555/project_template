@@ -1,4 +1,4 @@
-# Project Configuration — v4.2.0
+# Project Configuration — v4.2.1
 
 ## Canonical Lifecycle
 
@@ -29,26 +29,31 @@ The compact philosophy is:
 
 ## Hard Authority Rules
 
-1. No approved Planning Vx -> no local execution.
-2. Planning review/feedback is not implementation approval.
-3. Codex resolves material technical unknowns before requesting approval.
-4. Execution is bound to one exact approved Planning Vx.
-5. Local agents may not silently change approved architecture/intent/scope.
-6. Builder failure beyond bounded repair -> mandatory Issue + hard execution pause.
-7. Normal technical failures route to Codex Diagnosis/Recovery, not ChatGPT.
-8. External repair may modify broader repository scope only when Diagnosis proves it is required and approved contracts are preserved.
-9. A recovered Task becomes `PASS_RECOVERED`, not ordinary PASS.
-10. No resume until recovery verification fully passes and `resume_authorized: true` is persisted.
-11. Every material resolved execution Issue must produce durable Resolution knowledge.
-12. Evaluation is read-only and may not silently fix production code.
-13. Blocking Evaluation findings route to Codex Diagnosis; Evaluation does not assume its own finding is infallible.
-14. `EVALUATION_DEFECT` must be handled by review + re-evaluation, not unnecessary code change.
-15. Only proven `SCOPE_AMBIGUITY` returns to User/ChatGPT scope clarification.
-16. Only Evaluation may validate the implementation iteration.
-17. PASS/PASS_WITH_FINDINGS requires a full `PROJECT_COMPLETION_REPORT_Vx.md`.
-18. Completion Report is the preferred verified baseline for ChatGPT next-version Research.
-19. Historical Research/Planning/Issue/Diagnosis/Resolution/Evaluation artifacts are immutable records; current aliases/state may advance.
-20. Disk artifacts are authoritative; chat memory is disposable.
+1. **Human planning gates are terminal invocation boundaries.** `AWAITING_USER_FEEDBACK` or `AWAITING_USER_APPROVAL` means the external planning agent stops immediately.
+2. **No user decision -> no Task expansion.** Material unknowns lock current-Planning execution-package expansion.
+3. Expansion requires `scripts/planning_gate.py authorize-expansion` to pass.
+4. Plan review and implementation approval are separate user interactions.
+5. Codex/external planning agents may not run `scripts/approve_plan.py`; only the user/operator may perform the approval transition.
+6. No approved Planning Vx -> no local execution.
+7. Planning review/feedback is not implementation approval.
+8. Codex resolves material technical unknowns before requesting approval.
+9. Execution is bound to one exact approved Planning Vx.
+10. Local agents may not silently change approved architecture/intent/scope.
+11. Builder failure beyond bounded repair -> mandatory Issue + hard execution pause.
+12. Normal technical failures route to Codex Diagnosis/Recovery, not ChatGPT.
+13. External repair may modify broader repository scope only when Diagnosis proves it is required and approved contracts are preserved.
+14. A recovered Task becomes `PASS_RECOVERED`, not ordinary PASS.
+15. No resume until recovery verification fully passes and `resume_authorized: true` is persisted.
+16. Every material resolved execution Issue must produce durable Resolution knowledge.
+17. Evaluation is read-only and may not silently fix production code.
+18. Blocking Evaluation findings route to Codex Diagnosis; Evaluation does not assume its own finding is infallible.
+19. `EVALUATION_DEFECT` must be handled by review + re-evaluation, not unnecessary code change.
+20. Only proven `SCOPE_AMBIGUITY` returns to User/ChatGPT scope clarification.
+21. Only Evaluation may validate the implementation iteration.
+22. PASS/PASS_WITH_FINDINGS requires a full `PROJECT_COMPLETION_REPORT_Vx.md`.
+23. Completion Report is the preferred verified baseline for ChatGPT next-version Research.
+24. Historical Research/Planning/Issue/Diagnosis/Resolution/Evaluation artifacts are immutable records; current aliases/state may advance.
+25. Disk artifacts are authoritative; chat memory is disposable.
 
 ## Local Execution State Machine
 

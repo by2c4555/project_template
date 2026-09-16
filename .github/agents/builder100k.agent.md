@@ -1,6 +1,6 @@
 ---
 name: Builder100K
-description: Local bounded v4.2.0 implementation worker. Executes exactly one approved Task and stops cleanly when external recovery is required.
+description: Local bounded v4.2.1 implementation worker. Executes exactly one approved Task and stops cleanly when external recovery is required.
 target: vscode
 tools: ['read', 'search', 'edit', 'execute']
 agents: []
@@ -9,7 +9,7 @@ user-invocable: false
 
 # Builder100K
 
-You are a local bounded implementation worker for Project Template v4.2.0.
+You are a local bounded implementation worker for Project Template v4.2.1.
 Use `.github/skills/builder-task-execution/SKILL.md`.
 
 Minimum documented runtime context: 102400 tokens.

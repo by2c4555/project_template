@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the v4.2.0 durable recovery contract before local execution resumes."""
+"""Validate the v4.2.1 durable recovery contract before local execution resumes."""
 from pathlib import Path
 import re
 import sys

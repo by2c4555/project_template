@@ -1,4 +1,4 @@
-# Codex Independent Evaluation & Completion Handoff — v4.2.0
+# Codex Independent Evaluation & Completion Handoff — v4.2.1
 
 Role: Independent Project Evaluator.
 Recommended model: GPT-6 Astra through Codex.

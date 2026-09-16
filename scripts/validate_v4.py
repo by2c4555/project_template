@@ -36,7 +36,7 @@ required = [
     'EXECUTE/compiled/DECISIONS.md', 'EXECUTE/compiled/GLOBAL_CONSTRAINTS.md',
     'EXECUTE/compiled/INTERFACES.md', 'EXECUTE/compiled/DATA_MODEL.md', 'EXECUTE/compiled/KNOWN_RISKS.md',
     'EXECUTE/plan/IMPLEMENTATION_PLAN.md', 'EXECUTE/plan/PLANNING_STATUS.md',
-    'EXECUTE/plan/PLANNING_REVISION_TEMPLATE.md',
+    'EXECUTE/plan/PLANNING_REVISION_TEMPLATE.md', 'EXECUTE/plan/PLANNING_CONTROL.md',
     'EXECUTE/tasks/TASK_INDEX.md', 'EXECUTE/tasks/TASK_TEMPLATE.md',
     'EXECUTE/execution/EXECUTION_STATE.md', 'EXECUTE/execution/EXECUTION_SUMMARY.md',
     'EXECUTE/issues/ISSUE_INDEX.md', 'EXECUTE/issues/ISSUE_TEMPLATE.md',
@@ -49,7 +49,8 @@ required = [
     '.github/agents/project-manager.agent.md', '.github/agents/builder100k.agent.md',
     '.github/skills/builder-task-execution/SKILL.md',
     'scripts/approve_plan.py', 'scripts/configure_models.py', 'scripts/context_guard.py',
-    'scripts/recovery_gate.py', 'scripts/validate_v4.py',
+    'scripts/recovery_gate.py', 'scripts/planning_gate.py', 'scripts/validate_v4.py',
+    'test/regression/test_planning_interaction_gate.py',
     'EXECUTE/docs/raw', 'EXECUTE/execution/evidence',
     'EXECUTE/history/planning', 'EXECUTE/history/evaluation', 'EXECUTE/history/diagnostics',
     'EXECUTE/history/recovery', 'EXECUTE/history/completion',
@@ -59,16 +60,16 @@ for rel in required:
     req(rel)
 
 version = text('VERSION').strip()
-if version != '4.2.0':
-    errors.append('VERSION must be 4.2.0')
+if version != '4.2.1':
+    errors.append('VERSION must be 4.2.1')
 
 status = text('EXECUTE/PROJECT_STATUS.md')
 for marker in [
-    'workflow_version: "4.2.0"', 'active_issue:', 'last_resolved_issue:',
+    'workflow_version: "4.2.1"', 'active_issue:', 'last_resolved_issue:',
     'recovery_status:', 'resume_authorized:', 'completion_report:', 'scope_clarification_status:'
 ]:
     if marker not in status:
-        errors.append(f'PROJECT_STATUS missing v4.2.0 marker: {marker}')
+        errors.append(f'PROJECT_STATUS missing v4.2.1 marker: {marker}')
 
 execution = text('EXECUTE/execution/EXECUTION_STATE.md')
 for marker in [
@@ -104,7 +105,8 @@ for marker in ['Delivered Capability Inventory', 'Final Architecture', 'Executio
 
 planning_prompt = text('EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md')
 for marker in [
-    'Prior Resolution Knowledge Check', 'EXECUTE/knowledge/KNOWLEDGE_INDEX.md',
+    'STOP THIS INVOCATION IMMEDIATELY', 'NO USER DECISION -> NO TASK EXPANSION',
+    'planning_gate.py authorize-expansion', 'Prior Resolution Knowledge Check', 'EXECUTE/knowledge/KNOWLEDGE_INDEX.md',
     'material_unknowns: 0', 'implementation_approval_requested: true',
     'A complete plan is **not** permission to implement', 'PLAN_DEFECT'
 ]:
@@ -126,7 +128,7 @@ for marker in ['NEXT_VERSION_RESEARCH', 'SCOPE_CLARIFICATION', 'PROJECT_COMPLETI
     if marker not in chatgpt:
         errors.append(f'ChatGPT instructions missing marker: {marker}')
 
-# Obsolete v4.1.3 technical-routing entry prompts must not exist in v4.2.0.
+# Obsolete v4.1.3 technical-routing entry prompts must not exist in v4.2.1.
 for obsolete in [
     'EXECUTE/chatgpt/PROCESS_EVALUATION_PROMPT.md',
     'EXECUTE/chatgpt/PROCESS_ISSUE_PROMPT.md',
@@ -146,9 +148,105 @@ for rel in [
             errors.append(f'{rel} contains obsolete evaluation route {obsolete_state}')
 
 planning_status = text('EXECUTE/plan/PLANNING_STATUS.md')
-for marker in ['planning_revision', 'material_unknowns', 'implementation_approval_requested', 'AWAITING_USER_FEEDBACK', 'AWAITING_USER_APPROVAL']:
+for marker in ['planning_revision', 'material_unknowns', 'feedback_reason', 'plan_review_status', 'package_status', 'interaction_gate', 'invocation_stop_required', 'task_expansion_allowed', 'implementation_approval_requested', 'AWAITING_USER_FEEDBACK', 'AWAITING_USER_APPROVAL']:
     if marker not in planning_status:
         errors.append(f'PLANNING_STATUS missing approval-loop marker: {marker}')
+
+
+
+# v4.2.1 planning interaction/cost-control invariants.
+def value_of(blob, key):
+    import re
+    m = re.search(rf'^\s*{re.escape(key)}:\s*(.*?)\s*$', blob, re.M)
+    return m.group(1).strip().strip('"\'') if m else None
+
+def parse_unknowns(raw):
+    if raw is None or raw.lower() == 'unknown':
+        return None
+    try:
+        n = int(raw)
+        return n if n >= 0 else None
+    except ValueError:
+        return None
+
+ps = planning_status
+ps_state = value_of(ps, 'planning_status')
+unknowns = parse_unknowns(value_of(ps, 'material_unknowns'))
+feedback_reason = value_of(ps, 'feedback_reason')
+interaction_gate = value_of(ps, 'interaction_gate')
+stop_required = value_of(ps, 'invocation_stop_required')
+expand_allowed = value_of(ps, 'task_expansion_allowed')
+package_status = value_of(ps, 'package_status')
+review_status = value_of(ps, 'plan_review_status')
+approval_requested = value_of(ps, 'implementation_approval_requested')
+execution_locked = value_of(ps, 'execution_locked')
+active_planning = value_of(ps, 'planning_version')
+active_revision = value_of(ps, 'planning_revision')
+
+if ps_state == 'AWAITING_USER_FEEDBACK':
+    if interaction_gate != 'USER_FEEDBACK_REQUIRED': errors.append('AWAITING_USER_FEEDBACK requires interaction_gate: USER_FEEDBACK_REQUIRED')
+    if stop_required != 'true': errors.append('AWAITING_USER_FEEDBACK requires invocation_stop_required: true')
+    if approval_requested != 'false': errors.append('AWAITING_USER_FEEDBACK requires implementation_approval_requested: false')
+    if feedback_reason not in {'MATERIAL_DECISION','PLAN_REVIEW'}: errors.append('AWAITING_USER_FEEDBACK requires valid feedback_reason')
+    if feedback_reason == 'MATERIAL_DECISION':
+        if unknowns is None or unknowns < 1: errors.append('MATERIAL_DECISION feedback requires material_unknowns > 0')
+        if expand_allowed != 'false': errors.append('material decisions require task_expansion_allowed: false')
+        if package_status != 'NOT_COMPILED': errors.append('material decisions require package_status: NOT_COMPILED')
+    if feedback_reason == 'PLAN_REVIEW':
+        if unknowns != 0: errors.append('PLAN_REVIEW requires material_unknowns: 0')
+        if package_status != 'DRAFT_READY_FOR_REVIEW': errors.append('PLAN_REVIEW requires package_status: DRAFT_READY_FOR_REVIEW')
+
+if unknowns is None or (unknowns is not None and unknowns > 0):
+    if expand_allowed == 'true': errors.append('task expansion cannot be allowed while material_unknowns is unknown or > 0')
+
+if ps_state == 'AWAITING_USER_APPROVAL':
+    expected = {
+        'material_unknowns': '0', 'feedback_reason': 'none', 'plan_review_status': 'ACCEPTED',
+        'package_status': 'READY_FOR_APPROVAL', 'interaction_gate': 'USER_APPROVAL_REQUIRED',
+        'invocation_stop_required': 'true', 'task_expansion_allowed': 'true',
+        'implementation_approval_requested': 'true', 'execution_locked': 'true'
+    }
+    for k,v in expected.items():
+        if value_of(ps,k) != v: errors.append(f'AWAITING_USER_APPROVAL requires {k}: {v}')
+
+if ps_state == 'APPROVED':
+    if unknowns != 0: errors.append('APPROVED requires material_unknowns: 0')
+    if execution_locked != 'false': errors.append('APPROVED requires execution_locked: false')
+
+# Execution-package metadata is required so validators can distinguish placeholders/old plans/current plans.
+package_files = [
+    'EXECUTE/compiled/PROJECT_BRIEF.md','EXECUTE/compiled/ARCHITECTURE.md','EXECUTE/compiled/DECISIONS.md',
+    'EXECUTE/compiled/GLOBAL_CONSTRAINTS.md','EXECUTE/compiled/INTERFACES.md','EXECUTE/compiled/DATA_MODEL.md',
+    'EXECUTE/compiled/KNOWN_RISKS.md','EXECUTE/plan/IMPLEMENTATION_PLAN.md','EXECUTE/tasks/TASK_INDEX.md'
+]
+for rel in package_files:
+    t=text(rel)
+    for key in ['artifact_kind','artifact_status','planning_version','planning_revision']:
+        if value_of(t,key) is None: errors.append(f'{rel} missing package metadata: {key}')
+    if active_planning not in {None,'none'} and value_of(t,'planning_version') == active_planning:
+        if unknowns is None or unknowns > 0:
+            if value_of(t,'artifact_status') not in {'PLACEHOLDER','SUPERSEDED'}:
+                errors.append(f'{rel} illegally expanded for {active_planning} while material unknowns remain')
+    if ps_state in {'AWAITING_USER_FEEDBACK','AWAITING_USER_APPROVAL'} and feedback_reason == 'PLAN_REVIEW' or ps_state == 'AWAITING_USER_APPROVAL':
+        if active_planning not in {None,'none'} and rel in {'EXECUTE/plan/IMPLEMENTATION_PLAN.md','EXECUTE/tasks/TASK_INDEX.md'}:
+            if value_of(t,'planning_version') != active_planning: errors.append(f'{rel} must be bound to active Planning during review/approval')
+            if value_of(t,'planning_revision') != active_revision: errors.append(f'{rel} must be bound to active Revision during review/approval')
+            if value_of(t,'artifact_status') not in {'COMPILED','READY_FOR_APPROVAL'}: errors.append(f'{rel} must be compiled during review/approval')
+
+import re as _re
+for task in sorted((R/'EXECUTE/tasks').glob('TASK_*.md')):
+    if task.name in {'TASK_INDEX.md','TASK_TEMPLATE.md'} or not _re.fullmatch(r'TASK_\d+.*\.md',task.name):
+        continue
+    tt=task.read_text(encoding='utf-8',errors='replace')
+    tp=value_of(tt,'planning_version')
+    if tp is None: errors.append(f'{task.relative_to(R)} missing planning_version')
+    if active_planning not in {None,'none'} and tp in {None,'none',active_planning} and (unknowns is None or unknowns > 0):
+        errors.append(f'{task.relative_to(R)} exists for current/unknown Planning while material unknowns remain')
+
+control=text('EXECUTE/plan/PLANNING_CONTROL.md')
+for marker in ['No user decision -> no speculative task expansion', 'terminal state for the current agent invocation', 'must never execute `scripts/approve_plan.py` itself', 'Cost-Control Rule']:
+    if marker not in control: errors.append(f'PLANNING_CONTROL missing marker: {marker}')
+
 
 # Verify human-editable local model configuration.
 config_path = R / 'EXECUTE/MODEL_CONFIG.ini'
@@ -178,8 +276,8 @@ except json.JSONDecodeError as e:
     errors.append(f'MODEL_BINDINGS invalid JSON: {e}')
     bindings = {}
 
-if bindings.get('schema_version') != '4.2.0':
-    errors.append('MODEL_BINDINGS schema_version must be 4.2.0')
+if bindings.get('schema_version') != '4.2.1':
+    errors.append('MODEL_BINDINGS schema_version must be 4.2.1')
 
 tech = bindings.get('external_intelligence', {}).get('technical_authority', {})
 for responsibility in ['planning', 'diagnosis', 'recovery', 'evaluation', 'project_completion_handoff']:
@@ -207,7 +305,7 @@ for role, floor in {'ProjectManager500K': 512000, 'Builder100K': 102400}.items()
         warns.append(f'{role} unbound')
 
 # Python syntax sanity.
-for rel in ['scripts/approve_plan.py', 'scripts/configure_models.py', 'scripts/context_guard.py', 'scripts/recovery_gate.py']:
+for rel in ['scripts/approve_plan.py', 'scripts/configure_models.py', 'scripts/context_guard.py', 'scripts/recovery_gate.py', 'scripts/planning_gate.py', 'scripts/validate_v4.py']:
     try:
         py_compile.compile(str(R / rel), doraise=True)
     except Exception as e:
@@ -219,7 +317,7 @@ if errors:
         print('FAIL:', e)
     raise SystemExit(1)
 
-print('TEMPLATE_VALID: PASS (v4.2.0)')
+print('TEMPLATE_VALID: PASS (v4.2.1)')
 for w in warns:
     print('WARN:', w)
 print('RUNTIME_READY:', 'YES' if not warns else 'NO - edit EXECUTE/MODEL_CONFIG.ini, then run python scripts/configure_models.py')

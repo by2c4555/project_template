@@ -1,6 +1,29 @@
 # Changelog
 
-## v4.2.0 — Recovery, Diagnosis, Evaluation Integrity & Project Learning
+## v4.2.1 — Planning Interaction Gate & Token-Cost Hardening
+
+### Critical planning-gate fix
+- Fixed a workflow defect where an external planning agent could set `AWAITING_USER_FEEDBACK` while material unknowns remained and still continue into conditional planning, context compilation, or atomic Task generation.
+- Defined `AWAITING_USER_FEEDBACK` and `AWAITING_USER_APPROVAL` as terminal states for the current external-agent invocation.
+- Added the core invariant **NO USER DECISION -> NO TASK EXPANSION**.
+- Added a mandatory separate plan-review barrier before implementation-approval request.
+
+### Mechanical cost controls
+- Added `EXECUTE/plan/PLANNING_CONTROL.md` as the normative planning interaction/cost-control contract.
+- Added `scripts/planning_gate.py` with machine-checked expansion authorization and material-feedback hard-stop support.
+- Added explicit planning fields for `feedback_reason`, `plan_review_status`, `package_status`, `interaction_gate`, `invocation_stop_required`, and `task_expansion_allowed`.
+- Execution-package placeholders now carry Planning/artifact metadata so validators can distinguish untouched templates, prior packages, and current-Planning expansion.
+
+### Approval hardening
+- External planning agents are explicitly forbidden from executing `approve_plan.py`. Approval is user/operator owned.
+- `approve_plan.py` now requires the literal `I_APPROVE_IMPLEMENTATION` confirmation argument and verifies accepted plan review, package readiness, exact Planning identity, and generated Plan/Task package before unlocking execution.
+
+### Validation / regression protection
+- `validate_v4.py` now enforces planning-state invariants and rejects current-Planning Task/package expansion while material unknowns are unresolved where mechanically detectable.
+- Planning revision templates now start with `material_unknowns: unknown` instead of optimistically assuming zero.
+- Added regression coverage for the high-cost failure mode that motivated this release.
+
+## v4.2.1 — Recovery, Diagnosis, Evaluation Integrity & Project Learning
 
 ### Lifecycle architecture
 - Expanded the canonical lifecycle to **Research -> Plan -> Execute -> Recover -> Evaluate -> Learn -> Evolve**.
@@ -43,7 +66,7 @@
 - Removed obsolete direct `PROCESS_ISSUE_PROMPT.md` and `PROCESS_EVALUATION_PROMPT.md` technical routing entry points.
 
 ### Validation and documentation
-- Updated model-binding metadata to v4.2.0 and expanded Codex technical-authority responsibilities.
+- Updated model-binding metadata to v4.2.1 and expanded Codex technical-authority responsibilities.
 - Reworked README around the complete happy path, incident path, false-evaluation path, safe resume, knowledge reuse, and future-version loop.
 - Expanded template validation to enforce the new recovery/diagnosis/completion contracts and reject obsolete v4.1 routing states.
 

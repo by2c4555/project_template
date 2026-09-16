@@ -1,4 +1,4 @@
-# Codex / External Agent Issue Diagnosis & Recovery — v4.2.0
+# Codex / External Agent Issue Diagnosis & Recovery — v4.2.1
 
 Role: External Technical Recovery Agent.
 Recommended default: Codex / GPT-6 Astra.

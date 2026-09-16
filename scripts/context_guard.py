@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Conservative Builder100K context preflight for v4.2.0. Standard-library only."""
+"""Conservative Builder100K context preflight for v4.2.1. Standard-library only."""
 from pathlib import Path
 import argparse, math, re, sys, json
 ROOT=Path(__file__).resolve().parents[1]

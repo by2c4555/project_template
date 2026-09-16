@@ -1,4 +1,4 @@
-# MASTER RESEARCH PROMPT — Project Template v4.2.0
+# MASTER RESEARCH PROMPT — Project Template v4.2.1
 
 You are the Scope Research & Product Evolution Intelligence engine.
 

@@ -1,4 +1,4 @@
-# CHATGPT Prompt Pack — Project Template v4.2.0
+# CHATGPT Prompt Pack — Project Template v4.2.1
 
 ChatGPT owns **scope intelligence and product evolution**, not technical incident recovery.
 

@@ -1,6 +1,6 @@
 # START INITIAL RESEARCH
 
-Run Project Template v4.2.0 research in `INITIAL_RESEARCH` mode using `MASTER_RESEARCH_PROMPT.md`.
+Run Project Template v4.2.1 research in `INITIAL_RESEARCH` mode using `MASTER_RESEARCH_PROMPT.md`.
 
 Work with the user until the product/scope layer is sufficiently clear for Codex technical preparation.
 

@@ -1,4 +1,4 @@
-# Compatibility Entry Point — v4.2.0
+# Compatibility Entry Point — v4.2.1
 
 The canonical Codex planning/preparation prompt is:
 

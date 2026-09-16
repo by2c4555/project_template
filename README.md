@@ -1,14 +1,14 @@
-# Project Template v4.2.0
+# Project Template v4.2.1
 ## Research → Plan → Execute → Recover → Evaluate → Learn → Evolve
 
-Project Template v4.2.0 is a controlled, restartable engineering workflow for projects that use:
+Project Template v4.2.1 is a controlled, restartable engineering workflow for projects that use:
 
 - **ChatGPT Project** for product/scope research and future-version evolution;
 - **Codex / GPT-6 Astra** as the external technical authority for repository research, planning, diagnosis, recovery, evaluation, and completion handoff;
 - **VS Code custom agents** for deterministic local execution;
 - optional **external recovery agents** that can temporarily take over the repository when a local Builder is blocked.
 
-The major v4.2.0 change is that a project no longer has only a happy-path Research → Planning → Execution → Evaluation flow. It now has a durable **technical recovery and project-learning loop**.
+The major v4.2.1 change is that a project no longer has only a happy-path Research → Planning → Execution → Evaluation flow. It now has a durable **technical recovery and project-learning loop**.
 
 The core principle is:
 
@@ -155,7 +155,7 @@ python scripts/validate_v4.py
 A clean template should report:
 
 ```text
-TEMPLATE_VALID: PASS (v4.2.0)
+TEMPLATE_VALID: PASS (v4.2.1)
 ```
 
 `RUNTIME_READY` remains `NO` until real local model bindings are configured.
@@ -276,57 +276,56 @@ Use:
 EXECUTE/codex/IMPLEMENTATION_RESEARCH_AND_PLANNING_PROMPT.md
 ```
 
-Codex must inspect the real repository. It is not a one-shot text planner.
-
-It owns:
-
-- repository discovery;
-- architecture investigation;
-- dependency/interface/data analysis;
-- compatibility and migration analysis;
-- technical user clarification;
-- material-unknown loop;
-- context compilation;
-- plan construction;
-- atomic Task compilation;
-- prior Resolution knowledge review.
-
-## 6.1 Material unknown loop
-
-While material decisions remain:
+Codex must also obey:
 
 ```text
+EXECUTE/plan/PLANNING_CONTROL.md
+```
+
+v4.2.1 treats user interaction as a hard workflow boundary. Codex is not expected to finish all Planning phases in one invocation. Reaching a user gate and stopping is a successful result.
+
+It owns repository discovery, architecture/dependency/interface/data analysis, compatibility/migration analysis, technical clarification, context compilation, plan construction, atomic Task compilation, and relevant Resolution-knowledge review.
+
+## 6.1 Material-decision hard stop
+
+If any material decision remains, Codex must persist:
+
+```yaml
 planning_status: AWAITING_USER_FEEDBACK
+material_unknowns: <positive integer>
+feedback_reason: MATERIAL_DECISION
+interaction_gate: USER_FEEDBACK_REQUIRED
+invocation_stop_required: true
+task_expansion_allowed: false
+implementation_approval_requested: false
+execution_locked: true
 ```
 
-Codex asks focused questions, records user decisions, researches again if necessary, and creates internal Planning revisions.
+Then it asks only the focused questions needed and **ends the current invocation immediately**.
 
-Do not send unresolved architecture/product-changing decisions to local agents.
+While material unknowns remain, Codex must not create conditional atomic Tasks, expand every unresolved branch, or build a current-Planning execution package. The governing rule is:
 
-## 6.2 Recovery knowledge consumption
+> **NO USER DECISION -> NO TASK EXPANSION.**
 
-Before finalizing a plan Codex must inspect:
+The next Planning iteration happens only after a new user message supplies feedback.
 
-```text
-EXECUTE/knowledge/KNOWLEDGE_INDEX.md
+## 6.2 Expansion authorization
+
+Only after `material_unknowns: 0` and no interaction gate is active may Codex authorize expensive package expansion:
+
+```bash
+python scripts/planning_gate.py authorize-expansion --planning Planning_V1 --revision Revision_1
 ```
 
-and only relevant:
+The command must print `PLANNING_GATE: PASS` before current-Planning `compiled/**`, `IMPLEMENTATION_PLAN.md`, `TASK_INDEX.md`, or `TASK_NNN.md` expansion begins.
 
-```text
-EXECUTE/knowledge/resolutions/RESOLUTION_*.md
-```
+## 6.3 Recovery knowledge consumption
 
-Verified lessons may become:
+Before finalizing a plan Codex inspects `EXECUTE/knowledge/KNOWLEDGE_INDEX.md` and only relevant verified `RESOLUTION_*.md` files. Applicable lessons become constraints, Task invariants, regression requirements, or known failed approaches to avoid.
 
-- global constraints;
-- Task invariants;
-- regression requirements;
-- known failed approaches to avoid.
+## 6.4 Planning output
 
-## 6.3 Planning output
-
-Codex compiles at least:
+After expansion authorization, Codex compiles at least:
 
 ```text
 EXECUTE/reference/KNOWLEDGE_INDEX.md
@@ -344,42 +343,68 @@ EXECUTE/tasks/TASK_NNN.md
 EXECUTE/history/planning/**
 ```
 
-## 6.4 Explicit approval request
+Generated package artifacts identify the Planning version/revision that produced them.
 
-When:
+## 6.5 Mandatory plan-review barrier
 
-```text
+The first complete execution-ready draft is presented to the user for plan review, not implementation approval. Codex sets:
+
+```yaml
+planning_status: AWAITING_USER_FEEDBACK
 material_unknowns: 0
+feedback_reason: PLAN_REVIEW
+plan_review_status: AWAITING_USER_FEEDBACK
+package_status: DRAFT_READY_FOR_REVIEW
+interaction_gate: USER_FEEDBACK_REQUIRED
+invocation_stop_required: true
+implementation_approval_requested: false
+execution_locked: true
 ```
 
-Codex sets:
+Codex then stops the invocation. It must not present the plan and immediately self-continue into implementation authorization.
+
+If the user requests changes, Codex revises/researches and presents another review. If a change reopens a material decision, Task expansion is relocked and the flow returns to §6.1.
+
+## 6.6 Explicit implementation-approval barrier
+
+After a later user message accepts the reviewed plan, Codex may transition to:
 
 ```yaml
 planning_status: AWAITING_USER_APPROVAL
+material_unknowns: 0
+plan_review_status: ACCEPTED
+package_status: READY_FOR_APPROVAL
+interaction_gate: USER_APPROVAL_REQUIRED
+invocation_stop_required: true
+task_expansion_allowed: true
 implementation_approval_requested: true
 execution_locked: true
 ```
 
-A complete plan is not permission to implement.
+Codex explicitly asks whether implementation is authorized and **stops again**. Plan acceptance and implementation authorization are deliberately separate.
+
+Codex/external planning agents are forbidden from running `approve_plan.py` themselves.
 
 ---
 
 # 7. Step 3 — Explicit implementation approval
 
-After the user explicitly authorizes implementation, run:
+**Tool owner:** User/operator
+
+Only after the user explicitly authorizes implementation of the exact reviewed Planning package, the user/operator runs:
 
 ```bash
-python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1
+python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1 --confirm-explicit-user-approval I_APPROVE_IMPLEMENTATION
 ```
 
-This binds exactly one Execution version to the approved Planning version and resets execution/recovery state for that execution cycle.
+The confirmation token makes accidental or implicit approval harder. The script additionally verifies the Planning state, accepted plan review, zero material unknowns, package readiness, execution lock, and generated Plan/Task package before binding Execution.
 
 Expected transition:
 
 ```text
-Planning_V1
+Planning_V1 / reviewed Revision_N
 AWAITING_USER_APPROVAL
-        ↓ explicit user authorization
+        ↓ explicit user authorization + user/operator approval command
 APPROVED
         ↓
 Execution_V1 = READY
@@ -437,7 +462,7 @@ Builder is not an open-ended project recovery agent.
 
 # 9. When a local Builder gets stuck
 
-This is a major v4.2.0 workflow.
+This is a major v4.2.1 workflow.
 
 If Task verification still fails after bounded local repair:
 
@@ -813,7 +838,7 @@ Recovered Tasks are mandatory high-attention regression areas.
 
 ---
 
-# 20. Evaluation results in v4.2.0
+# 20. Evaluation results in v4.2.1
 
 The evaluator chooses exactly one:
 
@@ -823,7 +848,7 @@ PASS_WITH_FINDINGS
 DIAGNOSIS_REQUIRED
 ```
 
-v4.2.0 intentionally removes the old direct evaluator routing such as:
+v4.2.1 intentionally removes the old direct evaluator routing such as:
 
 ```text
 Evaluation -> ChatGPT Research
@@ -873,7 +898,7 @@ UNKNOWN               -> remain blocked / investigate
 
 # 22. False Evaluation handling
 
-This is a first-class v4.2.0 case.
+This is a first-class v4.2.1 case.
 
 Suppose Evaluation says:
 
@@ -1043,7 +1068,7 @@ Completion Report V2
 
 # 26. Two kinds of durable project memory
 
-v4.2.0 deliberately separates **execution memory** from **engineering knowledge**.
+v4.2.1 deliberately separates **execution memory** from **engineering knowledge**.
 
 ## Execution memory
 
@@ -1089,7 +1114,7 @@ Do not mix these purposes.
 
 A knowledge base that is never consumed is just an archive.
 
-v4.2.0 explicitly requires reuse.
+v4.2.1 explicitly requires reuse.
 
 ## Codex Planning
 
@@ -1182,7 +1207,7 @@ SCOPE_CLARIFICATION_REQUIRED_Vx
 # 30. Directory map
 
 ```text
-project_template-v4.2.0/
+project_template-v4.2.1/
 │
 ├── .github/
 │   ├── agents/
@@ -1321,7 +1346,7 @@ Do not merge them casually. One describes the planned/current system knowledge; 
 
 # 33. Migration from v4.1.3
 
-The conceptual changes are material enough that v4.2.0 should be treated as a new workflow version, not a small prompt patch.
+The conceptual changes are material enough that v4.2.1 should be treated as a new workflow version, not a small prompt patch.
 
 Important differences:
 
@@ -1329,7 +1354,7 @@ Important differences:
 v4.1.3
 Evaluation/Issue could route directly toward ChatGPT Research
 
-v4.2.0
+v4.2.1
 Issue/Evaluation blocking finding -> Codex Diagnosis first
 ```
 
@@ -1337,7 +1362,7 @@ Issue/Evaluation blocking finding -> Codex Diagnosis first
 v4.1.3
 Local Builder failure could stop without a complete standardized recovery/resume contract
 
-v4.2.0
+v4.2.1
 mandatory Issue -> Diagnosis -> Resolution -> Recovery Verification -> READY_TO_RESUME
 ```
 
@@ -1345,7 +1370,7 @@ mandatory Issue -> Diagnosis -> Resolution -> Recovery Verification -> READY_TO_
 v4.1.3
 PASS primarily produced Evaluation output
 
-v4.2.0
+v4.2.1
 PASS also requires a full post-implementation Project Completion Report for future ChatGPT scope evolution
 ```
 
@@ -1353,7 +1378,7 @@ PASS also requires a full post-implementation Project Completion Report for futu
 v4.1.3
 project knowledge mainly came from Research/Planning
 
-v4.2.0
+v4.2.1
 verified execution failures become a durable reusable Resolution Knowledge Base
 ```
 
@@ -1372,4 +1397,4 @@ What artifact must be produced before the next stage unlocks?
 
 Do not reconstruct workflow state from memory.
 
-That discipline is what makes v4.2.0 restartable across ChatGPT sessions, Codex sessions, VS Code agent sessions, external recovery agents, and human intervention.
+That discipline is what makes v4.2.1 restartable across ChatGPT sessions, Codex sessions, VS Code agent sessions, external recovery agents, and human intervention.

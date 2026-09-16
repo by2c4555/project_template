@@ -1,3 +1,10 @@
+---
+artifact_kind: TASK_INDEX
+artifact_status: PLACEHOLDER
+planning_version: none
+planning_revision: none
+---
+
 # Task Index
 
 No approved Tasks yet.
