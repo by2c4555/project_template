@@ -33,12 +33,12 @@ for rel in [
     req(rel)
 
 version = text('VERSION').strip()
-if version != '4.1.1':
-    errors.append('VERSION must be 4.1.1')
+if version != '4.1.2':
+    errors.append('VERSION must be 4.1.2')
 
 status = text('EXECUTE/PROJECT_STATUS.md')
-if 'workflow_version: "4.1.1"' not in status:
-    errors.append('PROJECT_STATUS workflow_version must be 4.1.1')
+if 'workflow_version: "4.1.2"' not in status:
+    errors.append('PROJECT_STATUS workflow_version must be 4.1.2')
 for x in ['research_version', 'planning_version', 'execution_version', 'evaluation_version']:
     if x not in status:
         errors.append(f'PROJECT_STATUS missing {x}')
@@ -56,7 +56,7 @@ if config_path.exists():
             if not cp.has_section(section):
                 errors.append(f'MODEL_CONFIG missing [{section}]')
                 continue
-            for key in ('model', 'provider', 'context'):
+            for key in ('model_id', 'vscode_model_name', 'vendor', 'context'):
                 if not cp.has_option(section, key):
                     errors.append(f'MODEL_CONFIG [{section}] missing {key}')
             try:
@@ -74,17 +74,26 @@ except json.JSONDecodeError as e:
     errors.append(f'MODEL_BINDINGS invalid JSON: {e}')
     b = {}
 
-if b.get('schema_version') != '4.1.1':
-    errors.append('MODEL_BINDINGS schema_version must be 4.1.1')
+if b.get('schema_version') != '4.1.2':
+    errors.append('MODEL_BINDINGS schema_version must be 4.1.2')
 
 for role, floor in {'ProjectManager500K': 512000, 'Builder100K': 102400}.items():
     r = b.get('roles', {}).get(role, {})
     if r.get('minimum_context_tokens') != floor:
         errors.append(f'{role} minimum mismatch')
     model = r.get('model')
+    model_id = r.get('model_id')
+    vscode_model_name = r.get('vscode_model_name')
+    vendor = r.get('vendor')
     cap = r.get('documented_context_tokens', 0)
     if model and cap < floor:
         errors.append(f'{role} bound below floor')
+    if model and vscode_model_name and vendor:
+        expected = f'{vscode_model_name} ({vendor})'
+        if model != expected:
+            errors.append(f'{role} qualified model mismatch: expected {expected!r}')
+    if model and not model_id:
+        errors.append(f'{role} bound model missing model_id provenance')
     if not model:
         warns.append(f'{role} unbound')
 
@@ -93,7 +102,7 @@ if errors:
     [print('FAIL:', e) for e in errors]
     raise SystemExit(1)
 
-print('TEMPLATE_VALID: PASS (v4.1.1)')
+print('TEMPLATE_VALID: PASS (v4.1.2)')
 for w in warns:
     print('WARN:', w)
 print('RUNTIME_READY:', 'YES' if not warns else 'NO - edit EXECUTE/MODEL_CONFIG.ini, then run python scripts/configure_models.py')

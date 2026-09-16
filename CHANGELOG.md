@@ -1,5 +1,20 @@
 # Changelog
 
+## v4.1.2 — Tool Map & Model Identity Patch
+
+### Onboarding / workflow clarity
+- Reworked the README so the lifecycle starts with **Research V1 in ChatGPT Project**, not with an artificial VS Code “Step 0”.
+- Added a required-tools section covering ChatGPT Project, Codex/GPT-6 Astra, VS Code, VS Code Chat/custom agents, Other Models/BYOK providers (OpenRouter/Ollama), Python, and recommended Git.
+- Added an explicit tool owner to every workflow step plus a state-to-tool routing table.
+- Separated one-time workstation/project setup from the versioned Research → Planning → Approval → Execution → Evaluation lifecycle.
+
+### Model identity correctness
+- Split runtime model configuration into `model_id`, `vscode_model_name`, `vendor`, and `context`.
+- `model_id` is preserved for provider/API provenance; `.agent.md` is pinned with the VS Code qualified model name `Model Name (vendor)`.
+- README now explains how to use **Chat: Manage Language Models** and why provider JSON alone might not identify an individual model.
+- Updated `MODEL_BINDINGS.json` to binding schema v4 and extended validation for model identity/provenance.
+- Kept legacy CLI `--*-model` / `--*-provider` aliases for advanced migration/automation, while requiring explicit model-ID provenance in v4.1.2 configuration.
+
 ## v4.1.1 — Configuration & Onboarding Patch
 
 ### Usability

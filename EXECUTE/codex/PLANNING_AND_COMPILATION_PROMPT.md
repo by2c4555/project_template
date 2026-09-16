@@ -1,4 +1,4 @@
-# Codex External Planning & Knowledge Compilation — v4.1.1
+# Codex External Planning & Knowledge Compilation — v4.1.2
 
 Role: External Planning & Knowledge Compilation Intelligence.
 Recommended model: GPT-6 Astra through Codex.

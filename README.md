@@ -1,76 +1,230 @@
-# Project Template v4.1.1
+# Project Template v4.1.2
 ## Research → Plan → Approve → Execute → Evaluate → Repeat
 
-Project Template v4.1.1 is a controlled engineering workflow that separates **research**, **planning**, **local implementation**, and **independent evaluation**.
+Project Template v4.1.2 is a controlled engineering workflow that separates **research**, **planning**, **local implementation**, and **independent evaluation**.
 
-If this is your first time using the template, follow **Quick Start** from top to bottom. Do not begin with the architecture sections.
+This README is usage-first. If you are new to the template, follow the setup and workflow sections from top to bottom. The architecture/reference sections are later in the file.
 
 ---
 
-# Quick Start
+# 1. Required tools
 
-## What you need
+Install or prepare these tools before starting the workflow.
 
-- A ChatGPT Project for Research
-- Codex with GPT-6 Astra for Planning and Evaluation
-- VS Code for the local `ProjectManager500K` and `Builder100K` execution roles
-- This repository/workspace
+| Tool | Required? | Used for |
+|---|---:|---|
+| **ChatGPT Project** | Yes | Research Vx, requirements clarification, processing evaluation findings/issues into new research |
+| **Codex** with the project-designated high-capability model (**GPT-6 Astra** in this template) | Yes | Planning & Knowledge Compilation Vx and independent Evaluation Vx |
+| **Visual Studio Code** | Yes | Local repository/workspace, terminal commands, and execution agents |
+| **VS Code Chat / GitHub Copilot Chat custom-agent support** | Yes for local agent execution | Runs the workspace custom agents in `.github/agents/` such as `ProjectManager500K` and `Builder100K` |
+| **Other Models / BYOK provider in VS Code** | Yes when using external/local runtime models | Supplies the Manager/Builder models; typical choices are **OpenRouter** or **Ollama** |
+| **Python 3** | Yes | Runs `configure_models.py`, `validate_v4.py`, `approve_plan.py`, and `context_guard.py` |
+| **Git** | Recommended | Version control, review, rollback, and preserving project history |
 
-The complete loop is:
+## Provider-specific requirements
+
+### OpenRouter
+
+You need an OpenRouter API key configured through VS Code's language-model provider setup. Do **not** store the API key in this repository or in `EXECUTE/MODEL_CONFIG.ini`.
+
+### Ollama
+
+You need Ollama installed and the desired local model already available. Current VS Code guidance prefers the official Ollama extension for local Ollama models rather than the deprecated built-in Ollama provider.
+
+### GitHub Copilot account/plan
+
+BYOK models can be used for VS Code chat without a Copilot plan, but some VS Code AI features such as semantic search, inline suggestions, or embeddings can still depend on GitHub Copilot services. The template itself primarily depends on chat/custom-agent execution plus normal file/terminal tools.
+
+---
+
+# 2. Workflow at a glance
+
+Every numbered workflow step below states exactly which tool owns that phase.
 
 ```text
-1. Research         — ChatGPT Project
-2. Planning         — Codex / GPT-6 Astra
-3. User Approval    — you
-4. Execution        — ProjectManager500K + Builder100K
-5. Evaluation       — Codex / GPT-6 Astra
-6. Route findings   — correction / replan / new research / finish
+Step 1  Research V1
+        Tool: ChatGPT Project
+             ↓
+Step 2  Planning & Knowledge Compilation V1
+        Tool: Codex / GPT-6 Astra
+             ↓
+Step 3  User review + approval
+        Tool: Human + terminal/Python
+             ↓
+Step 4  Local Execution V1
+        Tool: VS Code Chat custom agent
+              ProjectManager500K → Builder100K
+             ↓
+Step 5  Independent Evaluation V1
+        Tool: Codex / GPT-6 Astra
+             ↓
+Step 6  Route result
+        Tool depends on Evaluation status
+             ↓
+        PASS / correction / replan / Research V2+
 ```
 
-Do not skip the approval gate. Do not treat local execution completion as project validation.
+A successful local build is **not** the end of the lifecycle. Execution must still go through independent Evaluation.
 
 ---
 
-# Step 0 — Prepare the workspace
 
-Open this human-editable file in VS Code or any text editor:
+# 3. One-time project setup
+
+This setup is separate from the Research/Planning/Execution lifecycle. Do it once for a new workstation/project checkout.
+
+## Setup A — Extract/open the repository
+
+**Tool:** File system + VS Code
+
+1. Extract or clone this template.
+2. Open the repository root in VS Code.
+3. Confirm these paths exist:
+
+```text
+.github/agents/project-manager.agent.md
+.github/agents/builder100k.agent.md
+EXECUTE/
+scripts/
+```
+
+Do not start `EXECUTE_PROJECT_PROMPT.md` yet. There is no approved plan at this point.
+
+## Setup B — Make the Manager and Builder models available in VS Code
+
+**Tool:** VS Code → Chat → Language Models
+
+Open the VS Code language-model manager using either:
+
+```text
+Chat model picker
+  → Manage Language Models
+```
+
+or Command Palette:
+
+```text
+Chat: Manage Language Models
+```
+
+Add/configure the provider you want to use for the local runtime models, for example OpenRouter or Ollama, and make the intended Manager and Builder models visible in the model picker.
+
+### How to find the real model information
+
+Do not guess model identifiers from a marketing/display name.
+
+In **Manage Language Models**:
+
+1. Find the exact model.
+2. Hover the model name or context-size entry.
+3. Record the values VS Code reports, especially:
+   - **display/model name** used by VS Code;
+   - **model ID**;
+   - **vendor/provider**;
+   - **context size**.
+
+VS Code's model configuration JSON may sometimes show only the provider group, for example:
+
+```json
+{
+  "name": "OpenRouter",
+  "vendor": "openrouter",
+  "apiKey": "${input:...}"
+}
+```
+
+That confirms the provider/vendor, but it is **not** necessarily the per-model identifier. Use the Language Models editor details for the selected model.
+
+### Why the template stores both model ID and VS Code model name
+
+These are different concepts:
+
+```text
+model_id
+  = provider/API identifier
+
+vscode_model_name
+  = model name registered/displayed by VS Code
+
+vendor
+  = VS Code provider/vendor identifier
+
+qualified model name
+  = "VS Code Model Name (vendor)"
+```
+
+The template records `model_id` for provenance, but pins the VS Code custom agent using the qualified VS Code model name.
+
+## Setup C — Configure the local runtime bindings
+
+**Tool:** Text editor + terminal
+
+Open:
 
 ```text
 EXECUTE/MODEL_CONFIG.ini
 ```
 
-Replace only the model/provider values and set each model's real documented context-window capacity:
+Fill in the exact values gathered from VS Code.
+
+Example shape:
 
 ```ini
 [manager]
-model = YOUR_MANAGER_MODEL
-provider = YOUR_PROVIDER
+model_id = YOUR_MANAGER_MODEL_ID
+vscode_model_name = YOUR_MANAGER_VSCODE_MODEL_NAME
+vendor = YOUR_MANAGER_VENDOR
 context = 512000
 
 [builder]
-model = YOUR_BUILDER_MODEL
-provider = YOUR_PROVIDER
+model_id = YOUR_BUILDER_MODEL_ID
+vscode_model_name = YOUR_BUILDER_VSCODE_MODEL_NAME
+vendor = YOUR_BUILDER_VENDOR
 context = 102400
 ```
 
-The minimum accepted capacities are 512000 tokens for `ProjectManager500K` and 102400 tokens for `Builder100K`. Use the actual documented capacity when it is larger. Do not put API keys or secrets in this file.
+Use the **real documented/VS Code-reported context capacity** when it is larger than the minimum.
 
-Save the file, then run only:
+Minimum accepted capacities:
+
+```text
+ProjectManager500K : 512000 tokens
+Builder100K        : 102400 tokens
+```
+
+Do not put API keys or secrets in this file.
+
+Then run from the repository root:
 
 ```bash
 python scripts/configure_models.py
 python scripts/validate_v4.py
 ```
 
-`configure_models.py` reads `EXECUTE/MODEL_CONFIG.ini`, validates the context floors, writes `EXECUTE/MODEL_BINDINGS.json`, and pins the provider-qualified model names into the VS Code agent files. The old CLI flags remain available as optional overrides for automation/CI, but normal users do not need them.
+`configure_models.py`:
 
-At this point, do **not** run `EXECUTE_PROJECT_PROMPT.md`. There is no approved plan yet.
+```text
+MODEL_CONFIG.ini
+    ↓
+validate fields + context floors
+    ↓
+MODEL_BINDINGS.json
+    ↓
+pin "VS Code Model Name (vendor)" into .agent.md
+```
+
+If validation says `RUNTIME_READY: YES`, local runtime model setup is ready.
 
 ---
 
-# Step 1 — Research V1 in ChatGPT Project
 
-## 1.1 Create the ChatGPT Project
+# Step 1 — Research V1
+
+**Tool:** ChatGPT Project
+
+**Do not use:** VS Code Manager/Builder or Codex Planning yet.
+
+## 1.1 Create a ChatGPT Project
 
 Create a ChatGPT Project dedicated to this software project.
 
@@ -82,25 +236,25 @@ EXECUTE/chatgpt/PROJECT_INSTRUCTIONS.txt
 
 into the ChatGPT Project Instructions.
 
-Keep this file available in the Project as the research contract:
+Keep this research contract available in the Project:
 
 ```text
 EXECUTE/chatgpt/MASTER_RESEARCH_PROMPT.md
 ```
 
-## 1.2 Start the initial research
+## 1.2 Start Research V1
 
-Use:
+Send/use:
 
 ```text
 EXECUTE/chatgpt/START_RESEARCH_PROMPT.md
 ```
 
-The Research phase may ask you questions when information required for Planning is missing.
+Research can ask questions when information required for Planning is missing.
 
-## 1.3 Expected Research outputs
+## 1.3 Expected outputs
 
-Research V1 must produce/update:
+Transfer the generated artifacts back into the repository using these same paths:
 
 ```text
 EXECUTE/project_details.md
@@ -109,25 +263,27 @@ EXECUTE/docs/raw/*.md
 EXECUTE/research/Research_V1.md
 ```
 
-Transfer the generated artifacts back into the repository using the same paths.
+### Important: raw research is not temporary
 
-### Important
+`EXECUTE/docs/raw/**` is the durable evidence layer.
 
-`EXECUTE/docs/raw/**` is the durable evidence layer. **Do not delete or clear it after Planning.** Later Research versions build on prior evidence and provenance.
+**Do not delete or clear it after Planning.** Later Research versions, Planning versions, and Evaluation investigations may need its evidence/provenance.
 
 ## Stop condition
 
-Research stops when planning-blocking knowledge gaps are resolved, or explicitly recorded as non-blocking unknowns.
+Research stops when planning-blocking knowledge gaps are resolved or explicitly recorded as non-blocking unknowns.
 
 Research does **not** create the Implementation Plan and does **not** start coding.
 
-Next: Planning & Knowledge Compilation.
+**Next tool:** Codex / GPT-6 Astra.
 
 ---
 
-# Step 2 — Planning & Knowledge Compilation V1 in Codex
+# Step 2 — Planning & Knowledge Compilation V1
 
-Open the repository/workspace in Codex using GPT-6 Astra.
+**Tool:** Codex / GPT-6 Astra
+
+**Input:** Repository + Research V1 artifacts
 
 Run the instructions in:
 
@@ -135,9 +291,9 @@ Run the instructions in:
 EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md
 ```
 
-Astra reads the Research artifacts, repository state, and relevant evidence, then creates the execution package for the local models.
+Codex/Astra reads the Research artifacts, repository state, evidence, and project constraints, then creates the execution package for the local no-RAG Manager/Builder runtime.
 
-## Expected Planning outputs
+## Expected outputs
 
 At minimum:
 
@@ -149,6 +305,8 @@ EXECUTE/compiled/GLOBAL_CONSTRAINTS.md
 EXECUTE/compiled/INTERFACES.md
 EXECUTE/compiled/DATA_MODEL.md          # when applicable
 EXECUTE/compiled/KNOWN_RISKS.md
+
+EXECUTE/reference/KNOWLEDGE_INDEX.md
 
 EXECUTE/plan/IMPLEMENTATION_PLAN.md
 EXECUTE/plan/PLANNING_STATUS.md
@@ -166,11 +324,15 @@ planning_status: AWAITING_USER_APPROVAL
 execution_locked: true
 ```
 
-Astra cannot approve its own plan.
+Codex/Astra cannot approve its own plan.
+
+**Next tool:** Human review + terminal.
 
 ---
 
-# Step 3 — Review and approve the plan
+# Step 3 — Review and approve Planning V1
+
+**Tool:** Human review + terminal/Python
 
 Before approving, review at least:
 
@@ -181,7 +343,7 @@ EXECUTE/plan/IMPLEMENTATION_PLAN.md
 EXECUTE/tasks/TASK_INDEX.md
 ```
 
-If the plan is acceptable, approve and bind the exact Planning version to the new Execution version:
+If the plan is acceptable, bind the exact Planning version to the new Execution version:
 
 ```bash
 python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1
@@ -189,15 +351,50 @@ python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1
 
 If approval succeeds, local implementation is unlocked.
 
-If the plan is not acceptable, revise Planning instead of editing approved history silently.
+If the plan is not acceptable, return it to Planning instead of silently editing approved history.
+
+Before starting Execution, you may run:
+
+```bash
+python scripts/validate_v4.py
+```
+
+Confirm the local model bindings are ready.
+
+**Next tool:** VS Code Chat / `ProjectManager500K` custom agent.
 
 ---
 
-# Step 4 — Execute locally in VS Code
+# Step 4 — Local Execution V1
 
-Select/use `ProjectManager500K` as the user-facing local execution agent.
+**Tool:** VS Code Chat custom-agent runtime
 
-Run:
+**User-facing agent:** `ProjectManager500K`
+
+**Subagent:** `Builder100K`
+
+The workspace custom agents are stored in:
+
+```text
+.github/agents/project-manager.agent.md
+.github/agents/builder100k.agent.md
+```
+
+VS Code detects workspace custom-agent files in `.github/agents/`.
+
+## 4.1 Select the Manager agent
+
+Open VS Code Chat and select:
+
+```text
+ProjectManager500K
+```
+
+The Manager should already be pinned to the configured qualified runtime model by `configure_models.py`.
+
+## 4.2 Start the approved execution
+
+Run/use:
 
 ```text
 EXECUTE_PROJECT_PROMPT.md
@@ -207,11 +404,19 @@ The Manager must read `EXECUTE/PROJECT_STATUS.md` first and may execute only the
 
 The Manager dispatches one bounded Task per fresh `Builder100K` invocation.
 
-Each Builder Task uses the context manifest defined by its Task file. Local models execute approved decisions; they are not responsible for rediscovering the project architecture.
+```text
+ProjectManager500K
+      ↓
+TASK_001 → fresh Builder100K
+      ↓
+TASK_002 → fresh Builder100K
+      ↓
+...
+```
 
-## Expected Execution outputs
+Local models execute approved decisions. They are not responsible for rediscovering or redesigning the global architecture.
 
-Execution state and evidence are recorded under:
+## Expected outputs
 
 ```text
 EXECUTE/execution/EXECUTION_STATE.md
@@ -221,31 +426,31 @@ EXECUTE/execution/evidence/**
 
 ## Stop condition
 
-When all local Tasks pass, the Manager must stop at:
+When all approved Tasks and integration verification pass, the Manager must stop at:
 
 ```text
 AWAITING_EVALUATION
 ```
 
-This means **Execution is complete**, not that the project has been independently validated.
+This means **Execution is complete**, not that the project is validated.
 
-Next: Evaluation.
+**Next tool:** Codex / GPT-6 Astra.
 
 ---
 
-# Step 5 — Evaluation V1 in Codex
+# Step 5 — Independent Evaluation V1
 
-Open the completed workspace in Codex using GPT-6 Astra.
+**Tool:** Codex / GPT-6 Astra
 
-Run:
+Open the completed workspace in Codex and run:
 
 ```text
 EXECUTE/codex/EVALUATION_PROMPT.md
 ```
 
-Evaluation is independent and read-only with respect to the production implementation and approved planning artifacts. It may inspect code, run tests/build/static analysis, and compare the implementation against the Research and approved Planning package.
+Evaluation is independent and read-only with respect to the production implementation and approved planning artifacts. It may inspect code, run tests/build/static analysis, and compare the implementation against Research and the approved Planning package.
 
-## Expected Evaluation outputs
+## Expected outputs
 
 ```text
 EXECUTE/evaluation/Evaluation_V1.md
@@ -263,27 +468,31 @@ REPLAN_REQUIRED
 RESEARCH_REQUIRED
 ```
 
+**Next tool:** determined by the Evaluation result.
+
 ---
 
 # Step 6 — Route the Evaluation result
 
-Use the Evaluation status to choose the next phase:
+Use this table instead of guessing the next tool.
 
-| Evaluation result | Next action |
-|---|---|
-| `PASS` | Project can be closed/validated according to your release process. |
-| `PASS_WITH_FINDINGS` | Review findings and decide whether follow-up work is required. |
-| `CORRECTION_REQUIRED` | Return to local Execution using the existing sound Research/Plan when appropriate. |
-| `REPLAN_REQUIRED` | Create a new Planning Vx in Codex from the current Research. |
-| `RESEARCH_REQUIRED` | Return to ChatGPT Project and create Research Vx+1. |
+| Evaluation result | Next tool | Action |
+|---|---|---|
+| `PASS` | Human/release process | Close or release according to your release process; preserve Evaluation history. |
+| `PASS_WITH_FINDINGS` | Human/release process | Review findings and decide whether a follow-up lifecycle is required. |
+| `CORRECTION_REQUIRED` | VS Code Manager/Builder | Return to the authorized local correction path using the existing sound Research/Plan when permitted by the evaluator. |
+| `REPLAN_REQUIRED` | Codex / GPT-6 Astra | Create Planning Vx+1 from the current authoritative Research/evidence. |
+| `RESEARCH_REQUIRED` | ChatGPT Project | Create Research Vx+1 using the evaluator handoff/findings. |
 
-Never convert an evaluator finding directly into a permanent requirement without investigation when the issue indicates missing or uncertain knowledge.
+Never convert an evaluator finding directly into a permanent requirement when the finding indicates missing/uncertain knowledge. Investigate first.
 
 ---
 
 # Step 7 — Research V2+ after Evaluation or a new issue
 
 ## Evaluation-driven Research
+
+**Tool:** ChatGPT Project
 
 When Evaluation requests new research, use:
 
@@ -293,62 +502,95 @@ EXECUTE/chatgpt/PROCESS_EVALUATION_PROMPT.md
 
 Provide the relevant Evaluation report and Research handoff to the ChatGPT Project.
 
-Research V2 updates the active project knowledge while preserving the previous Research history.
+Research V2 updates active project knowledge while preserving prior evidence/history.
 
 Typical chain:
 
 ```text
-Research V1
-  → Planning V1
-  → Approval
-  → Execution V1
-  → Evaluation V1 = RESEARCH_REQUIRED
-  → Research V2
-  → Planning V2
-  → Approval
-  → Execution V2
-  → Evaluation V2
+Research V1          — ChatGPT Project
+  ↓
+Planning V1          — Codex / Astra
+  ↓
+Approval             — Human + terminal
+  ↓
+Execution V1         — VS Code Manager/Builder
+  ↓
+Evaluation V1        — Codex / Astra
+  ↓ RESEARCH_REQUIRED
+Research V2          — ChatGPT Project
+  ↓
+Planning V2          — Codex / Astra
+  ↓
+Approval
+  ↓
+Execution V2
+  ↓
+Evaluation V2
 ```
 
 ## Issue-driven Research
 
-For runtime errors, production issues, user feedback, compatibility changes, or other new observations that may change project knowledge, use:
+**Tool:** ChatGPT Project
+
+For runtime errors, user feedback, compatibility changes, newly discovered constraints, or other observations that may change project knowledge, use:
 
 ```text
 EXECUTE/chatgpt/PROCESS_ISSUE_PROMPT.md
 ```
 
-Treat the issue as evidence first. Investigate it before promoting it into authoritative requirements or project knowledge.
+Treat an issue as evidence first. Investigate it before promoting it into authoritative project requirements.
 
 ---
 
-# Where am I now?
+# Which tool do I use right now?
 
-If you open a project and do not remember the next step, read `EXECUTE/PROJECT_STATUS.md` and use this guide:
+If you open a project and do not remember the next step, read:
 
-| Current state | What you do next |
-|---|---|
-| `RESEARCH` / `INPUT_REQUIRED` | Continue ChatGPT Research using the appropriate prompt in `EXECUTE/chatgpt/`. |
-| `AWAITING_USER_APPROVAL` | Review the plan, then run `scripts/approve_plan.py` only if you approve it. |
-| `EXECUTION` / `READY` or `IN_PROGRESS` | Run `EXECUTE_PROJECT_PROMPT.md` with `ProjectManager500K` in VS Code. |
-| `AWAITING_EVALUATION` or Evaluation `REQUIRED` | Run `EXECUTE/codex/EVALUATION_PROMPT.md` in Codex/Astra. |
-| Evaluation = `CORRECTION_REQUIRED` | Return to the authorized local correction path. |
-| Evaluation = `REPLAN_REQUIRED` | Create the next Planning Vx in Codex/Astra. |
-| Evaluation = `RESEARCH_REQUIRED` | Use `EXECUTE/chatgpt/PROCESS_EVALUATION_PROMPT.md` and create Research Vx+1. |
-| Evaluation = `PASS` | Follow your release/closure process and preserve the evaluation history. |
+```text
+EXECUTE/PROJECT_STATUS.md
+```
+
+Then use this table:
+
+| Current state | Tool to open | What to do |
+|---|---|---|
+| `RESEARCH` / `INPUT_REQUIRED` | ChatGPT Project | Continue Research with the appropriate prompt in `EXECUTE/chatgpt/`. |
+| Research ready, no plan yet | Codex / Astra | Run `PLANNING_AND_COMPILATION_PROMPT.md`. |
+| `AWAITING_USER_APPROVAL` | Human + terminal | Review plan and run `approve_plan.py` only if approved. |
+| `EXECUTION` / `READY` / `IN_PROGRESS` | VS Code Chat → `ProjectManager500K` | Run/use `EXECUTE_PROJECT_PROMPT.md`. |
+| `AWAITING_EVALUATION` or Evaluation `REQUIRED` | Codex / Astra | Run `EVALUATION_PROMPT.md`. |
+| Evaluation = `CORRECTION_REQUIRED` | VS Code Manager/Builder | Follow the evaluator-authorized correction path. |
+| Evaluation = `REPLAN_REQUIRED` | Codex / Astra | Create the next Planning Vx. |
+| Evaluation = `RESEARCH_REQUIRED` | ChatGPT Project | Use `PROCESS_EVALUATION_PROMPT.md` and create Research Vx+1. |
+| Evaluation = `PASS` | Human/release process | Preserve history and release/close according to your process. |
 
 ---
 
 # Which prompt do I use?
 
-| Situation | Tool / environment | Prompt |
+| Situation | Tool/environment | Prompt/file |
 |---|---|---|
-| Starting a new project | ChatGPT Project | `EXECUTE/chatgpt/START_RESEARCH_PROMPT.md` |
+| Start a new project's research | ChatGPT Project | `EXECUTE/chatgpt/START_RESEARCH_PROMPT.md` |
 | Evaluation says more research is needed | ChatGPT Project | `EXECUTE/chatgpt/PROCESS_EVALUATION_PROMPT.md` |
 | New error/issue/feedback may change knowledge | ChatGPT Project | `EXECUTE/chatgpt/PROCESS_ISSUE_PROMPT.md` |
-| Research is ready and you need a plan | Codex / GPT-6 Astra | `EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md` |
-| Approved plan is ready to implement | VS Code / ProjectManager500K | `EXECUTE_PROJECT_PROMPT.md` |
+| Research is ready and you need Planning | Codex / GPT-6 Astra | `EXECUTE/codex/PLANNING_AND_COMPILATION_PROMPT.md` |
+| Plan is approved and implementation should start | VS Code Chat / `ProjectManager500K` | `EXECUTE_PROJECT_PROMPT.md` |
 | Local execution finished | Codex / GPT-6 Astra | `EXECUTE/codex/EVALUATION_PROMPT.md` |
+
+---
+
+# Tool ownership rules
+
+These boundaries are deliberate.
+
+| Tool/role | Owns | Must not silently do |
+|---|---|---|
+| ChatGPT Project | Research, requirements clarification, Research Vx evidence | Implement production code or create the approved implementation plan |
+| Codex / GPT-6 Astra Planning | Architecture, compilation, Tasks, Planning Vx | Approve its own plan or execute local production changes |
+| Human | Approval/release decisions | Be bypassed by automatic Planning → Execution transition |
+| VS Code `ProjectManager500K` | Orchestrate approved local Execution Vx | Redesign approved architecture/requirements |
+| VS Code `Builder100K` | One bounded implementation Task | Own global architecture or future Tasks |
+| Codex / GPT-6 Astra Evaluation | Independent verification and routing findings | Silently fix production implementation while evaluating |
 
 ---
 
@@ -358,9 +600,9 @@ If you open a project and do not remember the next step, read `EXECUTE/PROJECT_S
 |---|---|---|
 | `EXECUTE/project_details.md` | ChatGPT Research | Concise authoritative project requirements/context |
 | `EXECUTE/docs/raw/**` | ChatGPT Research | Raw evidence, facts, provenance, limitations, research details |
-| `EXECUTE/research/**` | ChatGPT Research | Immutable Research Vx records and handoff state |
-| `EXECUTE/compiled/**` | Astra Planning | Distilled execution knowledge for local no-RAG models |
-| `EXECUTE/reference/**` | Planning / controlled knowledge process | Durable indexed project knowledge with provenance where used |
+| `EXECUTE/research/**` | ChatGPT Research | Research Vx records and handoff state |
+| `EXECUTE/reference/**` | Planning / controlled knowledge process | Durable indexed project knowledge with provenance |
+| `EXECUTE/compiled/**` | Astra Planning | Distilled execution intelligence for local no-RAG models |
 | `EXECUTE/plan/**` | Astra Planning | Implementation plan and Planning state |
 | `EXECUTE/tasks/**` | Astra Planning | Atomic self-contained Builder work packages |
 | `EXECUTE/execution/**` | Local Manager/Builder | Execution state, summaries, and implementation evidence |
@@ -391,7 +633,7 @@ Execution Intelligence Layer
 Compact Builder/Manager-oriented knowledge and constraints
 ```
 
-Do not use `compiled/**` as a replacement for the original evidence. Do not delete `docs/raw/**` merely because Planning completed.
+Do not use `compiled/**` as a replacement for original evidence. Do not delete `docs/raw/**` merely because Planning completed.
 
 ---
 
@@ -414,22 +656,30 @@ Only independent Evaluation can produce the final validation result for an Execu
 # Core architecture
 
 ```text
-Research Vx — ChatGPT Project
+Research Vx
+Tool: ChatGPT Project
     ↓
-Planning & Knowledge Compilation Vx — Codex / GPT-6 Astra
+Planning & Knowledge Compilation Vx
+Tool: Codex / GPT-6 Astra
     ↓
 USER APPROVAL GATE
+Tool: Human + terminal
     ↓
-Execution Vx — local ProjectManager500K + Builder100K
+Execution Vx
+Tool: VS Code Chat
+      ProjectManager500K + Builder100K
     ↓
-Evaluation Vx — Codex / GPT-6 Astra
+Evaluation Vx
+Tool: Codex / GPT-6 Astra
     ↓
 PASS / correction / replan / Research Vx+1
 ```
 
-The separation exists because local Manager/Builder models may have no RAG. Astra therefore compiles global reasoning into durable disk artifacts before execution.
+The separation exists because the local Manager/Builder runtime may have no RAG. Codex/Astra therefore compiles global reasoning into durable disk artifacts before execution.
 
-`context window != project memory`
+```text
+context window != project memory
+```
 
 Disk artifacts are durable project memory. Each local Builder invocation is temporary working context.
 
@@ -438,51 +688,69 @@ Disk artifacts are durable project memory. Each local Builder invocation is temp
 # Workspace map
 
 ```text
+.github/
+└─ agents/
+   ├─ project-manager.agent.md      # VS Code custom agent: Manager
+   └─ builder100k.agent.md          # VS Code custom agent: Builder
+
 EXECUTE/
-├─ MODEL_CONFIG.ini                # human-editable Manager/Builder model settings
-├─ MODEL_BINDINGS.json            # generated machine-readable bindings
-├─ chatgpt/                       # Research prompt pack
+├─ MODEL_CONFIG.ini                 # human-editable runtime model identity/context
+├─ MODEL_BINDINGS.json             # generated machine-readable bindings
+├─ chatgpt/                         # ChatGPT Research prompt pack
 │  ├─ PROJECT_INSTRUCTIONS.txt
 │  ├─ MASTER_RESEARCH_PROMPT.md
 │  ├─ START_RESEARCH_PROMPT.md
 │  ├─ PROCESS_EVALUATION_PROMPT.md
 │  └─ PROCESS_ISSUE_PROMPT.md
 ├─ project_details.md
-├─ docs/raw/                      # durable research evidence; do not auto-delete
-├─ research/                      # Research Vx artifacts / handoffs
-├─ reference/                     # durable indexed knowledge where used
-├─ codex/
+├─ docs/raw/                        # durable Research evidence; never auto-clear
+├─ research/                        # Research Vx artifacts / handoffs
+├─ reference/                       # durable indexed knowledge
+├─ codex/                           # Codex Planning/Evaluation prompts
 │  ├─ PLANNING_AND_COMPILATION_PROMPT.md
 │  └─ EVALUATION_PROMPT.md
-├─ compiled/                      # distilled intelligence for local execution
-├─ plan/                          # plan + approval state
-├─ tasks/                         # atomic Builder tasks
-├─ execution/                     # local execution state/evidence
-├─ evaluation/                    # independent Evaluation reports
-├─ issues/                        # structured issue workflow
-└─ history/                       # immutable Planning/Evaluation history
+├─ compiled/                        # distilled intelligence for local execution
+├─ plan/                            # plan + approval state
+├─ tasks/                           # atomic Builder Tasks
+├─ execution/                       # local execution state/evidence
+├─ evaluation/                      # independent Evaluation reports
+├─ issues/                          # structured issue workflow
+└─ history/                         # immutable Planning/Evaluation history
 ```
 
 ---
 
 # Safety rails
 
-- ChatGPT Research does not implement code or create implementation Tasks.
-- Astra Planning does not approve its own plan.
-- Local Manager/Builder do not change approved architecture or requirements silently.
+- ChatGPT Research does not implement production code or create approved implementation Tasks.
+- Codex/Astra Planning does not approve its own plan.
+- Local Manager/Builder do not silently change approved architecture, scope, or requirements.
 - Execution completion does not equal independent validation.
-- Astra Evaluation does not silently fix production implementation while evaluating it.
+- Codex/Astra Evaluation does not silently fix production implementation while evaluating it.
 - Approved and historical versions are not silently overwritten.
-- Raw research evidence is preserved for provenance and future Research versions.
+- Raw Research evidence is preserved for provenance and future Research versions.
+- Provider credentials/API keys stay outside the repository configuration files.
 
 ---
 
-# Useful validation commands
+# Useful commands
 
-Validate the template:
+Configure the Manager/Builder bindings after editing `MODEL_CONFIG.ini`:
+
+```bash
+python scripts/configure_models.py
+```
+
+Validate the template/runtime setup:
 
 ```bash
 python scripts/validate_v4.py
+```
+
+Approve an exact Planning version for an exact Execution version:
+
+```bash
+python scripts/approve_plan.py --planning Planning_V1 --execution Execution_V1
 ```
 
 Check a controlled Builder Task payload:
@@ -491,4 +759,51 @@ Check a controlled Builder Task payload:
 python scripts/context_guard.py EXECUTE/tasks/TASK_TEMPLATE.md
 ```
 
-The context guard estimates only the controlled Task payload. It is not tokenizer-perfect and does not include all host/system/tool overhead.
+The context guard estimates only the controlled Task payload. It is not tokenizer-perfect and does not include every host/system/tool overhead token.
+
+---
+
+# Common mistakes
+
+## Mistake: starting in VS Code Manager before Research/Planning
+
+Wrong:
+
+```text
+Open template → run ProjectManager500K immediately
+```
+
+Correct:
+
+```text
+Research → Planning → Human Approval → VS Code Execution
+```
+
+## Mistake: using OpenRouter API ID directly as the VS Code custom-agent model name
+
+The API/provider `model_id` and the VS Code registered/display name can differ. Record both. The template pins the agent with:
+
+```text
+VS Code Model Name (vendor)
+```
+
+## Mistake: reading provider JSON and assuming it contains the selected model ID
+
+A provider group such as:
+
+```json
+{
+  "name": "OpenRouter",
+  "vendor": "openrouter"
+}
+```
+
+identifies the provider group, not necessarily the individual model. Inspect the model details in **Manage Language Models**.
+
+## Mistake: deleting `EXECUTE/docs/raw/**` after Planning
+
+Do not do this. `docs/raw/**` is the durable evidence/provenance layer used by future Planning, Evaluation, and Research versions.
+
+## Mistake: treating `AWAITING_EVALUATION` as project completion
+
+It means local Execution finished. The project still requires independent Evaluation.

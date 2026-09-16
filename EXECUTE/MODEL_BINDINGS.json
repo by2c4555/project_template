@@ -1,6 +1,6 @@
 {
-  "schema_version": "4.1.1",
-  "binding_schema_version": 3,
+  "schema_version": "4.1.2",
+  "binding_schema_version": 4,
   "provider_qualified_models_required": true,
   "qualified_model_format": "Model Name (vendor)",
   "external_intelligence": {
@@ -12,15 +12,17 @@
   },
   "roles": {
     "ProjectManager500K": {
-      "base_model": null,
-      "provider": null,
+      "model_id": null,
+      "vscode_model_name": null,
+      "vendor": null,
       "model": null,
       "documented_context_tokens": 0,
       "minimum_context_tokens": 512000
     },
     "Builder100K": {
-      "base_model": null,
-      "provider": null,
+      "model_id": null,
+      "vscode_model_name": null,
+      "vendor": null,
       "model": null,
       "documented_context_tokens": 0,
       "minimum_context_tokens": 102400

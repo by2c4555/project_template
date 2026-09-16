@@ -11,13 +11,13 @@ ROLES = {
     'ProjectManager500K': ('.github/agents/project-manager.agent.md', 512000),
     'Builder100K': ('.github/agents/builder100k.agent.md', 102400),
 }
-PLACEHOLDERS = {'', 'CHANGE_ME', '<MODEL>', '<PROVIDER>', 'NONE', 'NULL'}
+PLACEHOLDERS = {'', 'CHANGE_ME', '<MODEL>', '<MODEL_ID>', '<MODEL_NAME>', '<PROVIDER>', '<VENDOR>', 'NONE', 'NULL'}
 
 
-def pin(path, model):
+def pin(path, qualified_model_name):
     p = ROOT / path
     t = p.read_text(encoding='utf-8')
-    safe_model = model.replace("'", "''")
+    safe_model = qualified_model_name.replace("'", "''")
     if re.search(r'^model:', t, re.M):
         t = re.sub(r'^model:.*$', f"model: '{safe_model}'", t, count=1, flags=re.M)
     else:
@@ -38,9 +38,21 @@ def read_ini(path):
     values = {}
     for section in ('manager', 'builder'):
         if cp.has_section(section):
+            # Backward-compatible fallbacks for v4.1.1 config files:
+            #   model -> vscode_model_name
+            #   provider -> vendor
             values[section] = {
-                'model': cp.get(section, 'model', fallback='').strip(),
-                'provider': cp.get(section, 'provider', fallback='').strip(),
+                'model_id': cp.get(section, 'model_id', fallback='').strip(),
+                'vscode_model_name': cp.get(
+                    section,
+                    'vscode_model_name',
+                    fallback=cp.get(section, 'model', fallback='')
+                ).strip(),
+                'vendor': cp.get(
+                    section,
+                    'vendor',
+                    fallback=cp.get(section, 'provider', fallback='')
+                ).strip(),
                 'context': cp.get(section, 'context', fallback='').strip(),
             }
     return values
@@ -59,6 +71,10 @@ def parse_context(value, label):
         raise SystemExit(f'ERROR: {label} context must be an integer, got: {value!r}')
 
 
+def is_placeholder(value):
+    return value is None or str(value).strip().upper() in PLACEHOLDERS
+
+
 def incomplete_message(config_path, missing):
     lines = [
         'ERROR: Model configuration is incomplete.',
@@ -70,23 +86,34 @@ def incomplete_message(config_path, missing):
     lines.extend(f'  - {item}' for item in missing)
     lines += [
         '',
+        'In VS Code open: Chat: Manage Language Models',
+        'Record the model ID, VS Code model name, vendor, and context size.',
+        '',
         'Then run:',
         '  python scripts/configure_models.py',
         '',
-        'CLI flags are still supported as optional overrides.',
+        'Legacy --*-model / --*-provider flags are still accepted as aliases',
+        'for VS Code model name / vendor, but model_id should be recorded in the INI.',
     ]
     return '\n'.join(lines)
 
 
 def main():
     ap = argparse.ArgumentParser(
-        description='Configure v4.1.1 local model bindings from EXECUTE/MODEL_CONFIG.ini. CLI flags optionally override file values.'
+        description='Configure v4.1.2 local model bindings from EXECUTE/MODEL_CONFIG.ini. CLI flags optionally override file values.'
     )
     ap.add_argument('--config', default=str(DEFAULT_CONFIG), help='Path to INI config (default: EXECUTE/MODEL_CONFIG.ini)')
+
     for key in ('manager', 'builder'):
-        ap.add_argument(f'--{key}-model')
-        ap.add_argument(f'--{key}-provider')
+        ap.add_argument(f'--{key}-model-id')
+        ap.add_argument(f'--{key}-vscode-model-name')
+        ap.add_argument(f'--{key}-vendor')
         ap.add_argument(f'--{key}-context', type=int)
+
+        # v4.1.1 compatibility aliases. These do not represent API model IDs.
+        ap.add_argument(f'--{key}-model', help=argparse.SUPPRESS)
+        ap.add_argument(f'--{key}-provider', help=argparse.SUPPRESS)
+
     a = ap.parse_args()
 
     config_path = Path(a.config)
@@ -94,24 +121,24 @@ def main():
         config_path = ROOT / config_path
     cfg = read_ini(config_path)
 
-    raw = {
-        'manager': {
-            'model': choose(a.manager_model, cfg.get('manager', {}).get('model')),
-            'provider': choose(a.manager_provider, cfg.get('manager', {}).get('provider')),
-            'context': choose(a.manager_context, cfg.get('manager', {}).get('context')),
-        },
-        'builder': {
-            'model': choose(a.builder_model, cfg.get('builder', {}).get('model')),
-            'provider': choose(a.builder_provider, cfg.get('builder', {}).get('provider')),
-            'context': choose(a.builder_context, cfg.get('builder', {}).get('context')),
-        },
-    }
+    raw = {}
+    for section in ('manager', 'builder'):
+        legacy_model = getattr(a, f'{section}_model')
+        legacy_provider = getattr(a, f'{section}_provider')
+        cli_name = getattr(a, f'{section}_vscode_model_name')
+        cli_vendor = getattr(a, f'{section}_vendor')
+
+        raw[section] = {
+            'model_id': choose(getattr(a, f'{section}_model_id'), cfg.get(section, {}).get('model_id')),
+            'vscode_model_name': choose(cli_name if cli_name is not None else legacy_model, cfg.get(section, {}).get('vscode_model_name')),
+            'vendor': choose(cli_vendor if cli_vendor is not None else legacy_provider, cfg.get(section, {}).get('vendor')),
+            'context': choose(getattr(a, f'{section}_context'), cfg.get(section, {}).get('context')),
+        }
 
     missing = []
     for section in ('manager', 'builder'):
-        for field in ('model', 'provider'):
-            value = raw[section][field]
-            if value is None or str(value).strip().upper() in PLACEHOLDERS:
+        for field in ('model_id', 'vscode_model_name', 'vendor'):
+            if is_placeholder(raw[section][field]):
                 missing.append(f'[{section}] {field}')
         raw[section]['context'] = parse_context(raw[section]['context'], section)
         if raw[section]['context'] is None:
@@ -121,31 +148,48 @@ def main():
         raise SystemExit(incomplete_message(config_path, missing))
 
     vals = {
-        'ProjectManager500K': (raw['manager']['model'].strip(), raw['manager']['provider'].strip(), raw['manager']['context']),
-        'Builder100K': (raw['builder']['model'].strip(), raw['builder']['provider'].strip(), raw['builder']['context']),
+        'ProjectManager500K': raw['manager'],
+        'Builder100K': raw['builder'],
     }
 
     bindings_path = ROOT / 'EXECUTE' / 'MODEL_BINDINGS.json'
     data = json.loads(bindings_path.read_text(encoding='utf-8'))
     data['schema_version'] = (ROOT / 'VERSION').read_text(encoding='utf-8').strip()
+    data['binding_schema_version'] = 4
+    data['qualified_model_format'] = 'Model Name (vendor)'
 
-    for role, (base, prov, cap) in vals.items():
+    for role, value in vals.items():
         floor = ROLES[role][1]
+        cap = value['context']
         if cap < floor:
             raise SystemExit(f'ERROR: {role} context {cap} < required minimum {floor}')
-        qual = f'{base} ({prov})'
+
+        name = value['vscode_model_name'].strip()
+        vendor = value['vendor'].strip()
+        model_id = value['model_id'].strip()
+        qualified = f'{name} ({vendor})'
+
         data['roles'][role].update(
-            base_model=base,
-            provider=prov,
-            model=qual,
+            model_id=model_id,
+            vscode_model_name=name,
+            vendor=vendor,
+            model=qualified,
             documented_context_tokens=cap,
         )
-        pin(ROLES[role][0], qual)
+        # Remove obsolete fields if present from v4.1.1 bindings.
+        data['roles'][role].pop('base_model', None)
+        data['roles'][role].pop('provider', None)
+
+        pin(ROLES[role][0], qualified)
 
     bindings_path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
-    print('v4.1.1 local model bindings configured.')
-    print(f'  Manager: {data["roles"]["ProjectManager500K"]["model"]} / {data["roles"]["ProjectManager500K"]["documented_context_tokens"]} tokens')
-    print(f'  Builder: {data["roles"]["Builder100K"]["model"]} / {data["roles"]["Builder100K"]["documented_context_tokens"]} tokens')
+    print('v4.1.2 local model bindings configured.')
+    for role in ('ProjectManager500K', 'Builder100K'):
+        r = data['roles'][role]
+        print(f'  {role}:')
+        print(f'    VS Code model: {r["model"]}')
+        print(f'    Model ID:      {r["model_id"]}')
+        print(f'    Context:       {r["documented_context_tokens"]} tokens')
     print('  Updated: EXECUTE/MODEL_BINDINGS.json and VS Code agent model pins')
 
 
