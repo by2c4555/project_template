@@ -1,7 +1,7 @@
 # Project Status
 
 ```yaml
-workflow_version: "4.1.0"
+workflow_version: "4.1.1"
 
 lifecycle_stage: RESEARCH
 project_validation_status: NOT_VALIDATED

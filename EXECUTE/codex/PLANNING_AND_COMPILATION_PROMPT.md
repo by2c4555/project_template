@@ -1,4 +1,4 @@
-# Codex External Planning & Knowledge Compilation — v4.1
+# Codex External Planning & Knowledge Compilation — v4.1.1
 
 Role: External Planning & Knowledge Compilation Intelligence.
 Recommended model: GPT-6 Astra through Codex.
@@ -15,6 +15,7 @@ Read as needed:
 
 ## Required Output
 Create/update a new Planning Vx without overwriting history:
+- `EXECUTE/reference/KNOWLEDGE_INDEX.md` — update durable facts/decisions with stable IDs and provenance; never replace raw evidence
 - `EXECUTE/compiled/PROJECT_BRIEF.md`
 - `EXECUTE/compiled/ARCHITECTURE.md`
 - `EXECUTE/compiled/DECISIONS.md`
@@ -37,6 +38,8 @@ Do not dump raw reasoning or chat transcript. Distill reusable decision knowledg
 - consequences;
 - affected Tasks;
 - provenance to research/requirements/evidence.
+
+Keep `EXECUTE/docs/raw/**` intact after compilation. Raw evidence is durable provenance and must not be auto-deleted.
 
 Each Task must be executable without RAG and must include a context manifest naming exactly what the local Builder must load.
 

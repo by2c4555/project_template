@@ -1,4 +1,4 @@
-# CHATGPT Prompt Pack — Project Template v4.1
+# CHATGPT Prompt Pack — Project Template v4.1.1
 
 This folder is used in the ChatGPT Project research workspace.
 

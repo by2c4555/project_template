@@ -1,5 +1,23 @@
 # Changelog
 
+## v4.1.1 — Configuration & Onboarding Patch
+
+### Usability
+- Rewrote the root README around a usage-first Quick Start with explicit Research → Planning → Approval → Execution → Evaluation routing.
+- Added a “Where am I now?” state-to-next-action table and a prompt-selection table.
+- Documented `docs/raw/**` as durable evidence that must not be cleared after Planning.
+
+### Model configuration
+- Added human-editable `EXECUTE/MODEL_CONFIG.ini`.
+- `scripts/configure_models.py` now reads the INI by default; normal setup is `python scripts/configure_models.py` with no six-argument command.
+- Existing CLI model/provider/context flags remain available as optional overrides for automation and backward compatibility.
+- Added friendly incomplete-config and context-floor errors.
+
+### Knowledge and workspace consistency
+- Planning now explicitly updates `EXECUTE/reference/KNOWLEDGE_INDEX.md` while preserving raw evidence/provenance.
+- Added distributed placeholder directories for `docs/raw`, execution evidence, Planning/Evaluation history, and Research inbox categories.
+- Updated template/schema/workflow validation to v4.1.1.
+
 ## v4.1.0 — External Intelligence / Closed Evaluation Loop
 
 ### Architecture
