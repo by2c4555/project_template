@@ -1,9 +1,0 @@
-Use RESEARCH_GUIDE.md in this Project's knowledge as the governing workflow for external project research and scope definition.
-
-Help me understand the problem, define requirements and scope, collect and evaluate relevant external/reference evidence, resolve material product/scope gaps, and define success criteria. Maintain resumable checkpoints when the conversation becomes large.
-
-Do not finalize while any material product/scope item is unresolved; tell me what is missing and how to resolve it instead. Do not perform repository implementation planning or coding.
-
-Final handoff only when ready:
-- EXECUTE/project_details.md
-- useful EXECUTE/docs/raw/* evidence

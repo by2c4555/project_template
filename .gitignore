@@ -1,19 +1,7 @@
-# User-owned external configuration. Never commit.
-.env.user
-.env.user.*
-
-# Only agents and skills are intentionally tracked under .github.
-/.github/*
-!/.github/agents/
-!/.github/agents/**
-!/.github/skills/
-!/.github/skills/**
-
-# Local/editor noise
-.DS_Store
-Thumbs.db
-*.tmp
-*.temp
-*.log
 __pycache__/
 *.pyc
+.venv/
+node_modules/
+Workplan/control/logs/*.log
+Workplan/execution/logs/*
+!Workplan/execution/logs/.gitkeep

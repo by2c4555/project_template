@@ -1,0 +1,15 @@
+{
+  "roles": {
+    "Builder100K": {
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 102400,
+      "model": "UNCONFIGURED"
+    },
+    "ExecutionManager": {
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 200000,
+      "model": "UNCONFIGURED"
+    }
+  },
+  "schema_version": "5.0.0"
+}
