@@ -1,4 +1,4 @@
-# External Agent Roles — v5.2.0
+# External Agent Roles — v5.3.0
 
 Normal users do **not** select role prompt files.
 

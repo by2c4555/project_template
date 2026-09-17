@@ -1,5 +1,5 @@
-# v5.2 Operational Use Cases
+# v5.3 Operational Use Cases
 
-These scenarios are behavioral contracts. `Workplan/tests/run_scenarios.py` covers the central lifecycle/fencing/reconciliation behavior and `Workplan/tests/run_command_protocol.py` covers exact human commands, surface/stage rejection, approval gating/expiry, reset and continuation projection.
+These scenarios are behavioral contracts for Research/Planning handoff, deterministic Phase/Task/Attempt implementation, bounded context, repair/escalation, reasoning-only Diagnosis/Recovery, exact commands, approvals, resume, and final Evaluation.
 
-`11_COMMAND_PROTOCOL.md` documents the v5.2 human/AI command boundary.
+Executable release coverage lives in `Workplan/tests/` and is invoked by `python Workplan/scripts/validate.py --full`.

@@ -1,5 +1,18 @@
 # Changelog
 
+## 5.3.0 — Deterministic Phase/Task/Attempt Gates
+
+- Added first-class `Cycle -> Phase -> Task -> Attempt` authority with implicit `PHASE_001` compatibility.
+- Added validated Phase/Task dependency contracts, default repair budget 2 (`0..5`), and expanded immutable Planning Package bindings.
+- Added fresh Task/Repair/Recovery Attempts and durable ticket digests.
+- Fixed resume to compare immutable issue-time bindings instead of silently rebinding.
+- Added full production-worktree create/modify/delete accounting with authorization checks separate from Workplan control-plane writes.
+- Added deterministic Task Gate and Phase Gate ownership of PASS/progression.
+- Made External Diagnosis and Recovery reasoning-only; Recovery now emits a contract and dispatches a fresh Builder through normal gates.
+- Made public command tokens literal and approvals state-bound, time-bound, action/subject-bound, and single-use.
+- Replaced runtime coupling to `Builder100K` with generic `Builder` capability plus compatibility alias.
+- Added deterministic release-manifest generation/validation, v5.2 migration policy, negative authority tests, normal E2E, and Recovery E2E.
+
 ## 5.2.0 — Deterministic Human Command & Continuation Protocol
 
 - Added universal AI bootstrap `Workplan/ENTRY_PROMPT.md` across External AI and VS Code surfaces.

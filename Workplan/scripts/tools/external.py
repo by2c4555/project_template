@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility adapter. v5.2 public entry is Workplan/scripts/command.py."""
+"""Compatibility adapter. v5.3 public entry is Workplan/scripts/command.py."""
 import argparse,json
 from _bootstrap import *
 from _core.state import load_state

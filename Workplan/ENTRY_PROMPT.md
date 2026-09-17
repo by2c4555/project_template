@@ -1,12 +1,12 @@
-# Workplan Universal Entry Protocol — v5.2.0
+# Workplan Universal Entry Protocol — v5.3.0
 
-This is the single AI bootstrap entrypoint for Project Template Workplan, regardless of provider or surface.
+This is the single AI bootstrap entrypoint for Project Template Workplan on every provider/surface.
 
 ## Authority
 
-Natural-language conversation is **discussion only**. It never authorizes workflow execution, reset, role selection, Task selection, approval, or state mutation.
+Natural-language conversation is discussion only. It never authorizes workflow execution, reset, role selection, Phase/Task/Attempt selection, approval, or state mutation.
 
-Workflow execution starts only from an exact public Workplan command. Do not paraphrase, infer, or substitute commands.
+Public workflow authority is an **exact literal token**. Do not trim, case-normalize, paraphrase, infer, or extract a command from prose.
 
 ## Exact public commands
 
@@ -25,24 +25,16 @@ Workflow execution starts only from an exact public Workplan command. Do not par
 
 ## Required behavior
 
-When the user sends an exact command:
-
-1. Submit that exact command to the deterministic command interface. Do not decide stage, role, INIT/RESUME/RECONCILE, approval need, Task, or next surface yourself.
-2. External AI uses:
-   `python Workplan/scripts/command.py <COMMAND> --surface EXTERNAL_AI --tool "<provider/tool>" --model "<model>"`
-3. VS Code Workplan agents use:
-   `python Workplan/scripts/command.py <COMMAND> --surface VS_CODE --tool "vscode" --model "<model>"`
-4. If the result is `REJECTED`, do not reinterpret the request. Report the machine reason and allowed commands.
-5. If the result is `APPROVAL_REQUIRED`, stop. Display the exact human command. Never execute `Workplan/scripts/approve.py` for the user.
-6. After the human grants approval, re-submit the original exact command. Do not continue from chat inference.
-7. If an accepted external command returns a role constitution and Action/Resume Ticket, read the named constitution and execute only that ticket.
-8. If `EXECUTE_IMPLEMENTATION` is accepted, follow only the deterministic execution machine entry and its issued Builder tickets. Re-query the public command after bounded units or a surface handoff.
-9. At stage completion or uncertainty, use `WORKPLAN_NEXT`; never reconstruct workflow from conversation history.
-
-## Discussion mode
-
-Questions, design discussion, explanation, review, comparison, and hypothetical language do not start Workplan execution. Example: “How should Planning work?” is discussion. Only the exact token `EXECUTE_PLANNING` requests Planning execution.
+1. Submit the exact token to `Workplan/scripts/command.py`; never decide stage, role, INIT/RESUME, Phase, Task, Attempt, repair, or next surface yourself.
+2. External AI uses `python Workplan/scripts/command.py <COMMAND> --surface EXTERNAL_AI --tool "<provider/tool>" --model "<model>"`.
+3. VS Code uses `python Workplan/scripts/command.py <COMMAND> --surface VS_CODE --tool "vscode" --model "<model>"`.
+4. On `REJECTED`, report the machine reason and allowed commands. Do not reinterpret intent.
+5. On `APPROVAL_REQUIRED`, stop and show the exact human approval command. AI never executes `approve.py`.
+6. After human approval, resubmit the original exact token; do not continue from conversational inference.
+7. Accepted External-Agent commands return the machine-selected role constitution plus Action/Resume Ticket. Execute only that bounded Work.
+8. Accepted `EXECUTE_IMPLEMENTATION` delegates routing to deterministic execution. Follow only the returned action and machine-issued Builder/Repair/Recovery Ticket.
+9. After every bounded unit, failure, provider switch, or uncertainty, use `WORKPLAN_NEXT` rather than reconstructing state from chat.
 
 ## Durable-state rule
 
-Repository Workplan state and machine-issued tickets are authoritative. Chat/session/provider/process state is disposable. Prior conversation may be supplementary context only when the current ticket permits it; it never changes Scope or authority.
+Repository state, immutable bindings, tickets, evidence, and checkpoints are authority. Chat/session/provider/process memory is disposable. Granted read context is supplementary and never expands production write authority.

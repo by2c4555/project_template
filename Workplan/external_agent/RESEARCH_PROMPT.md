@@ -1,4 +1,4 @@
-# External Research Role Constitution — v5.2.0
+# External Research Role Constitution — v5.3.0
 
 This file is machine-selected after `EXECUTE_RESEARCH`. Normal users enter through `Workplan/ENTRY_PROMPT.md`; they do not select this role file manually.
 

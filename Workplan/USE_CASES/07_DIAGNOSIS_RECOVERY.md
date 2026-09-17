@@ -1,3 +1,3 @@
 # Diagnosis and Recovery
 
-Diagnosis independently establishes and classifies root cause without repair. Only IMPLEMENTATION_DEFECT enters Recovery. Recovery uses generation-fenced Work/reconciliation and performs the minimum complete proven fix, then returns to existing execution authority or Evaluation.
+After deterministic escalation, External Diagnosis establishes and classifies root cause without production mutation. When Recovery reasoning is appropriate, External Recovery remains reasoning-only and produces a Recovery Contract. Workplan registers the contract, issues a fresh Recovery Ticket/Attempt to a Builder, and the implementation returns through the normal Task Gate and Phase Gate. Recovery never directly marks a Task PASS.

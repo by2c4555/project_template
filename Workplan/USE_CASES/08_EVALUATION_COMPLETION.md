@@ -1,3 +1,3 @@
 # Independent Evaluation and Completion
 
-After all Tasks PASS/PASS_RECOVERED, deterministic routing enters Evaluation. Evaluation verifies actual behavior independently. PASS/PASS_WITH_FINDINGS requires a Completion Report containing the exact Scope revision and digest before CLOSED_VALIDATED.
+External Evaluation becomes eligible only after every required Phase Gate PASS. Evaluation verifies actual behavior independently against immutable Scope/Planning authority and durable evidence. PASS/PASS_WITH_FINDINGS requires a Completion Report containing the exact Scope revision and digest before `CLOSED_VALIDATED`.

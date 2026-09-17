@@ -3,7 +3,7 @@ import argparse,json,sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from _core.command import execute
-p=argparse.ArgumentParser(description='Project Template v5.2 exact human workflow command interface')
+p=argparse.ArgumentParser(description='Project Template v5.3 exact human workflow command interface')
 p.add_argument('command')
 p.add_argument('--surface',required=True,choices=['EXTERNAL_AI','VS_CODE'])
 p.add_argument('--tool',default='unknown')

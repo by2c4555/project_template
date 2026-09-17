@@ -1,3 +1,5 @@
-# Builder Task Execution
+# Builder Task Execution — v5.3
 
-Consume only the machine-issued immutable Task Ticket plus granted context. Modify only ticket/Task-authorized user-project paths. Verify exact acceptance criteria. Persist evidence and generation-fenced semantic checkpoints. A denied repair gate is a hard stop; route back to ExecutionManager rather than improvising.
+Consume only the current machine-issued Task, Repair, or Recovery Ticket plus granted read context. Modify only ticket-authorized production paths. Never select Phase/Task/Attempt authority or broaden writes from extra context.
+
+Use the current generation for every Work mutation, checkpoint meaningful validated units, run declared verification, and persist structured evidence. A denied gate/repair/recovery authority is a hard stop: return to ExecutionManager and deterministic Workplan routing rather than improvising.

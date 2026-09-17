@@ -1,1 +1,9 @@
-{"schema_version":"5.2.0","roles":{"Builder100K":{"model":"UNCONFIGURED","minimum_context_tokens":102400,"documented_context_tokens":0},"ExecutionManager":{"model":"UNCONFIGURED","minimum_context_tokens":200000,"documented_context_tokens":0}}}
+{
+  "schema_version": 1,
+  "workflow_version": "5.3.0",
+  "roles": {
+    "Builder": {"model": "UNCONFIGURED", "minimum_context_tokens": 0, "documented_context_tokens": 0},
+    "ExecutionManager": {"model": "UNCONFIGURED", "minimum_context_tokens": 0, "documented_context_tokens": 0}
+  },
+  "compatibility_aliases": {"Builder100K": "Builder"}
+}
