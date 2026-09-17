@@ -1,3 +1,3 @@
 # Cross-Machine Resume
 
-Copy the repository workspace including `Workplan/` to another machine. A fresh compatible Agent runs `resume.py`, validates current durable state/bindings and environment requirements, then continues the next safe unit without prior provider chat. Machine-local caches are not authority.
+Copy the repository including `Workplan/`. A fresh provider runs the same deterministic entry/query. Durable state, Work checkpoints, generation and bindings reconstruct the next safe unit. Machine-local caches and prior chat are not authority.

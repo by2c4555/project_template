@@ -1,3 +1,3 @@
 # Builder Interrupted Mid-Task
 
-Task remains active. Fresh Builder resumes the same BUILDER Work, verifies changed files/evidence, reruns only uncertain verification, and must not mark PASS or start a different Task until current Task completes.
+ExecutionManager queries `execution.py next`. An active Task returns RESUME_TASK or RECONCILE_TASK. `execution.py resume` reacquires the same Builder Work with a new generation. Machine reconciliation reports changed authorized files since the last semantic checkpoint. No future Task may start.

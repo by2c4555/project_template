@@ -1,3 +1,3 @@
-# Required Use Cases
+# v5.1 Operational Use Cases
 
-Use cases are executable documentation for the canonical workflow. Every material workflow change must update affected cases or add a case when new behavior is not demonstrated.
+These scenarios are behavioral contracts. `Workplan/tests/run_scenarios.py` provides executable coverage for the central lifecycle and fencing/reconciliation behavior.

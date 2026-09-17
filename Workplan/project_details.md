@@ -1,10 +1,3 @@
-artifact_kind: PROJECT_DETAILS
-artifact_status: INCOMPLETE
-scope_title: TODO
-baseline_ref: none
-product_scope_unknowns: unknown
-supporting_files: []
+# Legacy location notice
 
-# External Agent Context Map
-
-Declare only useful `Workplan/docs/raw/*` supporting files. Final Research_Vx.md is not required.
+v5.1.0 does not accept this file as authoritative Research input. Place the current Research handoff at `Workplan/ingest/project_details.md` and declared supporting files under `Workplan/ingest/docs/raw/`.

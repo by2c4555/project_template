@@ -1,3 +1,3 @@
 # External Agent Roles
 
-All expensive reasoning roles use the same provider-neutral Work protocol and role-specific Work Map semantics. Sessions/providers may disappear; durable Work Maps and checkpoints carry forward. Run only documented `scripts/tools/` commands. Never invoke human `approve.py`.
+v5.1 uses one deterministic entry contract for Planning, Diagnosis, Recovery and Evaluation. Lifecycle state selects the role; natural-language wording does not grant authority. Prompts contain semantic role constitutions, while Workplan software owns state, capability, tickets, resume, context and verification.

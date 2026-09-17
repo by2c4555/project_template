@@ -1,3 +1,3 @@
-# Architecture
+# ARCHITECTURE
 
-Not compiled.
+Not compiled yet.

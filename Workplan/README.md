@@ -1,126 +1,135 @@
-# Workplan — Project Template v5.0.0
+# Workplan v5.1.0 — Deterministic Control Plane & Capability-Based Work
 
-`Workplan/` is the AI-development **control plane** for the user project. Files outside `Workplan/` are user-project space except thin platform adapters.
+`Workplan/` is the durable control plane for AI-assisted development. v5.1 moves workflow mechanics out of prompts and into deterministic capabilities while preserving v5 approval, integrity, diagnosis/recovery and independent evaluation invariants.
 
-## Human UX
+## User Workflow
 
-Normal users should need only:
+There are only two normal work surfaces:
+
+1. **External AI** — expensive Research, Planning, Diagnosis, Recovery and Evaluation reasoning.
+2. **VS Code Copilot Chat** — local `@ExecutionManager`, which deterministically dispatches bounded Builder work.
+
+The user should not invent stage-specific commands, select Task IDs, or manually invoke Builders.
+
+### 1. Research
+
+Use an external strong model to determine product **WHAT/WHY**, resolve product-scope unknowns and produce:
+
+- `project_details.md`
+- only useful declared supporting files
+
+Research does not create implementation Tasks and does not read `Objective_dev.md` as project scope.
+
+Copy the handoff into:
+
+```text
+Workplan/ingest/project_details.md
+Workplan/ingest/docs/raw/*
+```
+
+Then validate/import:
+
+```bash
+python Workplan/scripts/tools/ingest.py check
+python Workplan/scripts/tools/scope.py import
+```
+
+### 2. Planning / other external reasoning
+
+The external agent uses one stable entry contract:
+
+```bash
+python Workplan/scripts/tools/external.py acquire --tool "<provider>" --model "<model>"
+```
+
+The role is derived from durable lifecycle state; wording such as **Continue Workplan.** only causes the agent to query state and never grants authority.
+
+Planning must checkpoint bounded semantic units using the generation printed by its ticket. When finished:
+
+```bash
+python Workplan/scripts/tools/work.py complete --generation <N> --note "..."
+python Workplan/scripts/tools/planning.py mark-ready
+```
+
+`mark-ready` revalidates ingest, validates the planning package, archives accepted Research input and switches the user to VS Code.
+
+### 3. Execution in VS Code
+
+Select `@ExecutionManager` and send:
+
+```text
+Continue Workplan.
+```
+
+The Manager queries:
+
+```bash
+python Workplan/scripts/tools/execution.py next
+```
+
+and follows only the returned action. For a new Task it runs `execution.py dispatch`; for an interrupted Task it runs `execution.py resume`. Both choose/bind the Task deterministically and return a bounded Builder ticket.
+
+A Builder executes only that immutable Task. It checkpoints with its generation and may request bounded context by reason:
+
+```bash
+python Workplan/scripts/tools/work.py request-context --reason ARCHITECTURE
+```
+
+Context expansion never expands authority.
+
+### 4. Failure / recovery
+
+Local repair is bounded by each Task's `max_repairs`. When the limit is exceeded or a Task fails, state routes to Diagnosis. Diagnosis and Recovery are separate external Work roles. Recovery can only follow an evidence-backed `IMPLEMENTATION_DEFECT`.
+
+### 5. Evaluation / completion
+
+After all Tasks are PASS/PASS_RECOVERED, deterministic execution routes to Evaluation. Independent Evaluation verifies actual behavior against immutable Scope and contracts. A passing result requires a Completion Report containing the exact Scope revision and digest, then the Cycle becomes `CLOSED_VALIDATED`.
+
+## System Workflow
+
+```text
+External Research
+  -> untrusted Workplan/ingest/
+  -> deterministic ingest receipt (package digest + canonical scope digest)
+  -> immutable Scope history
+  -> Planning capability / generation-fenced Work
+  -> final ingest revalidation + planning integrity
+  -> accepted ingest archive + PLAN_READY
+  -> VS Code ExecutionManager
+  -> deterministic next/dispatch/resume
+  -> fresh bounded Builder + Task Ticket
+  -> PASS / bounded repair / Diagnosis
+  -> Recovery when proven implementation defect
+  -> independent Evaluation
+  -> Completion Report
+  -> CLOSED_VALIDATED
+```
+
+## Authority boundaries
+
+- `Workplan/control/STATE.json` is internal machine authority.
+- `Workplan/control/ingest/*.json` are durable validation receipts.
+- `Workplan/history/` stores immutable logical snapshots.
+- `Workplan/archive/` preserves accepted original inbound packages.
+- `Workplan/work/` stores resumable role Work, semantic checkpoints and evidence.
+- Tickets are projections from current authority; stale Work generations are rejected.
+- Provider/model identity is metadata only.
+
+## Human commands
+
+Normal human interactions are deliberately small:
 
 ```bash
 python Workplan/scripts/resume.py
+python Workplan/scripts/approve.py -- <challenge>
 ```
 
-and, only when a material token/cost-risk boundary is pending:
+`approve.py` is the sole human approval surface and only exists for material token/cost/rework risk.
 
-```bash
-python Workplan/scripts/approve.py -- <CHALLENGE>
-```
+## Model guidance
 
-The user is not required to provide Cycle IDs, digests, revisions, task counts, approval kinds, or state transitions.
+Use the strongest available reasoning model for Planning/Diagnosis/Recovery/Evaluation when the uncertainty is material. Do not choose a weak model merely because it has a larger context window. Use low-cost models for Tasks whose scope, paths, acceptance criteria and verification are already bounded.
 
-## Script surfaces
+## Development reference
 
-- `Workplan/scripts/*.py` — stable human-facing commands.
-- `Workplan/scripts/tools/*.py` — bounded deterministic AI/advanced-user commands.
-- `Workplan/scripts/_core/` — internal Python implementation; do not invoke as workflow commands.
-
-Agents must prefer tool projections over reading raw `Workplan/control/STATE.json`.
-
-# VERSION / CHANGE CYCLE
-
-```mermaid
-flowchart TD
-  R[External Research] --> S[Immutable Scope Snapshot]
-  S --> P[External Agent Planning Work]
-  P --> PM[Planning Work Map + bounded topics]
-  PM --> PR{Token-risk expansion?}
-  PR -- No --> READY[PLAN_READY]
-  PR -- Yes --> A[Pending Approval + Challenge]
-  A --> H[Human: approve.py -- CHALLENGE]
-  H --> READY
-  READY --> M[Execution Manager]
-  M --> B[Fresh Builder / immutable Task]
-  B -->|PASS| M
-  B -->|Interrupted| RS[Resume + reconcile active bounded unit]
-  RS --> B
-  B -->|Failure| D[Diagnosis Work Map]
-  D --> C{Classification}
-  C -->|Implementation defect| RC[Recovery Work Map]
-  RC --> RR{Material token-risk expansion?}
-  RR -- Yes --> A
-  RR -- No --> M
-  C -->|Task/Plan defect| P
-  M -->|All Tasks complete| E[Independent Evaluation Work Map]
-  E -->|Blocking finding| D
-  E -->|PASS / PASS_WITH_FINDINGS| CR[Project Completion Report]
-  CR --> CLOSED[CLOSED_VALIDATED]
-```
-
-## Universal interruption contract
-
-Power loss, network failure, provider timeout/quota, token/context limit, editor/process crash, user Stop, provider switch, and machine transfer are treated as session interruption—not automatic workflow failure.
-
-A fresh compatible agent must be able to run a bounded status/resume command and determine:
-
-1. current Cycle/stage;
-2. active Work/Task;
-3. last durable valid checkpoint;
-4. whether the working tree needs reconciliation;
-5. exact next safe action;
-6. whether human feedback or token-risk approval is required.
-
-## External Agent roles
-
-Canonical prompts live under `Workplan/external_agent/`:
-
-- `PLANNING_PROMPT.md`
-- `DIAGNOSIS_PROMPT.md`
-- `RECOVERY_PROMPT.md`
-- `EVALUATION_PROMPT.md`
-
-Every role uses the same durable Work protocol. Initial work establishes a role-specific Work Map; compatible later sessions/providers resume the next bounded topic.
-
-## Human approval
-
-Approval is a token/cost circuit breaker, not routine bureaucracy. AI must never invoke `approve.py`.
-
-AI obtains the pending challenge through:
-
-```bash
-python Workplan/scripts/tools/approve_req.py --id APPROVAL_0001
-```
-
-Human authorizes only by manually running:
-
-```bash
-python Workplan/scripts/approve.py -- 583194
-```
-
-AI reads the result through:
-
-```bash
-python Workplan/scripts/tools/approve_res.py --id APPROVAL_0001
-```
-
-A wrong challenge rejects that attempt, invalidates the old challenge, and rotates a new one. A challenge whose state binding is stale cannot authorize changed work.
-
-## Work Maps
-
-Planning map = repository research / uncertainty / decisions / package decomposition.  
-Diagnosis map = reproduction / hypotheses / probes / root-cause narrowing.  
-Recovery map = repair boundary / implementation / targeted and regression verification.  
-Evaluation map = independent requirement/architecture/reliability/security/operability coverage.
-
-Map refinement is allowed inside the configured envelope. Material expansion must produce a pending token-risk approval.
-
-## Builder execution
-
-The Manager and Builder are the bounded local execution layer. One Task is one immutable contract. Interrupted Builders resume/reconcile the active Task; they do not silently mark PASS, start another Task, or redo completed verified units.
-
-## External Research handoff
-
-A mandatory `Research_Vx.md` is not required. Canonical scope input is `Workplan/project_details.md` plus only declared useful `Workplan/docs/raw/*` evidence. Scope is snapshotted immutably before Planning.
-
-## State and evidence
-
-`Workplan/control/STATE.json` is authoritative internal state. `TRANSITIONS.jsonl` is audit history, not authority. Work maps, immutable checkpoints, approvals, evidence, scope snapshots, and package manifests are durable repository artifacts.
+Maintainers and future agents evolving Project Template itself must read `Workplan/Objective_dev.md`. It is separate from user-project Research input.

@@ -8,15 +8,24 @@ def sha256_file(p:Path):
         for chunk in iter(lambda:f.read(1024*1024),b''): h.update(chunk)
     return h.hexdigest()
 
+def digest_rows(rows):
+    h=hashlib.sha256()
+    for r in sorted(rows,key=lambda x:x['path']):
+        h.update(r['path'].encode()); h.update(b'\0'); h.update(r['sha256'].encode()); h.update(b'\n')
+    return h.hexdigest()
+
 def digest_files(paths):
-    h=hashlib.sha256(); rows=[]
+    rows=[]
     for p in sorted(paths,key=lambda x:str(x)):
-        rel=str(p.relative_to(ROOT)).replace('\\','/')
-        d=sha256_file(p); rows.append({'path':rel,'sha256':d,'bytes':p.stat().st_size}); h.update(rel.encode()); h.update(b'\0'); h.update(d.encode()); h.update(b'\n')
-    return h.hexdigest(),rows
+        rel=str(p.relative_to(ROOT)).replace('\\','/'); rows.append({'path':rel,'sha256':sha256_file(p),'bytes':p.stat().st_size})
+    return digest_rows(rows),rows
 
 def field(text,key):
     m=re.search(rf'^\s*{re.escape(key)}:\s*(.*?)\s*$',text,re.M); return m.group(1).strip().strip('"\'') if m else None
+
+def inline_list(text,key):
+    raw=field(text,key) or '[]'; inner=raw[1:-1].strip() if raw.startswith('[') and raw.endswith(']') else ''
+    return [x.strip().strip('"\'') for x in inner.split(',') if x.strip()]
 
 def build_package_manifest():
     files=[]
