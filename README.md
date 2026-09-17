@@ -1,59 +1,122 @@
 # Project Template v5.3.0
 
-Project Template is a deterministic control plane for AI-assisted software development. It separates expensive reasoning from bounded implementation and makes repository state—not chat history—the workflow authority.
+A deterministic control plane for AI-assisted software development.
 
-## Normal workflow
+Project Template separates **reasoning**, **implementation**, and **authority** so that AI models can help build software without making chat history or model claims the source of truth.
 
-Use only the exact public commands below. Natural-language discussion never grants execution authority.
+> **Core rule:** repository state is durable; chat/session/provider state is disposable.
 
-```text
-External AI: EXECUTE_RESEARCH
-External AI: EXECUTE_PLANNING
-VS Code:     EXECUTE_IMPLEMENTATION
+---
+
+## What this project does
+
+Project Template coordinates four responsibilities:
+
+| Component | Responsibility |
+|---|---|
+| **External AI** | Research, planning/architecture, escalated diagnosis, recovery reasoning, final independent evaluation |
+| **ExecutionManager** | Deterministic VS Code-side routing and orchestration |
+| **Builder** | Small, bounded implementation tasks using the authority in its ticket |
+| **Workplan software** | State, bindings, approvals, tickets, mutation authority, gates, repair limits, recovery, integrity, resume |
+
+Provider or model identity never grants authority by itself.
+
+---
+
+## Workflow at a glance
+
+```mermaid
+flowchart TD
+    A[User starts project] --> B[EXECUTE_RESEARCH]
+    B --> C[Research / ingest]
+    C --> D[Scope ready]
+
+    D --> E[EXECUTE_PLANNING]
+    E --> F{Human approval required?}
+    F -- Yes --> G[Human approval]
+    G --> E
+    F -- No / approved --> H[Planning Package]
+
+    H --> I[Phase selection]
+    I --> J[Task selection]
+    J --> K[Fresh Builder Attempt + Ticket]
+    K --> L[Builder implementation]
+    L --> M[Verification + Evidence]
+    M --> N{Task Gate}
+
+    N -- PASS --> O{All tasks in Phase PASS?}
+    N -- FAIL --> P{Repairable?}
+
+    P -- Yes --> Q[Fresh Repair Attempt + Repair Ticket]
+    Q --> L
+
+    P -- Structural / exhausted --> R[External Diagnosis]
+    R --> S[External Recovery reasoning]
+    S --> T[Recovery Contract]
+    T --> U[Fresh Recovery Attempt + Ticket]
+    U --> L
+
+    O -- No --> J
+    O -- Yes --> V[Phase Gate]
+    V --> W{More Phases?}
+    W -- Yes --> I
+    W -- No --> X[External Independent Evaluation]
+    X --> Y[CLOSED_VALIDATED]
 ```
 
-At any point, run `WORKPLAN_NEXT` to obtain the authoritative next surface and exact next command. `WORKPLAN_STATUS` is read-only status inspection.
+The normal user does **not** manually choose Phase IDs, Task IDs, Attempt IDs, generations, repair counters, or internal tickets. Workplan routes them deterministically.
 
-The normal user does **not** choose Phase IDs, Task IDs, Attempt IDs, generations, repair counters, or internal tickets. Workplan routes them deterministically.
+---
 
-## v5.3 authority model
-
-Runtime hierarchy is:
+## Runtime hierarchy
 
 ```text
-Cycle -> Phase -> Task -> Attempt
+Cycle
+└── Phase
+    └── Task
+        └── Attempt
+            ├── INITIAL
+            ├── REPAIR
+            └── RECOVERY
 ```
 
-A simple flat plan automatically maps to implicit `PHASE_001`. Multi-phase plans declare `Workplan/plan/PHASES.json` and each Task names its `phase_id`.
+A Task belongs to one Phase. Every Builder dispatch creates a fresh Attempt with a durable ticket bound to the current workflow state.
 
-The main roles are:
+If a simple plan does not define explicit phases, Workplan maps it to `PHASE_001`. Multi-phase plans use `Workplan/plan/PHASES.json` and each Task declares its `phase_id`.
 
-- **External Agent** — Research, Planning/architecture, escalated Diagnosis, Recovery reasoning, and final independent Evaluation.
-- **ExecutionManager** — VS Code adapter that follows deterministic Workplan routing.
-- **Builder** — low-cost bounded implementation worker receiving one Task/Repair/Recovery Ticket.
-- **Workplan software** — authority for state, bindings, routing, approvals, mutation checks, gates, repair limits, integrity, resume, and escalation.
+---
 
-Provider/model identity never grants authority.
+## Normal user workflow
 
-## Deterministic safety gates
+There are only a few commands a normal user needs most of the time:
 
-Every Builder dispatch has a fresh Attempt and immutable ticket binding. Resume recalculates current Scope/Plan/Phase/Task/Recovery bindings and blocks on mismatch instead of silently rebinding.
+```text
+EXECUTE_RESEARCH       # External AI
+EXECUTE_PLANNING       # External AI
+EXECUTE_IMPLEMENTATION # VS Code / ExecutionManager
+WORKPLAN_NEXT          # Ask Workplan what to do next
+WORKPLAN_STATUS        # Read-only status
+```
 
-Builder production changes are snapshotted across the production worktree. Workplan then compares actual create/modify/delete mutations against ticket-authorized paths. `Workplan/`, `.git/`, caches, virtual environments, and generated bytecode are not treated as Builder production authority.
+The safest operating pattern is:
 
-A model cannot self-declare success:
+```text
+1. Run WORKPLAN_NEXT
+2. Execute the exact command returned by Workplan
+3. Complete that bounded unit of work
+4. Run WORKPLAN_NEXT again
+5. Repeat until CLOSED_VALIDATED
+```
 
-- **Task Gate** checks current Attempt/generation, ticket digest, immutable bindings, structured evidence, declared verification, and production mutation authority.
-- **Phase Gate** checks all Phase Tasks plus declared integration/regression evidence before the next Phase becomes eligible.
-- Final External Evaluation is available only after all required Phase Gates pass.
+Do not reconstruct the next action from chat history.
 
-## Repair, Diagnosis, and Recovery
+---
 
-Task contracts default to `max_repairs: 2`; allowed values are `0..5`. Each local repair gets a fresh Repair Ticket and fresh Builder Attempt. Structural failures may escalate immediately instead of wasting the repair budget.
+## Exact command interface
 
-External Diagnosis and External Recovery are **reasoning-only**. They cannot mutate production files. Recovery produces a durable Recovery Contract; a fresh Builder then performs the implementation through a Recovery Ticket and must pass the normal Task Gate and Phase Gate. There is no direct recovered-PASS shortcut.
+Natural-language discussion does not grant execution authority. Public workflow authority is an **exact literal token**.
 
-## Exact public commands
+Complete public command set:
 
 ```text
 WORKPLAN_STATUS
@@ -70,33 +133,395 @@ RESET_RECOVERY
 RESET_EVALUATION
 ```
 
-Tokens are literal: lowercase, extra whitespace, or prose-wrapped variants are rejected. Surface and lifecycle stage are checked deterministically.
+External AI invocation:
 
-Human approvals are time-bound, state/action/subject-bound, and single-use. AI must never execute `Workplan/scripts/approve.py` for the user.
+```bash
+python Workplan/scripts/command.py WORKPLAN_NEXT \
+  --surface EXTERNAL_AI \
+  --tool "<provider/tool>" \
+  --model "<model>"
+```
+
+VS Code invocation:
+
+```bash
+python Workplan/scripts/command.py EXECUTE_IMPLEMENTATION \
+  --surface VS_CODE \
+  --tool "vscode" \
+  --model "<model>"
+```
+
+If Workplan returns `REJECTED`, follow the machine reason and allowed commands.
+
+If Workplan returns `APPROVAL_REQUIRED`, stop. Show the exact approval command to the human user. **AI must never approve itself.** After approval, resubmit the original public command.
+
+---
+
+## What happens during implementation
+
+When implementation is eligible, Workplan selects the current Phase and Task and issues a fresh ticket.
+
+A Builder ticket contains bounded authority such as:
+
+```text
+Cycle / Phase / Task / Attempt
+Work ID + generation
+Scope digest
+Planning Package digest
+Phase digest
+Task digest
+authorized_paths
+granted read context
+verification requirements
+evidence requirements
+```
+
+The Builder may modify only production paths authorized by that ticket.
+
+Example:
+
+```text
+authorized_paths:
+  src/calculator.py
+```
+
+This does **not** authorize unrelated files such as:
+
+```text
+README.md
+src/database.py
+.github/...
+```
+
+unless those paths are present in the ticket.
+
+---
+
+## Task Gate and Phase Gate
+
+A model cannot declare its own work successful.
+
+### Task Gate
+
+The deterministic Task Gate checks the current execution identity and evidence, including:
+
+- current Phase / Task / Attempt / generation;
+- completed Builder Work;
+- ticket identity and digest;
+- immutable Scope / Plan / Phase / Task bindings;
+- unchanged approved Planning Package;
+- declared verification results;
+- required evidence;
+- mutation-manifest identity;
+- actual production mutations against `authorized_paths`.
+
+Only Task Gate can mark a Task `PASS`.
+
+### Phase Gate
+
+A Phase cannot pass until:
+
+- all required Tasks in that Phase are `PASS`;
+- dependencies are satisfied;
+- required phase-level verification/evidence passes;
+- no unresolved issue affects the Phase.
+
+Only a successful Phase Gate makes the next Phase eligible.
+
+---
+
+## Failure and repair flow
+
+Routine implementation failures do not require restarting the project.
+
+```mermaid
+flowchart LR
+    A[Builder Attempt] --> B[Verification]
+    B --> C{Task Gate}
+    C -- PASS --> D[Continue]
+    C -- FAIL --> E{Failure type}
+    E -- Local / repairable --> F[Repair Ticket]
+    F --> G[Fresh REPAIR Attempt]
+    G --> B
+    E -- Structural / repair exhausted --> H[Diagnosis]
+    H --> I[Recovery reasoning]
+    I --> J[Recovery Contract]
+    J --> K[Fresh RECOVERY Attempt]
+    K --> B
+```
+
+`max_repairs` defaults to `2` and may be configured from `0` through `5`.
+
+Every repair gets a new Attempt and Repair Ticket. Old Attempts are not silently reused.
+
+---
+
+## Diagnosis and Recovery
+
+External Diagnosis and External Recovery are **reasoning-only** roles.
+
+They do not directly modify production files.
+
+The recovery path is:
+
+```text
+Failure
+  ↓
+External Diagnosis
+  ↓
+External Recovery reasoning
+  ↓
+Recovery Contract
+  ↓
+ExecutionManager
+  ↓
+Recovery Ticket
+  ↓
+Fresh Builder Attempt
+  ↓
+Verification
+  ↓
+Task Gate
+  ↓
+Phase Gate
+```
+
+There is no direct "recovered = PASS" shortcut.
+
+---
+
+## Approval model
+
+Human approvals are explicit and deterministic.
+
+An approval is bound to the current state/action/subject and is:
+
+- time-bound;
+- single-use;
+- invalidated by incompatible state changes;
+- rotated after an incorrect challenge.
+
+AI cannot grant its own approval.
+
+---
 
 ## Resume and provider switching
 
-Repository Workplan state, immutable contracts, tickets, evidence, and checkpoints are durable. Chat/session/provider state is disposable. A resumed Work receives a new generation while retaining its original immutable binding and granted read context. Stale generations and stale state objects fail closed.
+Workplan is designed so that a chat session, model, provider, or process may disappear without becoming the source of truth.
 
-Read-context expansion never expands production write authority.
+Durable state includes:
 
-## Entry points
+```text
+Scope
+Planning Package
+STATE.json
+Work records
+Tickets
+Attempts
+Evidence
+Checkpoints
+Bindings / digests
+Recovery Contracts
+```
 
-- All AI surfaces: `Workplan/ENTRY_PROMPT.md`
-- Operator/architecture guide: `Workplan/README.md`
-- Development constitution: `Workplan/Objective_dev.md`
-- v5.2 migration: `Workplan/MIGRATION_V5_2_TO_V5_3.md`
-- Release verification: `Workplan/RELEASE_VALIDATION.md`
+On resume, Workplan recalculates the current bindings and compares them with the bindings captured when the Work was issued.
 
-## Validation and integrity
+A mismatch blocks instead of silently rebinding.
 
-From the repository root:
+A resumed Work receives a new generation, fencing stale sessions.
+
+---
+
+## Example mental model
+
+Suppose the project is a tiny calculator:
+
+```text
+Requirement:
+- add 2 3 -> 5
+- sub 7 4 -> 3
+- invalid operation -> non-zero exit
+- tests must pass
+```
+
+Planning may produce:
+
+```text
+PHASE_001
+└── TASK_001: implement src/calculator.py
+
+PHASE_002
+└── TASK_002: implement tests/test_calculator.py
+```
+
+Execution then looks like:
+
+```text
+TASK_001
+  ↓
+Builder writes src/calculator.py
+  ↓
+verification fails
+  ↓
+Task Gate FAIL
+  ↓
+Repair Attempt
+  ↓
+verification passes
+  ↓
+Task Gate PASS
+  ↓
+Phase Gate PASS
+
+TASK_002
+  ↓
+Builder writes tests/test_calculator.py
+  ↓
+unit tests pass
+  ↓
+Task Gate PASS
+  ↓
+Phase Gate PASS
+  ↓
+External Evaluation
+  ↓
+CLOSED_VALIDATED
+```
+
+The important point is that the failed first Attempt is preserved as history. The repair receives fresh authority rather than pretending the failure never happened.
+
+---
+
+## Important repository paths
+
+```text
+Workplan/
+├── ENTRY_PROMPT.md              # universal AI bootstrap / public command rules
+├── Objective_dev.md             # development constitution
+├── README.md                    # detailed Workplan architecture/operator guide
+├── RELEASE_VALIDATION.md        # candidate validation record
+├── VERSION                      # current Workplan version
+│
+├── control/
+│   └── STATE.json               # authoritative durable runtime state
+│
+├── plan/                        # implementation plan / phase definitions
+├── tasks/                       # task contracts
+├── compiled/                    # compiled architecture/interface authority
+├── work/                        # Work records, tickets, attempts, evidence
+├── diagnosis/                   # durable diagnosis artifacts
+├── recovery/                    # durable recovery artifacts
+├── evaluation/                  # final evaluation artifacts
+│
+├── external_agent/              # bounded role constitutions
+│
+└── scripts/
+    ├── command.py               # exact public command interface
+    ├── status.py                # status inspection
+    ├── resume.py                # durable continuation/reconciliation
+    ├── integrity.py             # deterministic release manifest
+    ├── validate.py              # structural/full validation
+    └── _core/                   # deterministic authority mechanisms
+```
+
+---
+
+## Validation
+
+Run validation from the repository root.
+
+After release files are stable, generate the deterministic manifest:
 
 ```bash
 python Workplan/scripts/integrity.py generate
+```
+
+Then run the authoritative full validation:
+
+```bash
 python Workplan/scripts/validate.py --full
 ```
 
-`validate.py --full` runs structural/version/schema checks, Python syntax checks, exact-command tests, authority/invariant tests, normal end-to-end execution, Recovery end-to-end execution, migration documentation checks, and release-manifest validation.
+The v5.3.0 full suite covers:
 
-The release manifest is deterministic and intentionally excludes runtime-local state/history, `.git/`, `__pycache__/`, `*.pyc`, caches, virtual environments, editor-local files, temp files, and ZIP artifacts.
+```text
+structural/version/schema validation
+exact public command protocol
+authority and invariant tests
+normal multi-Phase end-to-end flow
+failure + fresh Repair Attempt flow
+Diagnosis / Recovery end-to-end flow
+mutation authorization
+resume / generation fencing
+migration documentation checks
+release manifest validation
+```
+
+A skipped or timed-out required suite is a validation failure.
+
+---
+
+## Safety / authority principles
+
+Project Template follows a few strict invariants:
+
+1. **Chat is not authority.** Repository state is authority.
+2. **Models do not self-approve.** Human approval remains explicit.
+3. **Builders receive bounded tickets.** Read context does not expand write authority.
+4. **Every execution is bound.** Scope, Plan, Phase, Task, Attempt, generation, and ticket identities are checked.
+5. **Failures remain visible.** Repair and Recovery create fresh Attempts.
+6. **Task success is gated.** Builder claims alone cannot mark a Task `PASS`.
+7. **Phase progression is gated.** The next Phase cannot start until the current Phase passes.
+8. **Recovery is not a shortcut.** Recovered code returns through the normal Builder and gates.
+9. **Resume fails closed on stale bindings.** Work is never silently rebound.
+10. **Validation must be executable.** Do not claim release success without running the required validator.
+
+---
+
+## Entry points for deeper documentation
+
+| Document | Use it for |
+|---|---|
+| `Workplan/ENTRY_PROMPT.md` | Exact command bootstrap for every AI surface |
+| `Workplan/README.md` | Operator and control-plane architecture details |
+| `Workplan/Objective_dev.md` | Required design invariants and development constitution |
+| `Workplan/MIGRATION_V5_2_TO_V5_3.md` | v5.2 → v5.3 migration rules |
+| `Workplan/RELEASE_VALIDATION.md` | Candidate validation procedure and recorded results |
+
+---
+
+## Short version
+
+```text
+Research
+  ↓
+Planning + human approval
+  ↓
+Phase
+  ↓
+Task
+  ↓
+Fresh Builder Attempt
+  ↓
+Verification / Evidence
+  ↓
+Task Gate
+  ↓
+Repair or Recovery when needed
+  ↓
+Phase Gate
+  ↓
+Next Phase
+  ↓
+External Evaluation
+  ↓
+CLOSED_VALIDATED
+```
+
+If you are ever unsure what should happen next:
+
+```text
+WORKPLAN_NEXT
+```
+
+Let deterministic repository state decide the continuation instead of reconstructing it from conversation history.
