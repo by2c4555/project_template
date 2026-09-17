@@ -1,4 +1,4 @@
-# Project Template Development Objective — v5.1.0
+# Project Template Development Objective — v5.2.0
 
 This file is the maintainer/development constitution for **Project Template itself**. It is not user-project scope and must never be treated as Research input for a user project.
 
@@ -35,7 +35,7 @@ The design must amplify model intelligence rather than spend model intelligence 
 19. Evaluation is independent from Planning/Builder/Recovery claims and verifies actual behavior.
 20. PASS/PASS_WITH_FINDINGS requires a Completion Report bound to exact Scope revision/digest.
 21. There is a single human approval interface (`scripts/approve.py`), used only as a token/cost/rework circuit breaker.
-22. Approval challenges remain bound to exact durable state and rotate/reject stale or wrong challenges.
+22. Approval challenges remain bound to exact durable state, expire after a bounded lease, and reject stale/wrong/expired authorization.
 23. Raw `STATE.json` is internal authority; normal agents consume bounded tools/projections.
 24. Provider/model metadata is not authority and never substitutes for state bindings.
 25. Cross-session and cross-machine continuation must not require prior chat history.
@@ -44,6 +44,15 @@ The design must amplify model intelligence rather than spend model intelligence 
 28. More capability should normally mean more deterministic software, not larger prompts.
 29. README, runtime, use cases, validation and changelog must ship in sync.
 30. Changes to these MUST invariants require explicit owner feedback and same-release updates to this constitution and verification.
+31. `Workplan/ENTRY_PROMPT.md` is the single AI bootstrap entrypoint across providers/surfaces; it is protocol guidance, never workflow authority.
+32. Natural-language conversation never grants Workplan execution, reset, role selection, Task selection, or approval authority.
+33. Mutating or expensive workflow execution starts only through an exact recognized public Workplan command validated against durable state and current surface.
+34. AI must never infer INIT/RESUME/RECONCILE/RESET, role, approval requirement, Task selection, or next surface; deterministic software supplies them.
+35. Normal users never select role prompt files; Workplan selects role constitutions after command validation.
+36. Rejected commands cause no workflow mutation except issuance of an explicitly reported approval challenge when the command is valid but gated.
+37. RESET operations preserve immutable Scope/history, explicitly invalidate only the targeted active Work, and require human approval.
+38. Routine resume/reconciliation must not require repeated approval merely because a session, model, provider, process, or machine changed.
+39. Public continuation output must state the current result, next surface, and exact next command without requiring interpretation of internal state tokens.
 
 ## SHOULD principles
 
@@ -53,3 +62,4 @@ The design must amplify model intelligence rather than spend model intelligence 
 - Prefer the fewest new components consistent with clear ownership.
 - Avoid OS/process locks when durable generation fencing provides the required safety.
 - Avoid duplicate state, memory-summary files and prompt-only authority.
+- Keep the public command vocabulary small, stable and versioned; add a command only when it represents a distinct human intent that cannot be safely derived from state.

@@ -1,7 +1,5 @@
-# External Independent Evaluation — v5.1.0
+# External Evaluation Role Constitution — v5.2.0
 
-Role: independently verify actual behavior against immutable Scope and approved contracts. Planning/Builder/Recovery claims are history, not proof. Do not modify production implementation.
+This file is machine-selected after `EXECUTE_EVALUATION`. Normal users enter through `Workplan/ENTRY_PROMPT.md`.
 
-Enter through `python Workplan/scripts/tools/external.py acquire --tool "<provider/tool>" --model "<model>"`. Follow bounded tickets/context and checkpoint verified evaluation units. Never execute human `approve.py`.
-
-Results: PASS, PASS_WITH_FINDINGS, DIAGNOSIS_REQUIRED. Passing results require a detailed Completion Report bound to exact Scope revision/digest.
+Independently verify actual behavior against immutable Scope, planning contracts, and evidence. Do not accept Planning/Builder/Recovery claims without verification. PASS/PASS_WITH_FINDINGS requires the exact Completion Report binding required by Workplan. Never execute human approval commands.

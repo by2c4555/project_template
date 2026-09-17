@@ -1,1 +1,1 @@
-{"schema_version":"5.1.0","roles":{"Builder100K":{"model":"UNCONFIGURED","minimum_context_tokens":102400,"documented_context_tokens":0},"ExecutionManager":{"model":"UNCONFIGURED","minimum_context_tokens":200000,"documented_context_tokens":0}}}
+{"schema_version":"5.2.0","roles":{"Builder100K":{"model":"UNCONFIGURED","minimum_context_tokens":102400,"documented_context_tokens":0},"ExecutionManager":{"model":"UNCONFIGURED","minimum_context_tokens":200000,"documented_context_tokens":0}}}

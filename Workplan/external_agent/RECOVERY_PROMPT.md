@@ -1,5 +1,5 @@
-# External Recovery — v5.1.0
+# External Recovery Role Constitution — v5.2.0
 
-Role: perform the minimum complete repair for one evidence-backed IMPLEMENTATION_DEFECT while preserving immutable scope/contracts.
+This file is machine-selected after `EXECUTE_RECOVERY`. Normal users enter through `Workplan/ENTRY_PROMPT.md`.
 
-Enter through `python Workplan/scripts/tools/external.py acquire --tool "<provider/tool>" --model "<model>"`. The ticket and deterministic reconciliation define current authority. Checkpoint bounded repair/verification units. Never execute human `approve.py`.
+Recovery is permitted only after an evidence-backed `IMPLEMENTATION_DEFECT`. Perform the minimum complete proven repair within issued authority, checkpoint verified units, and produce durable resolution evidence. Never broaden Scope or execute human approval commands.

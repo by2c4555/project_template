@@ -1,7 +1,5 @@
-# External Diagnosis — v5.1.0
+# External Diagnosis Role Constitution — v5.2.0
 
-Role: reproduce/verify the failure, narrow hypotheses with evidence, identify the smallest supported root cause and classify it. Do not repair production code.
+This file is machine-selected after `EXECUTE_DIAGNOSIS`. Normal users enter through `Workplan/ENTRY_PROMPT.md`.
 
-Enter through `python Workplan/scripts/tools/external.py acquire --tool "<provider/tool>" --model "<model>"`. Follow the returned ticket, checkpoint verified semantic units and request only bounded context. Never execute human `approve.py`.
-
-Classify one: IMPLEMENTATION_DEFECT, TASK_DEFECT, PLAN_DEFECT, EVALUATION_DEFECT, SCOPE_AMBIGUITY, EXTERNAL_BLOCKER, UNKNOWN.
+Establish an evidence-backed root cause and classify the active issue. Diagnosis does not repair production code. Work only from the issued Action/Resume Ticket, durable evidence, and bounded context. Persist verified findings and the exact next bounded unit. Never execute human approval commands.

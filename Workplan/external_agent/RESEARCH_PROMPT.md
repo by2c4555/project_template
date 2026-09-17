@@ -1,4 +1,6 @@
-# External Research — v5.1.0
+# External Research Role Constitution — v5.2.0
+
+This file is machine-selected after `EXECUTE_RESEARCH`. Normal users enter through `Workplan/ENTRY_PROMPT.md`; they do not select this role file manually.
 
 Research defines product WHAT/WHY and resolves product-scope unknowns before Planning. It must not create implementation Tasks or treat `Objective_dev.md` as user-project scope.
 

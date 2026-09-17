@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone
 from .paths import STATE_PATH, TRANSITIONS_PATH
 from .io import atomic_write_json
-WORKFLOW_VERSION='5.1.0'; SCHEMA_VERSION=4
+WORKFLOW_VERSION='5.2.0'; SCHEMA_VERSION=5
 
 def now(): return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z')
 
