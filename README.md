@@ -64,7 +64,50 @@ flowchart TD
     X --> Y[CLOSED_VALIDATED]
 ```
 
+<<<<<<< HEAD
 The normal user does **not** manually choose Phase IDs, Task IDs, Attempt IDs, generations, repair counters, or internal tickets. Workplan routes them deterministically.
+=======
+## User workflow
+
+BOOTSTRAP
+   ↓
+EXECUTE_RESEARCH
+   ↓
+Ingest + Scope
+   ↓
+EXECUTE_PLANNING
+   ↓
+Human Approval
+   ↓
+Planning Package
+   ↓
+PHASE_001 / TASK_001
+   ↓
+Builder
+   ↓
+Verification FAIL
+   ↓
+Repair Attempt
+   ↓
+Task Gate PASS
+   ↓
+Phase Gate PASS
+   ↓
+PHASE_002 / TASK_002
+   ↓
+Builder + unittest
+   ↓
+Task Gate PASS
+   ↓
+Phase Gate PASS
+   ↓
+Evaluation
+   ↓
+CLOSED_VALIDATED
+
+
+At any point, run `WORKPLAN_NEXT` to obtain the authoritative next surface and exact next command. `WORKPLAN_STATUS` is read-only status inspection.
+>>>>>>> 96e1a800c4ef9c8c6a669c13bd7faf97a9bfe630
 
 ---
 
