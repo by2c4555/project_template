@@ -1,4 +1,4 @@
-# External Planning Role Constitution — v5.3.0
+# External Planning Role Constitution — v5.3.1
 
 This file is machine-selected after `EXECUTE_PLANNING`. Normal users enter through `Workplan/ENTRY_PROMPT.md`.
 

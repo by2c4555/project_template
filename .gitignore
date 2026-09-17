@@ -1,7 +1,51 @@
+# Python / language runtime
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
 .venv/
+venv/
+.env
+.env.*
+
+# Tool/test/editor caches
+.pytest_cache/
+.mypy_cache/
+.cache/
+.idea/
+.vscode/
+*.tmp
+*.swp
+*~
+
+# Common dependency/build output
 node_modules/
-Workplan/control/logs/*.log
+dist/
+build/
+
+# Project Template runtime-local Workplan state.
+# Keep only explicit directory sentinels in the release tree.
+Workplan/work/*
+!Workplan/work/.gitkeep
+Workplan/control/approvals/*
+!Workplan/control/approvals/.gitkeep
+Workplan/control/ingest/*
+!Workplan/control/ingest/.gitkeep
+Workplan/history/cycles/*
+!Workplan/history/cycles/.gitkeep
+Workplan/diagnosis/*
+!Workplan/diagnosis/.gitkeep
+Workplan/recovery/*
+!Workplan/recovery/.gitkeep
+Workplan/evaluation/*
+!Workplan/evaluation/.gitkeep
+Workplan/archive/*
+!Workplan/archive/.gitkeep
 Workplan/execution/logs/*
 !Workplan/execution/logs/.gitkeep
+Workplan/knowledge/resolutions/*
+!Workplan/knowledge/resolutions/.gitkeep
+Workplan/ingest/*
+!Workplan/ingest/.gitkeep
+
+# Local release artifacts
+*.zip

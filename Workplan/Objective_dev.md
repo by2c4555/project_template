@@ -1,28 +1,35 @@
-# Development Objective — Project Template v5.3.0
+# Development Objective — Project Template v5.3.1
 
 ## Status
 
-Development constitution for v5.3.0.
+Development constitution for Project Template v5.3.1.
 
-This document governs development of the Project Template itself.
+This file governs development of **Project Template itself**. It is not user-project Research, Scope, requirements, architecture, or implementation authority.
 
-It is **not** user-project scope and must never be treated as user Research, Scope, or product requirements.
+v5.3.1 is a hardening release. It preserves schema 6 and the v5.3 lifecycle while tightening:
+
+1. Research quality before Scope/Planning;
+2. VS Code Manager/Builder model-cost separation;
+3. release/document/tree cleanliness;
+4. patch migration and final-acceptance reproducibility.
+
+No new workflow role is introduced.
 
 ---
 
 ## 1. Core objective
 
-Maximize **engineering quality per token/cost**.
+Maximize **engineering quality per token/cost** while keeping workflow authority deterministic, durable, auditable, resumable, and provider-neutral.
 
-The architecture must intentionally allocate work so that:
+Architecture allocation:
 
-- expensive models perform high-value reasoning;
-- lower-cost models perform bounded implementation;
-- deterministic software controls authority, state, routing, gates, validation, verification, recovery, integrity, and resumability.
-
-Repository state is durable.
-
-Chat history and individual model sessions are disposable.
+```text
+strong/paid model   -> high-value reasoning
+local/low-cost model-> bounded implementation
+deterministic code  -> authority/state/routing/gates/validation/recovery
+repository state    -> durable truth
+chat/session state  -> disposable context
+```
 
 ---
 
@@ -32,175 +39,198 @@ Chat history and individual model sessions are disposable.
 2. Durable state before conversational memory.
 3. Bounded contracts before open-ended autonomy.
 4. Strong reasoning only where it materially improves quality.
-5. Low-cost implementation wherever deterministic contracts make it safe.
-6. Executable verification before claimed completion.
+5. Lowest-cost capable Builder for routine implementation.
+6. Executed verification before claimed completion.
 7. Immutable execution bindings.
-8. Explicit escalation.
-9. Resumability across sessions/providers.
-10. Simplicity: no agent, prompt, state, file, abstraction, or command without measurable value.
+8. Explicit escalation instead of unbounded retries.
+9. Resumability across sessions/providers/machines.
+10. Selective context rather than repository-wide context by default.
+11. Negative-path validation for every authority boundary.
+12. One source of truth per concern.
+13. Release cleanliness: no obsolete alias, duplicate prompt/template, cache, or placeholder without measurable value.
 
 ---
 
 ## 3. Authority model
 
-Authority is derived from deterministic Workplan state and approved contracts.
+Authority comes from deterministic Workplan state and accepted contracts.
 
-Authority is not derived from:
+Authority does **not** come from:
 
 - model capability;
+- model price;
 - model confidence;
+- provider identity;
 - chat context;
-- prose instruction alone;
-- role self-assertion.
+- prompt role self-assertion;
+- a claimed PASS;
+- an implementation summary.
 
-The authoritative system must be able to reject an otherwise capable model when state, binding, path, gate, approval, or generation is invalid.
+The control plane must be able to reject a capable model when lifecycle stage, surface, ticket, generation, binding, authorized path, approval, evidence, or gate is invalid.
 
 ---
 
-## 4. Roles
+## 4. Canonical workflow
 
-### External Agent
+```text
+Research
+  -> deterministic ingest validation
+  -> immutable Scope
+  -> approval-gated Planning
+  -> validated Planning Package
+  -> deterministic Phase/Task routing
+  -> bounded Builder Attempt
+  -> verification/evidence
+  -> Task Gate
+  -> Phase Gate
+  -> Independent Evaluation
+  -> CLOSED_VALIDATED
+```
 
-Use for:
+Failure path:
+
+```text
+Task failure
+  -> bounded local diagnosis
+  -> Repair if permitted
+  -> fresh Builder Attempt
+  -> gate
+  -> escalate if structural/exhausted
+  -> External Diagnosis
+  -> External Recovery reasoning
+  -> Recovery Contract
+  -> fresh Recovery Builder Attempt
+  -> normal gates
+```
+
+---
+
+## 5. Canonical hierarchy
+
+Runtime hierarchy:
+
+```text
+Cycle -> Phase -> Task -> Attempt
+```
+
+Rules:
+
+- every Task belongs to exactly one Phase;
+- a trivial project may deterministically use implicit `PHASE_001`;
+- every implementation dispatch creates a fresh Attempt;
+- Attempt kind is `INITIAL`, `REPAIR`, or `RECOVERY`;
+- normal user UX must not require manual selection of Phase/Task/Attempt/generation/digest/ticket internals.
+
+---
+
+## 6. External Agent role
+
+External reasoning is used for:
 
 - Research;
-- Planning;
-- architecture;
+- Planning/architecture;
 - escalated Diagnosis;
 - Recovery reasoning;
 - Independent Evaluation.
 
-External Agent is not the normal implementation worker.
+External Agent is not the normal production implementation worker.
 
 External Diagnosis and Recovery are reasoning-only.
 
-### Execution Manager
-
-Runs in VS Code/Copilot Chat or equivalent environment.
-
-Responsibilities:
-
-- invoke deterministic Workplan routing;
-- supervise Phase/Task execution;
-- dispatch exact tickets;
-- run/coordinate verification;
-- request bounded repair;
-- escalate when required;
-- report the exact next public command.
-
-The Manager does not own PASS/FAIL authority.
-
-### Builder
-
-Receives one bounded Task/Repair/Recovery Ticket.
-
-Responsibilities:
-
-- implement within authorized paths;
-- execute required verification;
-- produce structured evidence;
-- checkpoint;
-- report completion/failure;
-- stop.
-
-Builder does not own routing, retry policy, repair budget, or PASS authority.
-
-### Workplan
-
-Workplan owns:
-
-- lifecycle;
-- Cycle/Phase/Task/Attempt state;
-- immutable bindings;
-- dependency routing;
-- tickets;
-- generations;
-- context grants;
-- repair limits;
-- approvals;
-- gates;
-- mutation reconciliation;
-- integrity;
-- resume;
-- escalation;
-- completion.
+External Evaluation is review/acceptance, not repair.
 
 ---
 
-## 5. Hierarchy
+## 7. Research role and ingress boundary
 
-Canonical hierarchy:
+Research defines user-project **WHAT/WHY** and acceptance authority before Planning.
 
-`Cycle -> Phase -> Task -> Attempt`
+Canonical Research files:
 
-Every Task belongs to exactly one Phase.
+```text
+Workplan/external_agent/RESEARCH_INSTRUCTION.md
+Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md
+Workplan/templates/PROJECT_DETAILS_TEMPLATE.md
+```
 
-A trivial project may deterministically use implicit `PHASE_001`.
+Canonical handoff:
 
-User UX must not require manual Phase or Task selection.
+```text
+Workplan/ingest/project_details.md
+Workplan/ingest/docs/raw/*
+```
+
+New v5.3.1 handoffs must declare:
+
+```text
+research_protocol: EXTERNAL_RESEARCH_PROTOCOL_V1
+product_scope_unknowns: 0
+```
+
+`product_scope_unknowns: 0` is valid only when no unresolved question can materially alter product scope, architecture-driving constraints, acceptance criteria, mandatory interfaces, compatibility, security expectations, or another planning-critical boundary.
+
+Research must preserve source/evidence mapping and distinguish facts, requirements, constraints, assumptions, and remaining non-blocking unknowns.
+
+Research must not create implementation Tasks/Phases or modify production code.
 
 ---
 
-## 6. Planning contract
+## 8. Ingest authority
 
-Planning must define enough durable structure that routine execution requires minimal reasoning.
+Research text is not accepted merely because a model says it is ready.
 
-Planning Package must include or bind:
+`Workplan/scripts/tools/ingest.py check` must deterministically validate applicable:
 
-- project brief;
+- artifact kind/status;
+- protocol marker;
+- canonical required sections;
+- supporting-file list syntax;
+- path safety;
+- physical package presence;
+- file digests;
+- package/scope digest.
+
+Only actual `INGEST_VALID: PASS` proves ingest package validity.
+
+Existing already-accepted v5.3.0 ingest may use immutable-digest compatibility revalidation during patch migration. Compatibility must not create a second authority path for new Research.
+
+---
+
+## 9. Scope boundary
+
+Accepted Scope is an immutable product WHAT/WHY snapshot for the active Cycle.
+
+`Workplan/Objective_dev.md` must never be imported as user-project Scope.
+
+Scope authority must remain bound by revision/digest through Planning, Work, resume, gates, Recovery, and Evaluation.
+
+---
+
+## 10. Planning role
+
+Planning performs high-value technical reasoning after valid Scope and required human approval.
+
+Planning owns:
+
 - architecture;
 - global constraints;
 - interfaces;
 - data model;
 - decisions;
 - known risks;
-- Phase contracts;
-- Task contracts;
-- verification expectations.
+- Phase decomposition;
+- Task decomposition;
+- authorized production paths;
+- required context;
+- acceptance/verification contracts;
+- evidence requirements;
+- repair budgets.
 
-The package must pass deterministic validation before `PLAN_READY`.
-
----
-
-## 7. Phase contract
-
-Minimum Phase authority:
-
-- `phase_id`
-- objective
-- dependencies
-- architecture bindings
-- interface bindings
-- acceptance criteria
-- verification
-- required evidence
-
-Phase contracts are immutable after Planning approval except through controlled plan revision.
+Planning must define enough durable structure that routine execution does not repeatedly require expensive reasoning.
 
 ---
 
-## 8. Task contract
-
-Minimum Task authority:
-
-- `task_id`
-- `phase_id`
-- objective
-- dependencies
-- authorized production paths
-- required context
-- architecture bindings
-- interface bindings
-- acceptance criteria
-- verification
-- required evidence
-- repair budget
-
-Task contracts are immutable after Planning approval except through controlled plan revision.
-
----
-
-## 9. Planning package integrity
+## 11. Planning Package integrity
 
 `PLAN_READY` must bind:
 
@@ -209,172 +239,334 @@ Task contracts are immutable after Planning approval except through controlled p
 - Phase digests;
 - Task digests.
 
-Execution must fail closed if a bound contract changes.
+Material changes to bound Planning files after approval invalidate execution authority.
+
+Execution must fail closed rather than silently rebinding to modified contracts.
 
 ---
 
-## 10. Deterministic routing
+## 12. Phase contract
+
+Minimum Phase authority:
+
+- `phase_id`;
+- objective;
+- dependencies;
+- architecture bindings;
+- interface bindings;
+- acceptance criteria;
+- verification;
+- required evidence.
+
+Phase dependencies must be valid and acyclic.
+
+---
+
+## 13. Task contract
+
+Minimum Task authority:
+
+- `task_id`;
+- `phase_id`;
+- objective;
+- dependencies;
+- authorized production paths;
+- required read context;
+- architecture bindings;
+- interface bindings;
+- acceptance criteria;
+- verification;
+- required evidence;
+- repair budget.
+
+Task contracts are immutable after Planning approval except through controlled revision/recovery mechanisms.
+
+---
+
+## 14. ExecutionManager role
+
+ExecutionManager runs in VS Code/Copilot Chat or equivalent supported environment.
+
+Canonical file:
+
+```text
+.github/agents/manager.agent.md
+```
+
+Responsibilities:
+
+- invoke deterministic Workplan routing;
+- supervise Phase/Task execution;
+- execute only returned deterministic actions;
+- delegate exact Builder tickets;
+- run/coordinate verification as allowed;
+- request bounded repair;
+- perform bounded Task-local diagnosis where allowed;
+- report exact next public command/surface;
+- stop on external/human escalation.
+
+ExecutionManager does **not** own PASS/FAIL authority.
+
+---
+
+## 15. Manager model boundary
+
+`manager.agent.md` must not pin a model.
+
+The Manager uses the model selected by the user in the VS Code Chat model picker.
+
+This permits paid/strong reasoning where the user chooses it without hard-coding provider identity into Workplan.
+
+The Manager must not override Builder's model during normal delegation.
+
+---
+
+## 16. Manager capability boundary
+
+Manager must not have the normal production `edit` capability.
+
+Expected tools:
+
+```text
+read
+search
+execute
+agent
+```
+
+Manager may invoke only `Builder` as a normal subagent.
+
+If production mutation is required, Manager delegates the machine-issued ticket instead of implementing directly.
+
+---
+
+## 17. Builder role
+
+Canonical file:
+
+```text
+.github/agents/builder.agent.md
+```
+
+Builder receives one bounded Task/Repair/Recovery ticket.
+
+Responsibilities:
+
+- inspect granted context;
+- implement within authorized paths;
+- execute declared verification;
+- produce required structured evidence/checkpoints;
+- report completion/failure;
+- stop.
+
+Builder does not own routing, retry policy, repair budget, Scope/Plan changes, or PASS authority.
+
+---
+
+## 18. Builder model/cost boundary
+
+Builder is pinned to:
+
+```text
+Project Builder Local
+```
+
+This is a machine-local VS Code model display alias, typically mapped to a low-cost/local coding model such as Qwen2.5-Coder.
+
+The alias is cost/capability policy only. It grants no Workplan authority.
+
+Normal implementation should use the lowest-cost model that reliably satisfies bounded tickets.
+
+---
+
+## 19. Deterministic routing
 
 Workplan selects:
 
+- lifecycle continuation;
 - next Phase;
 - next Task;
 - Attempt kind;
 - ticket;
-- continuation.
+- repair/recovery authority;
+- next surface.
 
-The user and Manager must not manually reorder authoritative execution.
+User, Manager, and Builder must not manually reorder authoritative execution.
 
 ---
 
-## 11. Ticket authority
+## 20. Ticket authority
 
-Every Builder Attempt requires a durable ticket bound to:
+Every Builder Attempt requires a durable ticket bound to applicable:
 
 - Cycle;
 - Phase;
 - Task;
 - Attempt;
+- Work;
 - generation;
 - state identity;
-- Scope;
-- Planning Package;
+- Scope digest;
+- Planning Package digest;
 - Phase/Task digest;
+- Recovery Contract digest;
 - authorized paths;
 - context grant;
 - verification;
 - evidence requirements.
 
+Ticket authority is explicit and bounded.
+
 ---
 
-## 12. Production mutation authority
+## 21. Production mutation authority
 
-Builder production mutations must be checked against the complete production-worktree mutation set.
+Builder production mutations must be reconciled against the complete relevant production-worktree mutation set.
 
-Unauthorized create/modify/delete must fail the Task Gate.
+Unauthorized create/modify/delete must fail Task Gate.
 
-Workplan-owned control-plane updates are separate from Builder production mutations.
+Workplan control-plane updates are separate from production mutation authority.
 
 Generated/cache/runtime-local paths must not create false production-authority results.
 
 ---
 
-## 13. Verification and evidence
+## 22. Verification and evidence
 
 Required verification must execute.
 
-Evidence must be structured and bound to:
+Evidence must be structured and bound to current Attempt/Task/Phase/generation/ticket.
 
-- Attempt;
-- Task;
-- Phase;
+File existence and model prose are not sufficient proof.
+
+Independent Evaluation must recheck acceptance-critical behavior instead of merely trusting prior model claims.
+
+---
+
+## 23. Task Gate
+
+Only deterministic Task Gate marks a Task PASS.
+
+Task Gate validates applicable:
+
+- Task/Phase/Attempt identity;
 - generation;
-- ticket;
-- verification result.
+- completed Work;
+- current ticket/digest;
+- immutable bindings;
+- Planning Package integrity;
+- evidence identity;
+- verification result;
+- required artifact/digest evidence;
+- mutation manifest;
+- production path authority.
 
-File existence or textual claims are not sufficient proof.
-
----
-
-## 14. Task Gate
-
-Workplan deterministically decides Task PASS.
-
-Task Gate must verify identity, bindings, ticket, contract digest, verification, evidence, and production mutation authority.
-
-The Manager may orchestrate checks but cannot decide PASS.
+Manager may coordinate but cannot decide PASS.
 
 ---
 
-## 15. Phase Gate
+## 24. Phase Gate
 
-After all Phase Tasks PASS, Workplan must verify required phase-level integration/regression evidence.
+After all required Phase Tasks PASS, Workplan verifies Phase dependencies and declared integration/regression evidence.
 
-Next Phase cannot become eligible until Phase Gate PASS.
-
-The Manager may orchestrate verification but cannot decide gate authority.
+Next dependent Phase cannot become eligible before Phase Gate PASS.
 
 ---
 
-## 16. Local diagnosis
+## 25. Local diagnosis
 
-The Manager may perform bounded first-line diagnosis for ordinary Task-local implementation failures.
+Manager may perform bounded first-line diagnosis for ordinary Task-local implementation failures.
 
-This is not permission to change Scope, Plan, architecture, interfaces, Task contract, authorized paths, or repair budget.
+This does not authorize changes to:
+
+- Scope;
+- Planning Package;
+- architecture;
+- interfaces;
+- Task contract;
+- authorized paths;
+- repair budget.
 
 ---
 
-## 17. Repair budget
+## 26. Repair budget
 
 Default local repair budget: `2`.
 
-Normal deterministic range: `0..5`.
+Supported deterministic range: `0..5`.
 
-Repair budget is assigned by Planning/risk policy, not by Manager or Builder discretion.
+Repair budget belongs to Planning/risk policy, not Manager/Builder discretion.
 
-A repair may escalate before budget exhaustion when failure crosses a structural boundary.
-
----
-
-## 18. Repair attempts
-
-Every repair requires a fresh Repair Ticket and fresh Builder Attempt.
-
-Repair history must preserve failed evidence and prevent blind repetition of disproven strategies where that information exists.
-
-Repair attempts must pass the normal Task Gate.
+A structural failure may escalate before budget exhaustion.
 
 ---
 
-## 19. Immediate escalation
+## 27. Repair Attempts
 
-Escalate without routine retry when the issue involves:
+Every repair requires:
 
-- Scope;
-- architecture;
-- interfaces;
-- data model;
-- invalid contracts;
-- invalid dependencies;
-- unauthorized required paths;
-- deep unsupported root cause;
-- repeated disproven strategy;
-- environment/tooling outside Builder authority;
+- fresh Attempt;
+- fresh Repair Ticket;
+- preserved parent-failure evidence;
+- same Task authority unless a controlled higher-level decision changes it;
+- normal Task Gate.
+
+Do not blindly repeat disproven repair strategies when durable evidence exists.
+
+---
+
+## 28. Immediate escalation
+
+Escalate without routine retry when failure crosses a structural boundary, including applicable:
+
+- Scope defect;
+- architecture/interface/data-model conflict;
+- invalid contract/dependency;
+- unauthorized required path;
+- stale/invalid binding;
 - verification contract defect;
-- material high-risk condition.
+- tooling/environment outside Builder authority;
+- repeated disproven strategy;
+- material high-risk uncertainty.
 
 ---
 
-## 20. External Diagnosis
+## 29. External Diagnosis
 
 External Diagnosis is reasoning-only.
 
-It must produce a durable diagnosis containing:
+It should record:
 
 - observed failure;
 - evidence;
 - affected component;
 - root cause;
-- violated contract;
+- violated invariant/contract;
 - blast radius;
 - classification;
 - recovery boundary.
 
 Recommended classifications:
 
-`IMPLEMENTATION_DEFECT`, `TASK_DEFECT`, `PLAN_DEFECT`, `SCOPE_DEFECT`, `ENVIRONMENT_DEFECT`, `TOOLING_DEFECT`, `VERIFICATION_DEFECT`, `EXTERNAL_BLOCKER`, `UNKNOWN`.
+```text
+IMPLEMENTATION_DEFECT
+TASK_DEFECT
+PLAN_DEFECT
+SCOPE_DEFECT
+ENVIRONMENT_DEFECT
+TOOLING_DEFECT
+VERIFICATION_DEFECT
+EXTERNAL_BLOCKER
+UNKNOWN
+```
 
 ---
 
-## 21. External Recovery
+## 30. External Recovery
 
-External Recovery is reasoning-only.
+External Recovery is reasoning-only and produces a durable Recovery Contract.
 
-It produces a Recovery Contract.
-
-It must not directly implement production repair.
-
-Recovery Contract binds:
+Recovery Contract binds applicable:
 
 - issue;
 - objective;
@@ -387,116 +579,108 @@ Recovery Contract binds:
 
 Implementation occurs through a fresh Builder Attempt.
 
----
-
-## 22. Recovery flow
-
-Required flow:
-
-`Diagnosis -> Recovery reasoning -> Recovery Contract -> Manager -> Recovery Ticket -> Builder -> Verification -> Task Gate -> Phase Gate`
-
 Recovery cannot directly mark a Task PASS.
 
 ---
 
-## 23. Model/provider neutrality
+## 31. Recovery flow
 
-Workflow authority must not depend on named model/provider identities.
+Required flow:
 
-Logical roles should be capability-oriented.
-
-Execution Manager may use VS Code/Copilot Chat.
-
-Builder should normally use the lowest-cost model that satisfies the bounded ticket.
-
-Auto model selection may be used where appropriate, but deterministic Workplan authority remains unchanged.
+```text
+Diagnosis
+  -> Recovery reasoning
+  -> Recovery Contract
+  -> Manager
+  -> Recovery Ticket
+  -> Builder
+  -> verification/evidence
+  -> Task Gate
+  -> Phase Gate
+```
 
 ---
 
-## 24. Context grants
+## 32. Model/provider neutrality
+
+Workflow authority must not depend on named provider/model identities.
+
+Logical roles are capability-oriented.
+
+Model selection affects cost/capability, not authority.
+
+The repository may describe local model aliases required by its VS Code adapter, but a provider-specific identity must never override Workplan state/tickets/gates.
+
+---
+
+## 33. Context grants
 
 Context expansion is read authority only.
 
-A context grant must be durable and record:
+A durable grant records:
 
 - reason;
 - paths/resources;
-- work/attempt identity;
+- Work/Attempt identity;
 - generation;
 - time;
 - `authority_unchanged=true`.
 
-Context expansion must never silently expand write authority.
+Context expansion never silently expands write authority.
 
 ---
 
-## 25. Research/Scope boundary
+## 34. Immutable bindings
 
-User Research artifacts enter through explicit ingest validation.
+Work/Attempt bindings are persisted at creation.
 
-`Objective_dev.md` must never be included as user product Scope.
+Resume compares current repository bindings with persisted originals.
 
-Scope remains an immutable accepted product WHAT/WHY snapshot for the active Cycle.
+Mismatch blocks execution.
 
----
-
-## 26. Immutable bindings
-
-Work/Attempt bindings must be persisted at creation.
-
-Resume must compare current repository bindings against persisted originals.
-
-Binding mismatch blocks execution.
-
-Persisted bindings must never be silently recalculated and overwritten.
+Persisted originals must never be silently recalculated and overwritten.
 
 ---
 
-## 27. Generation fencing
+## 35. Generation fencing
 
-Stale agents/sessions must not complete or mutate a newer Attempt.
+Stale sessions/agents cannot complete or mutate a newer Attempt generation.
 
 Generation checks remain mandatory for checkpoint and completion authority.
 
 ---
 
-## 28. Durable resume
+## 36. Durable resume
 
-Resume derives from repository state, tickets, checkpoints, evidence, and immutable bindings.
+Resume derives from repository state, accepted contracts, tickets, checkpoints, evidence, and immutable bindings.
 
 A new model/provider/session must be able to continue without replaying full chat history.
 
 ---
 
-## 29. Semantic checkpoints
+## 37. Semantic checkpoints
 
-Persist verified decisions, evidence, and exact next bounded unit.
+Persist verified decisions, outcomes, evidence, and exact next bounded unit.
 
 Do not persist hidden chain-of-thought.
 
 ---
 
-## 30. Exact public commands
+## 38. Exact public commands
 
 Public command authority is exact-token authority.
 
-The runtime must not normalize authoritative input with trimming, case conversion, or free-intent interpretation.
+Runtime must not normalize authoritative input with trimming, case conversion, or free-intent interpretation.
 
-For example, only:
+Only literal supported tokens are authoritative.
 
-`EXECUTE_PLANNING`
-
-is authoritative.
-
-Lowercase, whitespace-modified, or prose-wrapped variants must be rejected.
+Wrong surface/stage must fail closed.
 
 ---
 
-## 31. Human approval
+## 39. Human approval
 
-Human approval remains explicit and deterministic.
-
-Approval must be:
+Human approval is:
 
 - action-bound;
 - subject-bound;
@@ -505,146 +689,138 @@ Approval must be:
 - stale-safe;
 - single-use.
 
-AI cannot grant its own approval.
+AI cannot grant its own approval or execute the human approval command.
 
 ---
 
-## 32. Independent Evaluation
+## 40. Independent Evaluation
 
-Default External Independent Evaluation runs after all required Phase Gates PASS.
+Default External Independent Evaluation runs after required Phase Gates PASS.
 
 Do not pay for external evaluation after every Phase by default.
 
-Risk policy may trigger phase-level external evaluation when justified.
+Risk policy may require earlier evaluation where justified.
 
-Evaluation is reasoning/review, not production mutation.
+Evaluation independently verifies current outcomes against approved authority and actual evidence.
+
+Only deterministic finalization may close the Cycle.
 
 ---
 
-## 33. Durable knowledge
+## 41. Durable knowledge
 
 Verified resolutions may become reusable knowledge.
 
 Knowledge is advisory context, not execution authority.
 
-A prior resolution cannot override current Scope, Plan, ticket, binding, gate, or state.
+Prior knowledge cannot override current Scope, Plan, ticket, binding, gate, or state.
 
 ---
 
-## 34. Root README
+## 42. Documentation ownership
 
-Root `README.md` is the primary normal-user guide.
+One source of truth per concern:
 
-It must explain current implemented behavior for:
+- root `README.md` — primary user/operator guide;
+- `Workplan/README.md` — advanced control-plane reference;
+- `Objective_dev.md` — Project Template development constitution;
+- `ENTRY_PROMPT.md` — exact public command/bootstrap interface;
+- `CHATGPT_PROJECT_INSTRUCTIONS.md` — compact ChatGPT Project bootstrap;
+- `external_agent/RESEARCH_INSTRUCTION.md` — machine-selected Research role;
+- `external_agent/RESEARCH_POTOCAL_PROMPT.md` — detailed Research protocol;
+- `templates/PROJECT_DETAILS_TEMPLATE.md` — canonical Research output shape;
+- other external role files — role-specific behavior;
+- runtime/tests — executable authority/evidence;
+- `RELEASE_VALIDATION.md` — release procedure + actual acceptance record.
 
-- setup;
-- required tools;
-- VS Code;
-- Copilot Chat;
-- Execution Manager;
-- Builder;
-- External Agent;
-- full workflow;
-- ingest;
-- repair/escalation/recovery;
-- resume;
-- approval;
-- public commands;
-- advanced documentation locations.
+Avoid duplicate prompts/templates that can drift.
 
 ---
 
-## 35. Documentation ownership
+## 43. Repository/release cleanliness
 
-- root README: normal user;
-- Workplan README: advanced operator;
-- Objective_dev: development constitution;
-- ENTRY_PROMPT: command/bootstrap interface;
-- role files: role behavior;
-- runtime/tests: executable authority.
+A release must not carry obsolete compatibility aliases, duplicate protocol files, obsolete input locations, cache artifacts, generated bytecode, editor-local state, secrets, or empty root placeholders with no authority/runtime/documentation purpose.
 
-Avoid duplicate sources of truth.
+Runtime directories may remain as explicit Workplan structure when required for predictable repository layout and resume behavior.
+
+User-project production directory structure must be created by actual project Planning/implementation rather than by unrelated template placeholders.
 
 ---
 
-## 36. Simplicity constraint
+## 44. Executable validation
 
-Do not add roles, prompts, state, files, schemas, abstractions, or commands without measurable reliability, cost, auditability, or recovery value.
-
-Prefer deterministic code to longer prompts.
-
-Prefer one authoritative state to duplicated state.
-
----
-
-## 37. Executable validation
-
-v5.3 must behaviorally validate:
+v5.3.1 must behaviorally validate at minimum:
 
 - exact public commands;
-- wrong stage/surface;
+- wrong surface/stage;
+- Research strict ingress and negative cases;
+- Manager/Builder agent model/tool boundary;
 - immutable bindings;
-- generation;
+- generation fencing;
 - Phase/Task routing;
-- production path authority;
+- production mutation authority;
 - Task Gate;
 - Phase Gate;
-- repair/fresh attempts;
-- immediate escalation;
-- diagnosis/recovery separation;
+- fresh Repair Attempts;
+- escalation;
+- Diagnosis/Recovery separation;
 - resume/reconciliation;
 - context grants;
 - approvals;
-- final evaluation closure;
+- migration safe boundary;
+- final Evaluation closure;
 - release integrity.
 
-String presence is not proof of a runtime invariant.
+String presence alone is not proof of a runtime invariant.
 
 ---
 
-## 38. Full candidate validation
+## 45. Full candidate validation
 
-Release validation must execute:
+Release validation must execute against the actual candidate tree:
 
-`python Workplan/scripts/validate.py --full`
+```bash
+python Workplan/scripts/integrity.py generate
+python Workplan/scripts/validate.py --full
+```
 
-against the actual candidate tree.
-
-The release report must identify exact revision/candidate and executed suites.
+The report must identify baseline/candidate, commands actually run, observed results, known limitations, and package checksum.
 
 No unexecuted validation may be reported as PASS.
 
 ---
 
-## 39. Release manifest
+## 46. Release manifest
 
-Integrity manifest must be deterministically generated.
+Integrity manifest is generated deterministically.
 
-It must exclude:
+It must exclude defined runtime/local artifacts, including applicable:
 
+- `.git/`;
 - `__pycache__/`;
-- `*.pyc`;
+- `*.pyc`/`*.pyo`;
 - temp/cache files;
 - virtual environments;
 - secrets/credentials;
 - editor-local artifacts;
-- other defined runtime-local files.
+- runtime Work/history/approval/ingest payloads;
+- ZIP artifacts.
 
 A stale manifest must fail validation.
 
 ---
 
-## 40. Release consistency
+## 47. Release consistency
 
 The following must describe one release:
 
-- VERSION;
-- Objective;
+- `VERSION`;
 - root README;
 - Workplan README;
-- runtime version/schema;
-- config;
-- prompts;
+- Objective;
+- runtime workflow/schema;
+- config/model bindings;
+- role instructions/protocols;
 - agents;
 - use cases;
 - tests;
@@ -653,114 +829,71 @@ The following must describe one release:
 - changelog;
 - integrity manifest.
 
-Mixed release labels are a defect.
+Mixed release labels or stale canonical filenames are defects.
 
 ---
 
-## 41. Compatibility
+## 48. State/schema migration
 
-Compatibility adapters may exist only when they do not create a second authority path.
+Material state-shape change requires schema update and explicit migration.
 
-Legacy model/context labels may be accepted temporarily as aliases, but runtime authority must use the v5.3 role/contract model.
+v5.3.1 remains schema 6.
 
----
+v5.3.0 -> v5.3.1 migration is permitted only at deterministic safe boundaries and must reject active Work where equivalence cannot be proven.
 
-## 42. State/schema migration
-
-Material state-shape changes require schema version update and explicit migration documentation.
-
-Do not silently reinterpret in-flight v5.2 execution attempts as v5.3 Attempts unless the equivalence is deterministically proven.
+Do not silently reinterpret in-flight earlier execution attempts.
 
 ---
 
-## 43. Change governance
+## 49. Change governance
 
-A material future change to this constitution requires:
+A material future change requires:
 
 - owner/user agreement;
-- runtime impact review;
-- test updates;
-- documentation updates;
+- root-cause/architecture impact review;
+- token/context/reliability/recovery impact review;
+- runtime update where required;
+- tests;
+- docs/config/version consistency;
 - full validation;
 - new development version when behavior materially changes.
 
 ---
 
-## 44. Normal flow
-
-```text
-Research
-  -> Ingest validation
-  -> Scope
-  -> Planning
-  -> validated Planning Package
-  -> Phase selection
-  -> Task selection
-  -> Task Ticket
-  -> fresh Builder Attempt
-  -> verification/evidence
-  -> Task Gate
-
-Task failure
-  -> Manager bounded diagnosis
-  -> Repair Ticket if authorized
-  -> fresh Builder
-  -> Task Gate
-  -> escalation if unresolved/structural
-
-Escalation
-  -> External Diagnosis
-  -> External Recovery reasoning
-  -> Recovery Contract
-  -> Manager
-  -> Recovery Ticket
-  -> fresh Builder
-  -> Task Gate
-
-All Phase Tasks PASS
-  -> Phase Gate
-
-All required Phases PASS
-  -> External Independent Evaluation
-  -> completion report
-  -> CLOSED_VALIDATED
-```
-
----
-
-## 45. User-experience invariant
+## 50. User-experience invariant
 
 Internal control may become more rigorous, but normal operation must not become more complex for the user.
 
-The user should not need to manually manage:
+Users should primarily need:
 
-- Phase IDs;
-- Task IDs;
-- Attempt IDs;
-- generation;
-- digests;
-- repair counters;
-- ticket internals.
+```text
+WORKPLAN_NEXT
+EXECUTE_RESEARCH
+EXECUTE_PLANNING
+EXECUTE_IMPLEMENTATION
+```
 
-`WORKPLAN_NEXT` remains the universal authoritative continuation mechanism.
+plus explicit commands only when Workplan routes to Diagnosis/Recovery/Evaluation/reset/approval.
+
+Users should not manually manage internal identifiers or deterministic state machinery.
 
 ---
 
-## 46. Direction of travel
+## 51. Direction of travel
 
-v5.3 should move the system toward:
+Project Template should move toward:
 
 - less model-managed workflow;
 - more deterministic workflow;
 - less repeated expensive reasoning;
-- more durable contracts;
+- more local/low-cost bounded implementation;
 - less broad context;
 - more selective context;
-- less autonomous repair;
-- more evidence-bound repair;
 - less prompt authority;
 - more executable authority;
-- less expensive-model implementation;
-- more expensive-model high-value reasoning;
 - less claimed completion;
-- more proven completion.
+- more proven completion;
+- fewer duplicate files/roles/aliases;
+- cleaner release trees;
+- stronger Research input quality;
+- safer resumability and migration.

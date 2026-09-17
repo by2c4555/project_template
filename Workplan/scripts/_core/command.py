@@ -83,7 +83,7 @@ def execute(command, surface, tool='unknown', model='unknown'):
     if command == 'EXECUTE_RESEARCH':
         if surface != 'EXTERNAL_AI': return _reject(command, st, 'RESEARCH_REQUIRES_EXTERNAL_AI')
         if st.get('lifecycle_stage') not in {'BOOTSTRAP','CLOSED_VALIDATED'}: return _reject(command, st, 'ACTIVE_CYCLE_MUST_FINISH_BEFORE_NEW_RESEARCH')
-        return {'status':'ACCEPTED','command':command,'mode':'INIT' if st.get('lifecycle_stage')=='BOOTSTRAP' else 'NEW_CYCLE','surface':'EXTERNAL_AI','role':'RESEARCH','role_constitution':'Workplan/external_agent/RESEARCH_PROMPT.md','expected_output':['Workplan/ingest/project_details.md','Workplan/ingest/docs/raw/*'],'state_changed':False}
+        return {'status':'ACCEPTED','command':command,'mode':'INIT' if st.get('lifecycle_stage')=='BOOTSTRAP' else 'NEW_CYCLE','surface':'EXTERNAL_AI','role':'RESEARCH','role_constitution':'Workplan/external_agent/RESEARCH_INSTRUCTION.md','research_protocol':'Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md','template':'Workplan/templates/PROJECT_DETAILS_TEMPLATE.md','expected_output':['Workplan/ingest/project_details.md','Workplan/ingest/docs/raw/*'],'state_changed':False}
     if command == 'EXECUTE_IMPLEMENTATION':
         if surface != 'VS_CODE': return _reject(command, st, 'IMPLEMENTATION_REQUIRES_VS_CODE')
         if st.get('lifecycle_stage') not in {'PLAN_READY','EXECUTION'}: return _reject(command, st, 'IMPLEMENTATION_NOT_ALLOWED_IN_CURRENT_STAGE')

@@ -29,7 +29,7 @@ Persisted v5.3 Work bindings are issue-time immutable. Resume compares rather th
 
 ## Builder naming
 
-The logical runtime role is `Builder`. `Builder100K` may remain only as a compatibility alias for older local configuration; runtime authority must not depend on that model-sized name.
+The logical runtime role is `Builder`. Model-size-specific agent names are not runtime authority and should be migrated to the generic Builder capability role.
 
 ## Integrity
 

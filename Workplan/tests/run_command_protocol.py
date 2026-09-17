@@ -33,6 +33,9 @@ def scenario():
             assert r['status'] == 'REJECTED' and r['reason'] == 'UNKNOWN_COMMAND'
             assert json.loads(statep.read_text())['state_seq'] == before
         r = execute('EXECUTE_RESEARCH', 'EXTERNAL_AI'); assert r['status'] == 'ACCEPTED' and r['role'] == 'RESEARCH'
+        assert r['role_constitution'] == 'Workplan/external_agent/RESEARCH_INSTRUCTION.md'
+        assert r['research_protocol'] == 'Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md'
+        assert r['template'] == 'Workplan/templates/PROJECT_DETAILS_TEMPLATE.md'
         r = execute('EXECUTE_RESEARCH', 'VS_CODE'); assert r['status'] == 'REJECTED'
 
         write_state(root, 'PLANNING')

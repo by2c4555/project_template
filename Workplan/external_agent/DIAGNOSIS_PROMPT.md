@@ -1,4 +1,4 @@
-# External Diagnosis Role Constitution — v5.3.0
+# External Diagnosis Role Constitution — v5.3.1
 
 This file is machine-selected after `EXECUTE_DIAGNOSIS`.
 

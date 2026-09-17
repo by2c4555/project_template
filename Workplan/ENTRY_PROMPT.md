@@ -1,4 +1,4 @@
-# Workplan Universal Entry Protocol — v5.3.0
+# Workplan Universal Entry Protocol — v5.3.1
 
 This is the single AI bootstrap entrypoint for Project Template Workplan on every provider/surface.
 
@@ -31,7 +31,7 @@ Public workflow authority is an **exact literal token**. Do not trim, case-norma
 4. On `REJECTED`, report the machine reason and allowed commands. Do not reinterpret intent.
 5. On `APPROVAL_REQUIRED`, stop and show the exact human approval command. AI never executes `approve.py`.
 6. After human approval, resubmit the original exact token; do not continue from conversational inference.
-7. Accepted External-Agent commands return the machine-selected role constitution plus Action/Resume Ticket. Execute only that bounded Work.
+7. Accepted External-Agent commands return the machine-selected role constitution plus Action/Resume Ticket. Execute only that bounded Work. For Research, the command also returns the canonical Research protocol and Project Details template paths.
 8. Accepted `EXECUTE_IMPLEMENTATION` delegates routing to deterministic execution. Follow only the returned action and machine-issued Builder/Repair/Recovery Ticket.
 9. After every bounded unit, failure, provider switch, or uncertainty, use `WORKPLAN_NEXT` rather than reconstructing state from chat.
 

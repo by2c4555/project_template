@@ -39,7 +39,56 @@ def evidence(root, rel):
 def scenario():
     with tempfile.TemporaryDirectory() as td:
         root=Path(td)/'repo'; shutil.copytree(SOURCE,root)
-        write(root/'Workplan/ingest/project_details.md','artifact_kind: PROJECT_DETAILS\nartifact_status: READY_FOR_PLANNING\nscope_title: Demo\nbaseline_ref: main\nproduct_scope_unknowns: 0\nsupporting_files: [Workplan/docs/raw/REQ.md]\n')
+        write(root/'Workplan/ingest/project_details.md', '''artifact_kind: PROJECT_DETAILS
+artifact_status: READY_FOR_PLANNING
+research_protocol: EXTERNAL_RESEARCH_PROTOCOL_V1
+product_scope_unknowns: 0
+supporting_files: [Workplan/docs/raw/REQ.md]
+
+# Project Details
+
+## Objective
+Build the demo behavior requested by the user.
+
+## Current State
+The isolated test repository has no demo production artifact yet.
+
+## Problem Statement
+Create the bounded demo artifact and verify deterministic workflow execution.
+
+## Functional Requirements
+- FR-001: Build the demo artifact.
+
+## Non-Functional Requirements
+- NFR-001: Preserve Workplan authority boundaries.
+
+## Constraints
+- Use only the authorized Task paths.
+
+## Interfaces
+- Repository file output only.
+
+## Acceptance Criteria
+- AC-001: Required demo artifacts are created through passing Task/Phase gates.
+
+## In Scope
+- Demo artifacts A and B.
+
+## Out of Scope
+- Unrelated repository changes.
+
+## Assumptions
+- None.
+
+## Resolved Unknowns
+- Demo scope is fixed by this scenario.
+
+## Remaining Non-Blocking Unknowns
+- None.
+
+## Source / Evidence Map
+- USER_REQUIREMENT — Build demo — Workplan/docs/raw/REQ.md
+''')
         write(root/'Workplan/ingest/docs/raw/REQ.md','# Requirement\nBuild demo.\n')
         run(root,'Workplan/scripts/tools/ingest.py','check'); run(root,'Workplan/scripts/tools/scope.py','import')
         c=cmd(root,'EXECUTE_PLANNING'); run(root,'Workplan/scripts/approve.py','--',c['challenge']); c=cmd(root,'EXECUTE_PLANNING'); assert c['generation']==1

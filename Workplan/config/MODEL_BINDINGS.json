@@ -1,9 +1,18 @@
 {
-  "schema_version": 1,
-  "workflow_version": "5.3.0",
   "roles": {
-    "Builder": {"model": "UNCONFIGURED", "minimum_context_tokens": 0, "documented_context_tokens": 0},
-    "ExecutionManager": {"model": "UNCONFIGURED", "minimum_context_tokens": 0, "documented_context_tokens": 0}
+    "Builder": {
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 0,
+      "model": "Project Builder Local",
+      "selection": "PINNED_LOCAL_ALIAS"
+    },
+    "ExecutionManager": {
+      "documented_context_tokens": 0,
+      "minimum_context_tokens": 0,
+      "model": "USER_SELECTED",
+      "selection": "CHAT_MODEL_PICKER"
+    }
   },
-  "compatibility_aliases": {"Builder100K": "Builder"}
+  "schema_version": 1,
+  "workflow_version": "5.3.1"
 }
