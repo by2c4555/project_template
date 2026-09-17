@@ -1,198 +1,133 @@
-# Project Configuration
+# Project Configuration — v4.3.2
 
-Static workflow policy for v4.0.1. Runtime state lives in `PROJECT_STATUS.md`.
-Hard model/context requirements must not be silently overridden.
+## Controlled boundary
 
-## Model Policy
+v4.3 controls only work after external scope handoff is manually handed into the VS Code repository. External Web AI is outside this runtime and remains a manual scope/product/evidence layer.
 
-```yaml
-models:
-  planner:
-    minimum_context_tokens: 524288
-    context_override_allowed: false
-    controlled_context_target_tokens: 262144
-    controlled_context_max_tokens: 307200
-
-  builders:
-    minimum_context_tokens: 131072
-    context_override_allowed: false
-    profiles:
-      Builder128K:
-        minimum_context_tokens: 131072
-        controlled_context_target_tokens: 49152
-        controlled_context_max_tokens: 65536
-      Builder256K:
-        minimum_context_tokens: 262144
-        controlled_context_target_tokens: 98304
-        controlled_context_max_tokens: 131072
+```text
+External Research handoff
+(project_details.md + useful docs/raw/*)
+        │ manual copy
+        ▼
+Scope Snapshot (Python, SHA-256)
+        │
+════════ v4.3.2 controlled boundary ════════
+Change Cycle -> External Agent Planning -> Human Plan Approval
+             -> Manager/Builder Execution
+             -> Diagnosis -> Human Recovery Approval -> Recovery -> Human Resume
+             -> Human Evaluation Start -> External Agent Evaluation -> Machine Finalize
+             -> CLOSED_VALIDATED
+═══════════════════════════════════════════
+        │ new external scope
+        ▼
+New Change Cycle (no inherited approval)
 ```
 
-Provider-specific model names are not guessed by the template. Before execution, run `scripts/configure_models.py` with trusted documented capacities. It updates `EXECUTE/MODEL_BINDINGS.json` and pins `model:` in the three role agents. An unbound or undersized role is not runtime-ready.
+## Authority model
 
+- **External scope layer:** WHAT / WHY / product decisions / next-version or post-validation debug scope.
+- **External Agent Planning:** repository research, HOW, architecture, immutable Plan/Task compilation; stops at PLAN_READY.
+- **ProjectManager500K:** local orchestration only; cannot mutate authoritative workflow state directly.
+- **Builder100K:** one bounded immutable Task; cannot mark PASS or dispatch future Tasks.
+- **External Agent Diagnosis:** root-cause analysis only; cannot repair in the same invocation.
+- **External Agent Recovery:** repair only after a human recovery approval.
+- **External Agent Evaluation:** one authorized read-only evaluation attempt.
+- **Python control layer:** owns authoritative state transitions, integrity checks, counters, and transition ledger.
+- **User/operator:** owns high-cost human gates.
 
-provider_binding:
-  provider_qualified_model_required: true
-  qualified_model_format: "Model Name (vendor)"
-  bind_provider_separately: true
-  silent_cross_provider_fallback_allowed: false
-  verify_runtime_selection_when_available: true
-  customendpoint_same_vendor_group_disambiguation_guaranteed: false
+## Fundamental invariants
 
-A bound execution role MUST identify both the model display name and its VS Code provider/vendor identifier. Examples: `Claude Opus 4.7 (copilot)` and `Claude Opus 4.7 (openrouter)`. The provider suffix is part of the execution contract. A bare model name is not accepted for a bound role.
+1. `EXECUTE/control/STATE.json` is authoritative. Markdown status files are generated views.
+2. Agents may produce artifacts/evidence; agents may not grant themselves authority.
+3. Natural-language chat never counts as implementation approval, recovery approval, resume approval, or evaluation authorization.
+4. Expensive phase boundaries require interactive human scripts.
+5. Routine within-phase transitions use machine gates without user interaction.
+6. Approval is bound to one exact Change Cycle, immutable Scope revision/digest, Planning version/revision, manifest, Task count, and SHA-256 package digest.
+7. Scope Snapshot integrity failure or approved package mutation -> execution hard stop.
+8. Task contracts are immutable; Task runtime status/counters live in machine state.
+9. Ordinary Task dispatch is one-time. Local repair attempts are machine-counted.
+10. Manager context accumulation is bounded by a dispatch batch; reaching the limit forces a fresh Manager conversation.
+11. Builder failure beyond bounded repair -> Issue + hard stop.
+12. Diagnosis and Recovery are separate invocations.
+13. Recovery verification never authorizes resume by itself.
+14. Evaluation authorization is one-attempt only; re-evaluation requires a new user gate.
+15. A validated Cycle is immutable. New feature/version/post-validation debug scope always starts a new Cycle.
+16. No approval/execution authority carries across a Cycle boundary.
 
-If multiple same-name models are registered under the same vendor (especially `customendpoint`), current qualified-name routing might still be ambiguous because the qualified form does not encode group/id. Treat that setup as non-deterministic unless runtime diagnostics prove the intended model was selected.
+## Human-operated gates
 
-## Context Isolation Policy
-
-```yaml
-context_isolation:
-  task_is_fresh_subagent_invocation: true
-  planner_transaction_is_fresh_subagent_invocation: true
-  integration_gate_is_fresh_subagent_invocation: true
-  retry_is_fresh_subagent_invocation: true
-  conversation_history_authoritative: false
-  cross_task_full_context_inheritance: false
-  inter_agent_handoff: result_capsule_only
+```text
+PLAN_READY                         -> scripts/approve_plan.py
+Manager batch limit                -> scripts/reset_manager_batch.py
+IMPLEMENTATION_DEFECT diagnosis    -> scripts/approve_recovery.py
+verified execution recovery        -> scripts/resume_execution.py
+execution complete / re-evaluation -> scripts/start_evaluation.py
 ```
 
-Invariant:
-`1 Task = 1 execution contract = 1 isolated subagent invocation = 1 fresh context window.`
+These scripts require an interactive TTY challenge and intentionally do not accept `--yes` or a static confirmation phrase.
 
-Disk artifacts are persistent memory. Model context is temporary working memory.
+## Machine gates
 
-## Agent Routing Policy
-
-```yaml
-routing:
-  user_entry_agent: ProjectManager
-  planner_agent: Planner512K
-  default_builder: Builder128K
-  escalation_builder: Builder256K
-  builders_may_spawn_subagents: false
-  planner_may_spawn_subagents: false
-  project_manager_may_spawn:
-    - Planner512K
-    - Builder128K
-    - Builder256K
+```text
+scope capture/revision -> start_cycle.py / import_scope.py
+planning interaction/package -> planning_gate.py
+task dispatch/repair/pass/fail/completion -> execution_gate.py
+diagnosis registration/routing -> diagnosis_gate.py
+recovery verification -> recovery_gate.py
+evaluation result/close or Issue creation -> finalize_evaluation.py
+package/context/template integrity -> validate_v4.py / context_guard.py
+bounded command output -> safe_exec.py
 ```
 
-## Execution Policy
+## Change-cycle semantics
+
+One Cycle represents one externally scoped change until independently validated.
+
+- Evaluation PASS/PASS_WITH_FINDINGS -> `CLOSED_VALIDATED`.
+- A later feature/version/refactor/newly discovered bug supplied as new scope -> new Cycle.
+- Evaluation failure before validation stays in the same Cycle through Diagnosis/Recovery/Replan/Re-evaluation.
+- TASK/PLAN defect may create a new Planning Vx inside the same open Cycle; old approval is superseded and a new approval is mandatory.
+
+## Root-cause classifications
+
+Exactly one primary classification:
+
+- `IMPLEMENTATION_DEFECT`
+- `TASK_DEFECT`
+- `PLAN_DEFECT`
+- `EVALUATION_DEFECT`
+- `SCOPE_AMBIGUITY`
+- `EXTERNAL_BLOCKER`
+- `UNKNOWN`
+
+## Token-safety controls
+
+- unresolved material decisions block Task expansion;
+- external handoff is captured into immutable Scope Snapshots;
+- exact approved Scope digest + approved-package digest checked on execution/recovery/evaluation transitions;
+- Builder context preflight target/hard limit;
+- machine-counted local repair budget;
+- ordinary Task can be dispatched only once;
+- Manager dispatch-batch context reset (default 10 Tasks);
+- verbose command output stored in full logs while agent-visible output is bounded;
+- no diagnosis+repair chain in a single invocation;
+- no automatic re-evaluation loop.
+
+## Model policy
 
 ```yaml
-execution:
-  prefer_task_split_before_escalation: true
-  stop_on_non_pass: true
-  repair_attempts: 2
-  same_approach_repeats: 1
-  phase_auto_continue_on_pass: true
-  fresh_context_per_retry: true
+local_models:
+  ProjectManager500K:
+    minimum_context_tokens: 512000
+  Builder100K:
+    minimum_context_tokens: 102400
+    controlled_target_tokens: 40000
+    controlled_max_tokens: 52000
+external_intelligence:
+  environment: External Agent
+  recommended_model: GPT-6 Astra
 ```
 
-Builder256K remains an execution role, not an architecture role.
+## Safety scope
 
-## Local Output Budget
-
-```yaml
-local_output_budget:
-  max_command_output_chars_into_model: 12000
-  max_search_results_into_model: 100
-  max_log_excerpt_lines_into_model: 200
-  max_diff_lines_into_model: 400
-  max_test_failure_excerpt_lines_into_model: 250
-```
-
-Full raw output should remain in terminal or be persisted to an ignored/local file. Only summaries or focused excerpts should enter model context.
-
-## Context Estimation Policy
-
-```yaml
-context_estimation:
-  estimator: scripts/context_guard.py
-  chars_per_token_estimate: 4
-  include_task_contract: true
-  include_listed_write_read_test_files: true
-  expected_tool_output_reserve_tokens:
-    Builder128K: 6000
-    Builder256K: 12000
-  decisions:
-    within_target: PASS
-    over_target_under_max: WARN
-    over_max: SPLIT_REQUIRED
-```
-
-This is a conservative deterministic preflight, not a tokenizer-accurate measurement. It exists to block obviously oversized Task packs before their files are injected into model context.
-
-## Interaction Policy
-
-```yaml
-interaction:
-  task_completion_mode: auto
-  phase_completion_mode: ask
-  executor_escalation_mode: ask
-```
-
-The user authorizes at Phase boundaries. PASS may auto-route to the next Task, but never reuses the previous Task context.
-
-## Planning Policy
-
-```yaml
-planning:
-  require_project_details: true
-  require_knowledge_validation: true
-  require_plan_validation: true
-  require_task_pack_validation: true
-  architecture_critical_unknowns_block: true
-  persist_blocking_questions: true
-  checkpoint_transactions:
-    - PT1_INPUT_KNOWLEDGE
-    - PT2_ARCHITECTURE_PLAN
-    - PT3_RISK_PHASES
-    - PT4_TASK_COMPILATION
-    - PT5_TASK_PACK_VALIDATION
-```
-
-## Knowledge Policy
-
-```yaml
-knowledge:
-  execution_access: read_only
-  planner_write_only: true
-  require_provenance: true
-```
-
-## Environment Policy
-
-```yaml
-environment:
-  user_env: ".env.user"
-  execute_env: "EXECUTE/.env.execute"
-  required_placeholder: "__REQUIRED__"
-  production_access_default: false
-  database_write_default: false
-  never_guess_external_configuration: true
-```
-
-`.env.user` is human-owned and must never be committed. `EXECUTE/.env.execute` must never contain secrets.
-
-## Release Policy
-
-```yaml
-release:
-  require_system_test: true
-  require_package: true
-  require_clean_install: true
-  require_release_gate: true
-```
-
-## Default External I/O Policy
-
-```yaml
-external_io_defaults:
-  repeated_equivalent_calls: 2
-  transient_retries_per_operation: 2
-  api_pages: 3
-  api_requests: 8
-  api_items_per_page: 100
-  db_queries: 8
-  db_rows_per_query: 100
-```
+Interactive human gates are designed to prevent accidental agent flow and token/cost runaway in the normal tool workflow. They are not a security sandbox against a malicious process with full control of the user's local machine.

@@ -1,25 +1,12 @@
+---
+artifact_kind: TASK_INDEX
+artifact_status: PLACEHOLDER
+planning_version: none
+planning_revision: none
+---
+
 # Task Index
 
-Task Pack status: NOT_READY
+No compiled Tasks yet.
 
-No executable Tasks may exist until the Implementation Plan is VALIDATED and Task Pack Validation passes.
-
-## Phase Graph
-
-None yet.
-
-## Tasks
-
-None yet.
-
-## Status Rules
-
-- PENDING
-- READY
-- ACTIVE
-- PASS
-- PARTIAL
-- BLOCKED
-- SUPERSEDED
-
-Only PASS permits automatic continuation inside an authorized Phase.
+Task **contracts are immutable after approval**. Runtime states (`PENDING`, `IN_PROGRESS`, `PASS`, `BLOCKED`, `PASS_RECOVERED`) are machine state in `EXECUTE/control/STATE.json`, not fields in Task markdown.

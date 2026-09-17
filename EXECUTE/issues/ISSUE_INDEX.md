@@ -1,6 +1,10 @@
 # Issue Index
 
-## Open Issues
+## Active Issue
+
+None.
+
+## Open / In-Recovery Issues
 
 None.
 
@@ -8,12 +12,26 @@ None.
 
 None.
 
-## Classifications
+## Allowed Issue Status Values
 
-- LOCAL_REPAIR
-- EXECUTOR_ESCALATION
-- KNOWLEDGE_REVIEW_REQUIRED
-- REPLAN_REQUIRED
-- EXTERNAL_ACTION_REQUIRED
+- `OPEN`
+- `DIAGNOSING`
+- `IN_REPAIR`
+- `VERIFYING_RECOVERY`
+- `RESOLVED`
+- `BLOCKED_EXTERNAL`
+- `SUPERSEDED`
 
-Issues are concise evidence and handoff packages, not error diaries.
+## Primary Root-Cause Classifications
+
+Diagnosis, not the local Builder, assigns the authoritative root-cause classification:
+
+- `IMPLEMENTATION_DEFECT`
+- `TASK_DEFECT`
+- `PLAN_DEFECT`
+- `EVALUATION_DEFECT`
+- `SCOPE_AMBIGUITY`
+- `EXTERNAL_BLOCKER`
+- `UNKNOWN`
+
+Issues are forensic handoff packages. They answer **what failed and where the evidence is**. They do not replace Diagnosis or Resolution artifacts.

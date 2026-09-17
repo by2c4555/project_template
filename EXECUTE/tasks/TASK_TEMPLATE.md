@@ -1,147 +1,125 @@
 ---
 task_id: TASK_NNN
+artifact_status: COMPILED
+planning_version: Planning_Vx
+planning_revision: Revision_N
 phase: PHASE_NN
-status: PENDING
-
-builder: Builder128K
-
+builder: Builder100K
 depends_on: []
-plan_refs: []
-knowledge_refs: []
-issue_refs: []
+decision_refs: []
+requirement_refs: []
+recovery_refs: []
 ---
 
 # TASK_NNN — Title
 
-## Goal
+> **Immutable approved contract.** Runtime status, dispatch counters, repair counters, and recovery status live only in `EXECUTE/control/STATE.json` and must never be written into this Task file after approval.
 
-One coherent, independently verifiable outcome.
+## Objective
 
-## Context
+One atomic, independently verifiable outcome.
+
+## Why This Task Exists
+
+Compiled causal reason from the approved plan.
+
+## Context Manifest
+
+### mandatory
+- `EXECUTE/compiled/GLOBAL_CONSTRAINTS.md`
+- `path/to/relevant/file`
+
+### relevant_prior_resolutions
+- none
+
+### useful
+- `path/to/optional/context`
+
+### do_not_load_by_default
+- `EXECUTE/docs/raw/**`
+- `EXECUTE/knowledge/**`
+- unrelated repository areas
+
+## Allowed Scope
 
 ### WRITE
 - `path/to/file`
-  - `Exact.symbol` when known
 
 ### READ
 - `path/to/file`
-  - relevant symbol/section when known
 
 ### TEST
-- `path/to/focused_test`
+- `path/to/test`
 
-Do not load unrelated project context.
+## Architecture / Decisions
 
-## Context Budget
-
-```yaml
-profile: Builder128K
-controlled_target_tokens: 49152
-controlled_max_tokens: 65536
-expected_tool_output_reserve_tokens: 6000
-preflight: python scripts/context_guard.py EXECUTE/tasks/TASK_NNN.md
-```
-
-Planner must run the preflight before publishing the Task pack. Builder must run it again before loading implementation files.
-
-Decision rules:
-- PASS: within target;
-- WARN: above target but within hard maximum;
-- SPLIT_REQUIRED: above hard maximum;
-- CONTEXT_BLOCKED: runtime/model capacity or required context cannot be established safely.
+- execution-critical decision references
 
 ## Verified Facts
 
-Include only execution-critical facts.
+Only facts required to execute safely, with provenance.
 
-- FACT 1
-- FACT 2
+## Prior Resolution Guardrails
 
-Sources:
-- KNOWLEDGE-ID
-- CONTRACT-ID
+- none
 
 ## Required Change
 
-Describe the exact required behavior. Do not leave architecture decisions unresolved.
+Exact behavior; no unresolved project-wide design decisions.
 
-## Must Preserve
+## Invariants / Must Preserve
 
-- existing required behavior;
-- named contracts;
-- unrelated functionality.
+- ...
+
+## Out of Scope
+
+- ...
 
 ## Acceptance Criteria
 
 - AC-01:
 - AC-02:
 
-## Verify
+## Verification
 
 ```text
-<exact command or deterministic verification procedure>
+<exact command/procedure>
 ```
 
-Expected result: `PASS`
+Expected: PASS
 
-## Environment
+For potentially verbose commands use `python scripts/safe_exec.py --label <TASK>_<CHECK> -- <command>` so full logs are durable but agent-visible output is bounded.
+
+## Local Repair Budget
 
 ```yaml
-external_access: false
-required_user_env: []
-production_access: false
-database_access: none
+max_evidence_driven_repair_attempts: 2
+open_ended_recovery_allowed: false
 ```
 
-## External I/O Budget
+Each post-failure code-repair attempt requires `python scripts/execution_gate.py authorize-repair TASK_NNN` first. When the machine counter is exhausted, persist evidence and return BLOCKED.
+
+## Context Budget
 
 ```yaml
-api_requests: 0
-api_pages: 0
-api_items_per_page: 0
-db_queries: 0
-db_rows_per_query: 0
-repeated_equivalent_calls: 2
-transient_retries_per_operation: 2
+profile: Builder100K
+controlled_target_tokens: 40000
+controlled_max_tokens: 52000
+expected_tool_output_reserve_tokens: 5000
+preflight: python scripts/context_guard.py EXECUTE/tasks/TASK_NNN.md
 ```
-
-## Local Output Budget
-
-```yaml
-max_command_output_chars_into_model: 12000
-max_search_results_into_model: 100
-max_log_excerpt_lines_into_model: 200
-max_diff_lines_into_model: 400
-max_test_failure_excerpt_lines_into_model: 250
-```
-
-Keep full raw output out of model context when a bounded summary is sufficient.
 
 ## Stop If
 
-Stop and create/escalate an Issue when:
-- Task facts conflict with repository/external reality;
-- context preflight is SPLIT_REQUIRED or CONTEXT_BLOCKED;
-- required scope expands materially;
-- a required architecture decision is missing;
-- external configuration is missing;
-- equivalent failure repeats without new evidence;
-- two meaningful repairs fail;
-- unrelated regression is introduced.
+- compiled facts contradict implementation reality;
+- a required decision is missing;
+- material scope/architecture/requirement change is required;
+- context exceeds budget;
+- verification cannot be made deterministic enough;
+- safe repair requires broader repository authority than this Task permits;
+- `execution_gate.py` denies dispatch/repair;
+- bounded repair attempts are exhausted.
 
-## Result
+## Evidence Output
 
-Status: PENDING
-
-Persist durable evidence before returning.
-Return a bounded Result Capsule only:
-
-```yaml
-result_capsule:
-  unit: TASK_NNN
-  status: PENDING
-  changed_files: []
-  verification: NOT_RUN
-  issue: none
-  next_action: none
-```
+Persist `EXECUTE/execution/evidence/TASK_NNN.md` with changed files, AC mapping, verification, deviations, assumptions, risks, and failure/repair evidence when applicable.

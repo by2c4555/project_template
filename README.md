@@ -1,142 +1,304 @@
-# Project Template v4.0.1
+# Project Template v4.4.0
+## Provider-Neutral Resumable AI Development Workflow
 
-## AI-assisted development workflow for VS Code Copilot Chat
+Project Template separates expensive reasoning, bounded implementation, and deterministic workflow authority.
 
-This template is for projects where one AI model plans the whole project and smaller bounded AI workers implement one task at a time.
+> **Agents produce reasoning/work/evidence. Python grants authority. Chat history is disposable. Repository state is durable.**
 
-The main idea is simple:
+## Development intent
 
-```text
-You prepare project requirements
-        ↓
-ProjectManager starts the workflow
-        ↓
-Planner512K creates project knowledge, architecture, plan, phases, and tasks
-        ↓
-You authorize one Phase
-        ↓
-Builder128K / Builder256K executes each Task in a fresh context
-        ↓
-Integration Gate verifies the Phase
-        ↓
-You authorize the next Phase
-```
+The long-term intent, mandatory repository structure, user-mandated invariants, and maintainer expectations for **Project Template itself** are defined in [`Objective_dev.md`](Objective_dev.md). It is a maintainer/development reference, **not** user-project runtime scope and must not be treated as `EXECUTE/project_details.md`.
 
-You normally interact with **ProjectManager only**.
-
-You do **not** manually switch between Planner and Builder agents for every step.
+Anyone substantially evolving Project Template should read `VERSION` -> `Objective_dev.md` -> this README -> relevant current implementation.
 
 ---
 
-# Start Here
+# VERSION / CHANGE CYCLE
 
-If this is your first time using the template, follow these steps in order.
+> **Mandatory invariant:** this diagram must always represent the current canonical workflow. Any workflow architecture change must update this diagram in the same change/version.
 
-## Step 1 — Prepare the project input
+```mermaid
+flowchart TD
+    ER["External Research\nWHAT / WHY / Requirements / Constraints"]
+    HANDOFF["project_details.md\n+ selected docs/raw/*"]
+    SCOPE["Immutable Scope Snapshot"]
+    PLAN["External Agent — PLANNING\nprovider-neutral\nbounded work + checkpoint/resume"]
+    READY["PLAN_READY"]
+    APPROVE["Human: approve_plan.py"]
+    MANAGER["Local Manager"]
+    BUILDER["Fresh Builder / Task"]
+    EXEC_DONE["EXECUTION_COMPLETE"]
+    EVAL_AUTH["Human: start_evaluation.py"]
+    EVAL["External Agent — EVALUATION\nindependent + checkpoint/resume"]
+    COMPLETE["PROJECT_COMPLETION_REPORT"]
+    CLOSED["CLOSED_VALIDATED"]
+    ISSUE["Issue / Blocking Finding"]
+    DIAG["External Agent — DIAGNOSIS\ncheckpoint/resume"]
+    REC_APPROVE["Human: approve_recovery.py"]
+    RECOVERY["External Agent — RECOVERY\ncheckpoint/resume"]
+    REC_GATE["recovery_gate.py"]
+    RESUME["Human: resume_execution.py"]
+    REPLAN["start_replan.py"]
+    SCOPE_FIX["External Research / Scope Clarification"]
+    IMPORT["import_scope.py"]
 
-Before opening the execution workflow, fill in:
+    ER --> HANDOFF --> SCOPE --> PLAN --> READY --> APPROVE --> MANAGER --> BUILDER
+    BUILDER -->|PASS| MANAGER
+    MANAGER -->|all Tasks PASS| EXEC_DONE --> EVAL_AUTH --> EVAL
+    EVAL -->|PASS / PASS_WITH_FINDINGS| COMPLETE --> CLOSED
+    BUILDER -->|repair budget exhausted| ISSUE
+    EVAL -->|DIAGNOSIS_REQUIRED| ISSUE
+    ISSUE --> DIAG
+    DIAG -->|IMPLEMENTATION_DEFECT| REC_APPROVE --> RECOVERY --> REC_GATE
+    REC_GATE -->|execution-origin| RESUME --> MANAGER
+    REC_GATE -->|evaluation-origin| EVAL_AUTH
+    DIAG -->|TASK_DEFECT / PLAN_DEFECT| REPLAN --> PLAN
+    DIAG -->|SCOPE_AMBIGUITY| SCOPE_FIX --> IMPORT --> SCOPE
+    DIAG -->|EVALUATION_DEFECT| EVAL_AUTH
+    CLOSED -->|next feature / version / refactor / validated bug scope| ER
+```
+
+A validated Cycle is never reopened for new work. New scope starts a new Cycle. No approval or execution authority carries forward.
+
+---
+
+# 1. Responsibility model
+
+| Layer | Responsibility | Typical tools |
+|---|---|---|
+| External Research | WHAT / WHY / requirements / constraints / success criteria | ChatGPT Project or other web AI |
+| External Agent | expensive technical reasoning: Planning, Diagnosis, Recovery, Evaluation | Codex, Claude Code, OpenCode, Antigravity, other repository agents |
+| Human | material approval boundaries | terminal/operator |
+| Manager | approved Task orchestration | VS Code ProjectManager500K |
+| Fresh Builder | bounded implementation of one Task | Builder100K / local or BYOK model |
+| Python scripts | authority, state, gates, integrity, verification | Python 3 |
+
+**Role != Agent != Model.** Provider identity is audit metadata, never workflow authority.
+
+---
+
+# 2. External Research
+
+External Research is outside the controlled local runtime and is vendor-neutral. Use `EXECUTE/external_research/RESEARCH_GUIDE.md`. Long chats may checkpoint into external `research_workspace/` topic/source files.
+
+Final handoff only when product/scope unknowns are zero:
 
 ```text
 EXECUTE/project_details.md
+EXECUTE/docs/raw/*     # only declared useful evidence
 ```
 
-This is the main user-owned requirements file.
+There is **no required `Research_Vx.md` handoff**.
 
-It should explain at least:
+Start a new Cycle with:
 
-- what you are building;
-- what success means;
-- what is in scope and out of scope;
-- important user/system workflows;
-- functional requirements;
-- architecture-relevant non-functional requirements;
-- target runtime/platform;
-- database or persistence requirements;
-- external APIs/services;
-- security constraints;
-- packaging/deployment expectations;
-- testing expectations;
-- known risks or unknowns.
+```bash
+python scripts/start_cycle.py --title "..."
+```
 
-If something important is genuinely unknown, write:
+Python validates the mutable handoff and captures an immutable Scope Snapshot under cycle history.
+
+---
+
+# 3. Authoritative state
+
+The workflow authority is:
 
 ```text
+EXECUTE/control/STATE.json
+```
+
+Every transition is appended to `EXECUTE/control/TRANSITIONS.jsonl`. Markdown status files are generated views only.
+
+External Agent resumable working memory is:
+
+```text
+EXECUTE/control/AGENT_WORK.json
+EXECUTE/work/WORK_NNNN_RESUME.md
+```
+
+These are **not independent authority**. `STATE.json` contains the authoritative active-work pointer/status/sequence.
+
+---
+
+# 4. Provider-neutral External Agent work protocol
+
+Planning, Diagnosis, Recovery, and Evaluation use `scripts/agent_work.py`. A fresh compatible agent with zero prior conversation history must be able to resume from the latest valid checkpoint.
+
+Start/resume a role:
+
+```bash
+python scripts/agent_work.py begin --role PLANNING --tool "claude-code" --model "..."
+python scripts/agent_work.py status
+```
+
+Checkpoint after each bounded expensive work unit:
+
+```bash
+python scripts/agent_work.py checkpoint \
+  --expected-seq 0 \
+  --phase REPOSITORY_RESEARCH \
+  --unit RU-001 \
+  --next-unit RU-002 \
+  --note "Verified facts, evidence, resolved decisions, open items, exact next step"
+```
+
+Resume from another provider/session:
+
+```bash
+python scripts/agent_work.py resume --tool "codex" --model "..."
+```
+
+Complete the reasoning role before its deterministic finalizer:
+
+```bash
+python scripts/agent_work.py complete \
+  --expected-seq N \
+  --unit FINAL \
+  --note "Durable final handoff summary"
+```
+
+The capsule stores conclusions/evidence/open items, **not hidden chain-of-thought**.
+
+If authoritative role inputs change (Scope/Issue/Evaluation binding), the old work becomes stale rather than being silently reused. Checkpoint sequence also prevents stale sessions from overwriting newer progress. Git HEAD/dirty digest are recorded when Git is available for cross-machine/audit awareness.
+
+---
+
+# 5. External Agent Planning
+
+Use:
+
+```text
+EXECUTE/external_agent/PLANNING_PROMPT.md
+```
+
+Planning researches only the repository context necessary to remove material technical uncertainty. It binds to the immutable Scope Snapshot and compiles:
+
+```text
+EXECUTE/compiled/**
+EXECUTE/plan/IMPLEMENTATION_PLAN.md
+EXECUTE/tasks/TASK_INDEX.md
+EXECUTE/tasks/TASK_NNN.md
+```
+
+Material unknown -> `planning_gate.py hold-material-feedback` -> STOP.
+
+Zero material unknowns -> authorize expansion. When the package is ready, Planning must complete its External Agent work item, then:
+
+```bash
+python scripts/planning_gate.py mark-plan-ready
+```
+
+`PLAN_READY` is a hard stop. Chat is feedback, never implementation approval.
+
+---
+
+# 6. Human implementation approval
+
+```bash
+python scripts/approve_plan.py
+```
+
+This interactive terminal gate binds approval to exact Cycle, Scope revision/digest, Planning revision, Task count, and package SHA-256.
+
+---
+
+# 7. Local Manager / fresh Builder — unchanged execution architecture
+
+Manager uses `EXECUTE_PROJECT_PROMPT.md` and machine gates. It consumes only the approved immutable package and runtime state — not External Agent scratch/checkpoint history.
+
+For each Task:
+
+```bash
+python scripts/execution_gate.py begin-task TASK_001
+python scripts/context_guard.py EXECUTE/tasks/TASK_001.md
+```
+
+Manager launches one fresh bounded Builder. Builder implements only allowed scope, writes Task evidence, and verification is recorded through `execution_gate.py`.
+
+Local repair attempts are machine-counted. Ordinary Task dispatch is one-time. Manager context is bounded by the existing batch circuit breaker (`reset_manager_batch.py`). Large command output should use `safe_exec.py`.
+
+---
+
+# 8. Incident -> External Agent Diagnosis
+
+When bounded Builder repair is exhausted, `execution_gate.py fail-task` creates an Issue and pauses normal execution. Use:
+
+```text
+EXECUTE/external_agent/DIAGNOSIS_PROMPT.md
+```
+
+Diagnosis may inspect/reproduce/reason but may not repair production code. It uses resumable work checkpoints, creates immutable `Diagnosis_Vx.md`, marks DIAGNOSIS work complete, then registers exactly one classification with `diagnosis_gate.py`:
+
+```text
+IMPLEMENTATION_DEFECT
+TASK_DEFECT
+PLAN_DEFECT
+EVALUATION_DEFECT
+SCOPE_AMBIGUITY
+EXTERNAL_BLOCKER
 UNKNOWN
 ```
 
-Do not guess.
+---
 
-You may also place supporting research or source documents in:
+# 9. Recovery / Replan / Scope clarification
 
-```text
-EXECUTE/docs/
-```
+`IMPLEMENTATION_DEFECT` -> human `approve_recovery.py` -> `EXECUTE/external_agent/RECOVERY_PROMPT.md`. Recovery uses resumable checkpoints and additionally records/validates working-tree/baseline observations. Complete External Agent RECOVERY work before `recovery_gate.py`.
 
-For example:
+Execution-origin Recovery then requires human `resume_execution.py`; start a fresh Manager conversation. Evaluation-origin Recovery routes back to a separately authorized Evaluation attempt.
 
-```text
-EXECUTE/
-├── project_details.md
-└── docs/
-    ├── API_RESEARCH.md
-    ├── DATABASE_RESEARCH.md
-    ├── SECURITY_RESEARCH.md
-    └── vendor_specification.pdf
-```
+`TASK_DEFECT` / `PLAN_DEFECT` -> `start_replan.py` -> new Planning package -> new approval.
 
-These documents may come from your own research, a ChatGPT Research Project, vendor documentation, previous project notes, or other trusted sources.
-
-`project_details.md` is authoritative user intent.
-
-`EXECUTE/docs/` is supporting raw source material.
+`SCOPE_AMBIGUITY` -> External Research clarification -> `import_scope.py` -> new immutable Scope revision -> Planning/replan as required.
 
 ---
 
-## Step 2 — Choose models for the three roles
+# 10. Independent External Agent Evaluation
 
-v4.0.1 has three internal AI roles:
-
-```text
-Planner512K
-Builder128K
-Builder256K
-```
-
-Minimum documented context sizes are:
-
-```text
-Planner512K  >= 524288 tokens
-Builder128K  >= 131072 tokens
-Builder256K  >= 262144 tokens
-```
-
-The template does not guess which provider you want to use.
-
-Bind the exact model and provider before execution.
-
-Example:
+After all Tasks pass, human authorizes one attempt:
 
 ```bash
-python scripts/configure_models.py \
-  --planner-model "Claude Opus 4.7" --planner-provider openrouter --planner-context 1048576 \
-  --builder128-model "Qwen3 Coder Next" --builder128-provider openrouter --builder128-context 262144 \
-  --builder256-model "Qwen3 Coder Next" --builder256-provider openrouter --builder256-context 262144
+python scripts/start_evaluation.py
 ```
 
-Use the real model name, provider/vendor identifier, and documented context capacity available in your VS Code environment.
+Use `EXECUTE/external_agent/EVALUATION_PROMPT.md`. Evaluation is independent: Planning/Manager/Builder/Recovery claims are history, not proof. It may checkpoint already verified requirement ranges/tests/findings so provider/session changes do not force repetition.
 
-For example:
+Before finalization, complete EVALUATION work, create the authorized Evaluation report, and on PASS/PASS_WITH_FINDINGS create the detailed `PROJECT_COMPLETION_REPORT_Vx.md`. Then run `finalize_evaluation.py`.
 
-```text
-Claude Opus 4.7 (openrouter)
-Claude Opus 4.7 (copilot)
-```
-
-are treated as different bindings.
+PASS closes the Cycle as `CLOSED_VALIDATED`. Blocking findings create an Evaluation-origin Issue and route to Diagnosis.
 
 ---
 
-## Step 3 — Validate the workspace
+# 11. Next version / change cycle
+
+The Completion Report is verified actual-system truth for the next External Research cycle. New work should begin from:
+
+```text
+latest Completion Report
++ current repository truth
++ new user goals
++ targeted new external research
+```
+
+not from old chat history.
+
+---
+
+# 12. Required tools
+
+- Visual Studio Code / repository terminal
+- Python 3
+- Git (strongly recommended, especially for cross-machine External Agent handoff)
+- any compatible External Agent provider for expensive reasoning stages
+- VS Code Manager/Builder agent support and configured local/BYOK models
+- optional ChatGPT Project or other Web AI for External Research
+
+Configure local execution models with `python scripts/configure_models.py`.
+
+---
+
+# 13. Validation
 
 Run:
 
@@ -144,593 +306,10 @@ Run:
 python scripts/validate_v4.py
 ```
 
-Do not begin planning if validation fails.
-
-After model binding is correct and the workspace is structurally valid, the validator should report the template as ready.
-
-For individual Tasks, the workflow may also use:
-
-```bash
-python scripts/context_guard.py EXECUTE/tasks/TASK_NNN.md
-```
-
-This estimates whether the bounded Task context fits its assigned Builder.
+Validation checks structural invariants including `Objective_dev.md`, README reference/canonical `VERSION / CHANGE CYCLE`, provider-neutral External Agent prompts/work protocol, state schema/version, Scope/package bindings, human gates, Manager/Builder contracts, and Python compilation.
 
 ---
 
-## Step 4 — Open the project in VS Code
+# 14. Compatibility paths
 
-Open the project folder in a VS Code/Copilot version that supports:
-
-```text
-custom agents
-tools
-agents
-subagent invocation
-```
-
-The template depends on isolated subagent execution.
-
-The user-facing agent is:
-
-```text
-ProjectManager
-```
-
-Planner512K, Builder128K, and Builder256K are internal agents.
-
----
-
-## Step 5 — Start the workflow
-
-In Copilot Chat:
-
-1. Select the `ProjectManager` custom agent.
-2. Start with `EXECUTE_PROJECT_PROMPT.md`.
-
-That entry prompt tells ProjectManager to read:
-
-```text
-EXECUTE/PROJECT_STATUS.md
-```
-
-and resume from the persisted workflow state.
-
-Do not paste the whole repository, all research documents, or the entire implementation plan into the main chat.
-
-The system is intentionally designed so the main chat remains small.
-
----
-
-# What Happens After You Start?
-
-At a new project, the initial state is approximately:
-
-```text
-INITIALIZE
-    ↓
-PT1_INPUT_KNOWLEDGE
-```
-
-ProjectManager invokes a fresh Planner512K subagent.
-
-The Planner then progresses through five isolated planning transactions.
-
-```text
-PT1_INPUT_KNOWLEDGE
-    ↓
-PT2_ARCHITECTURE_PLAN
-    ↓
-PT3_RISK_PHASES
-    ↓
-PT4_TASK_COMPILATION
-    ↓
-PT5_TASK_PACK_VALIDATION
-    ↓
-EXECUTION_READY
-```
-
-Each planning transaction receives a fresh context window.
-
-The Planner uses the project input to create and maintain durable project state on disk.
-
-Important outputs include:
-
-```text
-EXECUTE/reference/
-EXECUTE/plan/IMPLEMENTATION_PLAN.md
-EXECUTE/tasks/
-EXECUTE/PROJECT_STATUS.md
-```
-
-The main chat does not need to remember the whole project.
-
-Disk state is authoritative.
-
----
-
-# When Does the User Need to Interact?
-
-There are two common cases.
-
-### 1. The Planner needs missing information
-
-If architecture-critical information is missing, the workflow stops instead of guessing.
-
-The Planner may create:
-
-```text
-EXECUTE/reference/OPEN_QUESTIONS.md
-```
-
-ProjectManager reports what information is required.
-
-You answer the question and persist the important answer in:
-
-```text
-EXECUTE/project_details.md
-```
-
-or the appropriate supporting source document.
-
-Then resume through ProjectManager.
-
-### 2. A Phase is ready for execution
-
-A Phase is the user authorization boundary.
-
-Typical structure:
-
-```text
-Phase
-├── TASK_001
-├── TASK_002
-├── TASK_003
-└── Integration Gate
-```
-
-When you authorize the Phase:
-
-```text
-phase_authorized = true
-```
-
-ProjectManager executes its Tasks in dependency order.
-
-You do not need to approve every successful Task.
-
----
-
-# How Task Execution Works
-
-The core invariant of v4.0.1 is:
-
-> **1 Task = 1 execution contract = 1 isolated subagent invocation = 1 fresh context window.**
-
-Example:
-
-```text
-ProjectManager
-    ↓
-Builder128K → TASK_001 → PASS
-    ↓ fresh context
-Builder128K → TASK_002 → PASS
-    ↓ fresh context
-Builder256K → TASK_003 → PASS
-    ↓ fresh context
-Builder256K → Integration Gate → PASS
-```
-
-A successful Task may allow ProjectManager to continue automatically inside the currently authorized Phase.
-
-The previous Builder context is never reused for the next Task.
-
-This is the main protection against context accumulation and scope drift.
-
----
-
-# Builder128K vs Builder256K
-
-`Builder128K` is the default implementation executor.
-
-Use `Builder256K` when the work cannot safely fit the smaller Builder after reasonable Task decomposition.
-
-Builder256K is also used for Phase Integration Gates.
-
-The intended decision is:
-
-```text
-Can Task fit Builder128K?
-    │
-    ├─ YES → Builder128K
-    │
-    └─ NO
-        ↓
-Can Task be cleanly split?
-    │
-    ├─ YES → split it
-    │
-    └─ NO → Builder256K
-```
-
-Builder256K is not a Planner.
-
-Builders do not redesign project architecture.
-
----
-
-# What Happens When Something Fails?
-
-Only `PASS` allows normal automatic continuation.
-
-Statuses such as:
-
-```text
-PARTIAL
-BLOCKED
-WAITING_USER
-EXECUTION_UNSTABLE
-KNOWLEDGE_REVIEW_REQUIRED
-REPLAN_REQUIRED
-EXTERNAL_ACTION_REQUIRED
-```
-
-stop the current Phase.
-
-The system then persists evidence to disk and reports the next valid action.
-
-It does not silently keep retrying forever.
-
-The default repair limit is two meaningful repair attempts.
-
-After that, the problem should be recorded as an Issue and routed appropriately.
-
----
-
-# What Is an Issue?
-
-An Issue is a durable recovery package.
-
-It should contain enough verified information for another isolated agent to continue without replaying the entire failed chat.
-
-Conceptually:
-
-```text
-Issue
-=
-problem
-+ verified evidence
-+ approaches already ruled out
-+ safe resume point
-+ escalation information
-```
-
-Issues live under:
-
-```text
-EXECUTE/issues/
-```
-
----
-
-# Phase Completion
-
-After all Tasks and the Integration Gate pass:
-
-```text
-Phase complete
-    ↓
-phase_authorized = false
-    ↓
-ProjectManager stops
-    ↓
-User authorizes the next Phase
-```
-
-The user approves Phases, not every micro-Task.
-
-This keeps human control at meaningful checkpoints without forcing constant confirmation.
-
----
-
-# Project Completion
-
-When enabled by project policy, release completion may require:
-
-```text
-System Test
-→ Package
-→ Clean Install
-→ Release Gate
-→ COMPLETE
-```
-
-Passing unit tests alone does not necessarily mean the project is complete.
-
----
-
-# Which Files Do I Actually Edit?
-
-For normal use, the most important user-facing files are:
-
-```text
-EXECUTE/project_details.md
-EXECUTE/docs/*
-.env.user                  # only when external credentials/config are needed
-```
-
-You normally should not manually edit internal Planner/Builder instructions during project execution.
-
-The workflow itself maintains files such as:
-
-```text
-EXECUTE/PROJECT_STATUS.md
-EXECUTE/reference/*
-EXECUTE/plan/*
-EXECUTE/tasks/*
-EXECUTE/issues/*
-```
-
-Review them when needed, but treat them as workflow state and project memory.
-
----
-
-# Where Do Secrets Go?
-
-Never put secrets in:
-
-```text
-project_details.md
-EXECUTE/docs/
-EXECUTE/.env.execute
-Tasks
-Issues
-Plans
-Knowledge files
-```
-
-Human-owned local credentials belong in:
-
-```text
-.env.user
-```
-
-and must not be committed.
-
-If required external configuration is missing, the AI must stop and ask rather than inventing values.
-
----
-
-# Mental Model
-
-The easiest way to understand the system is:
-
-```text
-USER
-  owns requirements and Phase authorization
-
-ProjectManager
-  owns routing
-
-Planner512K
-  owns global thinking
-
-Builder128K / Builder256K
-  own bounded implementation
-
-Disk
-  owns persistent project memory
-
-Chat
-  is temporary
-```
-
-Or even shorter:
-
-> **Planner thinks globally. Builder executes locally. ProjectManager routes. Disk remembers. User authorizes.**
-
----
-
-# Workspace Structure
-
-```text
-workspace/
-├── README.md
-├── EXECUTE_PROJECT_PROMPT.md
-│
-├── .github/
-│   ├── agents/
-│   │   ├── project-manager.agent.md
-│   │   ├── planner512k.agent.md
-│   │   ├── builder128k.agent.md
-│   │   └── builder256k.agent.md
-│   └── skills/
-│       ├── project-planning/SKILL.md
-│       └── builder-task-execution/SKILL.md
-│
-├── EXECUTE/
-│   ├── PROJECT_CONFIG.md
-│   ├── PROJECT_STATUS.md
-│   ├── MODEL_BINDINGS.json
-│   ├── project_details.md
-│   ├── docs/
-│   ├── reference/
-│   ├── plan/
-│   ├── tasks/
-│   └── issues/
-│
-├── scripts/
-│   ├── configure_models.py
-│   ├── validate_v4.py
-│   └── context_guard.py
-│
-├── src/
-├── test/
-└── package/
-```
-
-Think of the folders this way:
-
-```text
-.github/
-= how the AI roles operate
-
-EXECUTE/
-= what the project knows, decided, is doing, and must do next
-
-src/ + test/
-= implementation reality
-```
-
----
-
-# Why v4.0.1 Uses Fresh Contexts
-
-Large model context windows are not fully available to project content.
-
-The same context is also consumed by:
-
-```text
-VS Code/Copilot system instructions
-agent instructions
-tools
-conversation history
-user prompts
-project files
-tool output
-reasoning
-model output
-```
-
-Therefore:
-
-> nominal model context != usable project context
-
-v4.0.1 does not try to keep one giant conversation alive.
-
-Instead, it persists durable state to disk and starts fresh isolated subagents for bounded units of work.
-
-That is why the workflow requires:
-
-```text
-Planner >= 512K
-Builder >= 128K
-```
-
-while still keeping each actual planning or execution payload significantly below the model's nominal maximum.
-
----
-
-# Core Safety and Reliability Rules
-
-```text
-Planner below 512K
-→ no Planning.
-
-Builder below 128K
-→ no Execution.
-
-Missing project details
-→ ask User and STOP.
-
-Insufficient Knowledge
-→ no Plan.
-
-Unvalidated Plan
-→ no Tasks.
-
-Unvalidated Task Pack
-→ no Execution.
-
-Builder does not design architecture.
-
-Builder does not repair planning gaps.
-
-Task execution always uses a fresh Builder context.
-
-Planner transactions always use fresh Planner contexts.
-
-PASS
-→ may continue inside the authorized Phase.
-
-Any non-PASS
-→ stop the Phase.
-
-Missing external configuration
-→ never guess.
-
-Repeated no-progress behavior
-→ Issue and STOP.
-
-Chat history
-→ not authoritative.
-
-Disk state
-→ authoritative.
-```
-
----
-
-# Common Mistakes
-
-Avoid these patterns:
-
-```text
-Selecting Planner512K as the main user-facing agent
-→ Use ProjectManager instead.
-
-Manually changing model in chat before every Task
-→ Bind role models once; ProjectManager invokes the internal roles.
-
-Pasting the whole repository into the chat
-→ Let each Task define bounded context.
-
-Putting research only in chat
-→ Persist important material in project_details.md or EXECUTE/docs/.
-
-Letting Builder make architecture decisions
-→ Planning defects go back to Planner.
-
-Approving every successful Task manually
-→ Approve one Phase; successful Tasks continue automatically.
-
-Retrying the same failure repeatedly
-→ Produce new evidence, make a materially different repair, or stop.
-
-Keeping important decisions only in conversation history
-→ Persist them to disk.
-```
-
----
-
-# Quick Checklist
-
-Before first run:
-
-```text
-[ ] Fill EXECUTE/project_details.md
-[ ] Put useful supporting material in EXECUTE/docs/
-[ ] Bind Planner512K model/provider/context
-[ ] Bind Builder128K model/provider/context
-[ ] Bind Builder256K model/provider/context
-[ ] Run python scripts/validate_v4.py
-[ ] Open project in compatible VS Code/Copilot
-[ ] Select ProjectManager
-[ ] Start with EXECUTE_PROJECT_PROMPT.md
-```
-
-During the project:
-
-```text
-[ ] Answer blocking Planner questions when requested
-[ ] Persist important answers to disk
-[ ] Authorize one Phase at a time
-[ ] Let ProjectManager route Tasks automatically after PASS
-[ ] Stop and review Issues when execution is non-PASS
-```
-
----
-
-# In One Sentence
-
-**Prepare the requirements, bind and validate the models, start through ProjectManager, let Planner create bounded work, authorize one Phase, and let isolated Builders execute one fresh-context Task at a time.**
+`EXECUTE/codex/*` remains only as deprecated v4.4.0 compatibility stubs. Canonical role prompts live under `EXECUTE/external_agent/`. This avoids silently breaking older operator habits while making provider-neutral paths authoritative.

@@ -1,75 +1,53 @@
 ---
 issue_id: ISSUE_NNNN
 status: OPEN
-
-origin_task: TASK_NNN
-origin_phase: PHASE_NN
-origin_builder: Builder128K
-
-classification: EXECUTOR_ESCALATION
-
-safe_baseline: unknown
+origin_type: EXECUTION | EVALUATION
+origin_execution: Execution_Vx
+origin_task: TASK_NNN | none
+origin_evaluation: Evaluation_Vx | none
+opened_at: unknown
+resume_authorized: false
 ---
 
 # ISSUE_NNNN — Title
 
-## Problem
+## Failure Summary
 
-Concise verified problem.
+Verified symptom only; do not claim root cause before Diagnosis.
 
-## Verified Evidence
+## Expected Behavior
 
-Only facts established during execution.
+## Observed Behavior
 
-- evidence
+## Reproduction / Finding Reference
 
-## Last Confirmed Failure
+## Failure Signature
 
-Exact failing test, command, external result, or behavior.
+## Evidence Pointers
 
-Do not include giant raw logs.
+Store giant logs under `EXECUTE/execution/logs/**` or evidence directories and link them here.
 
-## Attempts Ruled Out
+## Relevant Repository Scope
 
-- approach — reason
+## Attempts Already Made / Ruled Out
 
-## Relevant Scope
+## Approved Contract References
 
-Files/symbols/tests only.
+## Safe Baseline
 
-- path
+## Recovery Control
 
-## Impact
-
-Choose exactly one primary classification:
-
-- LOCAL_REPAIR
-- EXECUTOR_ESCALATION
-- KNOWLEDGE_REVIEW_REQUIRED
-- REPLAN_REQUIRED
-- EXTERNAL_ACTION_REQUIRED
-
-## Resume Package
-
-Task:
-`TASK_NNN`
-
-Read:
-- exact file/test
-- exact file/test
-
-Do not repeat:
-- ruled-out approach
-
-Recommended next role:
-`Builder256K | Planner512K | User`
-
-## Safe Resume Point
-
-Describe current repository state and whether the failed Task change was reverted, partially preserved, or safely retained.
-
-Never discard unrelated user work.
+```yaml
+local_execution_paused: true
+resume_authorized: false
+diagnosis_artifact: none
+recovery_approval: none
+resolution_artifact: none
+recovery_verification: none
+```
 
 ## Next Action
 
-One concrete action.
+Run `EXECUTE/codex/ISSUE_DIAGNOSIS_PROMPT.md`.
+
+Diagnosis is a separate read/analyze/propose invocation. Do not use the deprecated combined Diagnosis+Recovery prompt.

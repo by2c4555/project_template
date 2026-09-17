@@ -1,122 +1,197 @@
 #!/usr/bin/env python3
-"""Bind provider-qualified VS Code custom-agent models to v4.0.1 roles.
-
-The binding is intentionally explicit about provider/vendor so a model with the
-same display name from GitHub Copilot and OpenRouter cannot be confused.
-
-Example:
-  python scripts/configure_models.py \\
-    --planner-model "Claude Opus 4.7" --planner-provider openrouter --planner-context 1048576 \\
-    --builder128-model "Qwen3 Coder Next" --builder128-provider openrouter --builder128-context 262144 \\
-    --builder256-model "Qwen3 Coder Next" --builder256-provider openrouter --builder256-context 262144
-
-This writes qualified model references such as:
-  Claude Opus 4.7 (openrouter)
-  Claude Opus 4.7 (copilot)
-
-Use the vendor/provider identifier exposed by VS Code. Do not guess it from a
-provider display label. This script never guesses model context capacity.
-"""
 from pathlib import Path
-import argparse, json, re, sys
+import argparse
+import configparser
+import json
+import re
 
-ROOT=Path(__file__).resolve().parents[1]
-BIND=ROOT/'EXECUTE/MODEL_BINDINGS.json'
-ROLES={
- 'Planner512K': ('.github/agents/planner512k.agent.md',524288),
- 'Builder128K': ('.github/agents/builder128k.agent.md',131072),
- 'Builder256K': ('.github/agents/builder256k.agent.md',262144),
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CONFIG = ROOT / 'EXECUTE' / 'MODEL_CONFIG.ini'
+ROLES = {
+    'ProjectManager500K': ('.github/agents/project-manager.agent.md', 512000),
+    'Builder100K': ('.github/agents/builder100k.agent.md', 102400),
 }
-PROVIDER_RE=re.compile(r'^[A-Za-z0-9._-]+$')
-QUALIFIED_RE=re.compile(r'^(?P<base>.+?)\s+\((?P<provider>[A-Za-z0-9._-]+)\)$')
+PLACEHOLDERS = {'', 'CHANGE_ME', '<MODEL>', '<MODEL_ID>', '<MODEL_NAME>', '<PROVIDER>', '<VENDOR>', 'NONE', 'NULL'}
 
-def yaml_quote(s:str)->str:
-    return "'" + s.replace("'", "''") + "'"
 
-def normalize_binding(model:str, provider:str):
-    model=model.strip(); provider=provider.strip().lower()
-    if not model:
-        raise ValueError('model name is empty')
-    if not provider or not PROVIDER_RE.fullmatch(provider):
-        raise ValueError(f'invalid provider/vendor identifier: {provider!r}')
-    m=QUALIFIED_RE.fullmatch(model)
-    if m:
-        embedded=m.group('provider').lower()
-        if embedded != provider:
-            raise ValueError(f'model already names provider {embedded!r}, but --provider is {provider!r}')
-        base=m.group('base').strip()
-        qualified=f'{base} ({provider})'
+def pin(path, qualified_model_name):
+    p = ROOT / path
+    t = p.read_text(encoding='utf-8')
+    safe_model = qualified_model_name.replace("'", "''")
+    if re.search(r'^model:', t, re.M):
+        t = re.sub(r'^model:.*$', f"model: '{safe_model}'", t, count=1, flags=re.M)
     else:
-        base=model
-        qualified=f'{base} ({provider})'
-    return base,provider,qualified
+        t = t.replace('target: vscode\n', f"target: vscode\nmodel: '{safe_model}'\n", 1)
+    p.write_text(t, encoding='utf-8')
 
-def bind_agent(rel:str, qualified_model:str):
-    p=ROOT/rel; t=p.read_text(encoding='utf-8')
-    if not t.startswith('---\n'):
-        raise RuntimeError(f'{rel}: missing YAML frontmatter')
-    if re.search(r'^model:\s*.*$',t,re.M):
-        t=re.sub(r'^model:\s*.*$', 'model: '+yaml_quote(qualified_model), t, count=1, flags=re.M)
-    elif re.search(r'^target:\s*.*$',t,re.M):
-        t=re.sub(r'^(target:\s*.*)$', r'\1\nmodel: '+yaml_quote(qualified_model), t, count=1, flags=re.M)
-    else:
-        t=t.replace('---\n','---\nmodel: '+yaml_quote(qualified_model)+'\n',1)
-    p.write_text(t,encoding='utf-8')
+
+def read_ini(path):
+    if not path.exists():
+        return {}
+    cp = configparser.ConfigParser(interpolation=None)
+    try:
+        with path.open('r', encoding='utf-8') as f:
+            cp.read_file(f)
+    except configparser.Error as e:
+        raise SystemExit(f'ERROR: cannot parse {path}: {e}')
+
+    values = {}
+    for section in ('manager', 'builder'):
+        if cp.has_section(section):
+            # Backward-compatible fallbacks for v4.1.1 config files:
+            #   model -> vscode_model_name
+            #   provider -> vendor
+            values[section] = {
+                'model_id': cp.get(section, 'model_id', fallback='').strip(),
+                'vscode_model_name': cp.get(
+                    section,
+                    'vscode_model_name',
+                    fallback=cp.get(section, 'model', fallback='')
+                ).strip(),
+                'vendor': cp.get(
+                    section,
+                    'vendor',
+                    fallback=cp.get(section, 'provider', fallback='')
+                ).strip(),
+                'context': cp.get(section, 'context', fallback='').strip(),
+            }
+    return values
+
+
+def choose(cli_value, config_value):
+    return cli_value if cli_value is not None else config_value
+
+
+def parse_context(value, label):
+    if value is None or str(value).strip() == '':
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        raise SystemExit(f'ERROR: {label} context must be an integer, got: {value!r}')
+
+
+def is_placeholder(value):
+    return value is None or str(value).strip().upper() in PLACEHOLDERS
+
+
+def incomplete_message(config_path, missing):
+    lines = [
+        'ERROR: Model configuration is incomplete.',
+        '',
+        f'Edit: {config_path}',
+        '',
+        'Missing or placeholder fields:',
+    ]
+    lines.extend(f'  - {item}' for item in missing)
+    lines += [
+        '',
+        'In VS Code open: Chat: Manage Language Models',
+        'Record the model ID, VS Code model name, vendor, and context size.',
+        '',
+        'Then run:',
+        '  python scripts/configure_models.py',
+        '',
+        'Legacy --*-model / --*-provider flags are still accepted as aliases',
+        'for VS Code model name / vendor, but model_id should be recorded in the INI.',
+    ]
+    return '\n'.join(lines)
+
 
 def main():
-    ap=argparse.ArgumentParser(description='Bind exact model + provider/vendor to each v4.0.1 execution role.')
-    ap.add_argument('--planner-model',required=True)
-    ap.add_argument('--planner-provider',required=True)
-    ap.add_argument('--planner-context',required=True,type=int)
-    ap.add_argument('--builder128-model',required=True)
-    ap.add_argument('--builder128-provider',required=True)
-    ap.add_argument('--builder128-context',required=True,type=int)
-    ap.add_argument('--builder256-model',required=True)
-    ap.add_argument('--builder256-provider',required=True)
-    ap.add_argument('--builder256-context',required=True,type=int)
-    a=ap.parse_args()
-    raw={
-      'Planner512K':(a.planner_model,a.planner_provider,a.planner_context),
-      'Builder128K':(a.builder128_model,a.builder128_provider,a.builder128_context),
-      'Builder256K':(a.builder256_model,a.builder256_provider,a.builder256_context),
-    }
-    values={}; errors=[]; warnings=[]
-    for role,(model,provider,cap) in raw.items():
-        minimum=ROLES[role][1]
-        try:
-            base,vendor,qualified=normalize_binding(model,provider)
-            values[role]=(base,vendor,qualified,cap)
-        except ValueError as e:
-            errors.append(f'{role}: {e}')
-            continue
-        if cap < minimum:
-            errors.append(f'{role}: documented context {cap} < required {minimum}')
-        if vendor == 'customendpoint':
-            warnings.append(
-                f'{role}: provider is customendpoint. If multiple same-name models share this vendor, '
-                'current VS Code qualified-name routing may not distinguish their groups/IDs. '
-                'Prefer a distinct vendor such as openrouter when available.'
-            )
-    if errors:
-        for e in errors: print('FAIL:',e,file=sys.stderr)
-        return 2
-    data=json.loads(BIND.read_text(encoding='utf-8'))
-    data['binding_schema_version']=2
-    data['provider_qualified_models_required']=True
-    data['qualified_model_format']='Model Name (vendor)'
-    for role,(base,vendor,qualified,cap) in values.items():
-        bind_agent(ROLES[role][0],qualified)
-        r=data['roles'][role]
-        r['base_model']=base
-        r['provider']=vendor
-        r['model']=qualified
-        r['documented_context_tokens']=cap
-    BIND.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
-    for w in warnings: print('WARN:',w)
-    print('PASS: provider-qualified model bindings written and agent frontmatter pinned.')
-    for role,(_,vendor,qualified,cap) in values.items():
-        print(f'  {role}: {qualified} | provider={vendor} | context={cap}')
-    return 0
+    ap = argparse.ArgumentParser(
+        description='Configure v4.3.2 local model bindings from EXECUTE/MODEL_CONFIG.ini. CLI flags optionally override file values.'
+    )
+    ap.add_argument('--config', default=str(DEFAULT_CONFIG), help='Path to INI config (default: EXECUTE/MODEL_CONFIG.ini)')
 
-if __name__=='__main__':
-    raise SystemExit(main())
+    for key in ('manager', 'builder'):
+        ap.add_argument(f'--{key}-model-id')
+        ap.add_argument(f'--{key}-vscode-model-name')
+        ap.add_argument(f'--{key}-vendor')
+        ap.add_argument(f'--{key}-context', type=int)
+
+        # v4.1.1 compatibility aliases. These do not represent API model IDs.
+        ap.add_argument(f'--{key}-model', help=argparse.SUPPRESS)
+        ap.add_argument(f'--{key}-provider', help=argparse.SUPPRESS)
+
+    a = ap.parse_args()
+
+    config_path = Path(a.config)
+    if not config_path.is_absolute():
+        config_path = ROOT / config_path
+    cfg = read_ini(config_path)
+
+    raw = {}
+    for section in ('manager', 'builder'):
+        legacy_model = getattr(a, f'{section}_model')
+        legacy_provider = getattr(a, f'{section}_provider')
+        cli_name = getattr(a, f'{section}_vscode_model_name')
+        cli_vendor = getattr(a, f'{section}_vendor')
+
+        raw[section] = {
+            'model_id': choose(getattr(a, f'{section}_model_id'), cfg.get(section, {}).get('model_id')),
+            'vscode_model_name': choose(cli_name if cli_name is not None else legacy_model, cfg.get(section, {}).get('vscode_model_name')),
+            'vendor': choose(cli_vendor if cli_vendor is not None else legacy_provider, cfg.get(section, {}).get('vendor')),
+            'context': choose(getattr(a, f'{section}_context'), cfg.get(section, {}).get('context')),
+        }
+
+    missing = []
+    for section in ('manager', 'builder'):
+        for field in ('model_id', 'vscode_model_name', 'vendor'):
+            if is_placeholder(raw[section][field]):
+                missing.append(f'[{section}] {field}')
+        raw[section]['context'] = parse_context(raw[section]['context'], section)
+        if raw[section]['context'] is None:
+            missing.append(f'[{section}] context')
+
+    if missing:
+        raise SystemExit(incomplete_message(config_path, missing))
+
+    vals = {
+        'ProjectManager500K': raw['manager'],
+        'Builder100K': raw['builder'],
+    }
+
+    bindings_path = ROOT / 'EXECUTE' / 'MODEL_BINDINGS.json'
+    data = json.loads(bindings_path.read_text(encoding='utf-8'))
+    data['schema_version'] = (ROOT / 'VERSION').read_text(encoding='utf-8').strip()
+    data['binding_schema_version'] = 4
+    data['qualified_model_format'] = 'Model Name (vendor)'
+
+    for role, value in vals.items():
+        floor = ROLES[role][1]
+        cap = value['context']
+        if cap < floor:
+            raise SystemExit(f'ERROR: {role} context {cap} < required minimum {floor}')
+
+        name = value['vscode_model_name'].strip()
+        vendor = value['vendor'].strip()
+        model_id = value['model_id'].strip()
+        qualified = f'{name} ({vendor})'
+
+        data['roles'][role].update(
+            model_id=model_id,
+            vscode_model_name=name,
+            vendor=vendor,
+            model=qualified,
+            documented_context_tokens=cap,
+        )
+        # Remove obsolete fields if present from v4.1.1 bindings.
+        data['roles'][role].pop('base_model', None)
+        data['roles'][role].pop('provider', None)
+
+        pin(ROLES[role][0], qualified)
+
+    bindings_path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8')
+    print('v4.3.2 local model bindings configured.')
+    for role in ('ProjectManager500K', 'Builder100K'):
+        r = data['roles'][role]
+        print(f'  {role}:')
+        print(f'    VS Code model: {r["model"]}')
+        print(f'    Model ID:      {r["model_id"]}')
+        print(f'    Context:       {r["documented_context_tokens"]} tokens')
+    print('  Updated: EXECUTE/MODEL_BINDINGS.json and VS Code agent model pins')
+
+
+if __name__ == '__main__':
+    main()

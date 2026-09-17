@@ -1,0 +1,104 @@
+# External Agent Independent Evaluation & Completion Handoff — v4.4.0
+
+Role: independent evaluator. Read-only with respect to production implementation and approved planning artifacts.
+
+## Hard start gate
+
+Evaluation may run only after the user manually executes `python scripts/start_evaluation.py`.
+
+Read `EXECUTE/control/STATE.json` first. Require:
+
+- active Cycle status `EVALUATION`;
+- evaluation status `AUTHORIZED`;
+- exactly one active Evaluation version and expected report path;
+- execution complete;
+- no active Issue;
+- approved package integrity valid.
+
+Do not call `start_evaluation.py` yourself.
+
+One authorization covers **one Evaluation attempt only**.
+
+## Resumable work gate
+
+Run `python scripts/agent_work.py begin --role EVALUATION --tool "<agent tool>" --model "<model>"`. Resume completed independent checks from the valid capsule; do not rerun them solely because the provider/session changed. Checkpoint requirement ranges, tests/evidence verified, findings, and next independent check.
+
+The resume capsule may record what Planning/Recovery claimed only as history; those claims are not Evaluation evidence.
+
+Before `finalize_evaluation.py`, mark EVALUATION work complete with `agent_work.py complete`.
+
+## Required inputs
+
+Read as needed:
+
+- the immutable Scope Snapshot referenced by the Cycle (scope revision + digest);
+- approved compiled knowledge, Plan, Task contracts and package manifest;
+- machine execution state and Task evidence;
+- execution/recovery Issues, Diagnoses and Resolutions;
+- source code/tests/runtime configuration;
+- bounded independent build/test/static/runtime evidence.
+
+Use `scripts/safe_exec.py` for potentially verbose commands.
+
+Do not accept Manager/Builder PASS claims without independent evidence.
+
+## Required coverage
+
+Evaluate when relevant:
+
+- scope/requirement coverage;
+- approved-plan compliance;
+- actual functional behavior;
+- architecture/decision compliance;
+- interface/data compatibility;
+- security/reliability/error handling;
+- regression and test adequacy;
+- performance/operability/documentation;
+- invalidated assumptions;
+- all `PASS_RECOVERED` Tasks and material recovery history.
+
+## Artifact
+
+Create exactly the authorized report path (normally `EXECUTE/evaluation/Evaluation_Vx.md`) using the report template.
+
+It must contain top-level YAML-like fields:
+
+```yaml
+result: PASS | PASS_WITH_FINDINGS | DIAGNOSIS_REQUIRED
+blocking_findings: <integer>
+```
+
+For every material finding include severity, blocking state, concrete evidence, expected/actual behavior, related contract, and `requires_diagnosis` when blocking. Do not claim an unproven root cause as fact.
+
+### PASS / PASS_WITH_FINDINGS
+
+Before finalization create a detailed actual-system Completion Report, normally:
+
+`EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md`
+
+It must transfer verified post-build truth for a future external research/scope cycle.
+It must include `based_on_scope_revision` and `based_on_scope_digest` matching the active immutable Scope Snapshot. `finalize_evaluation.py` rejects a PASS/PASS_WITH_FINDINGS Completion Report that does not match.
+
+Then call only the machine finalizer:
+
+```bash
+python scripts/finalize_evaluation.py \
+  --evaluation Evaluation_Vx \
+  --completion-report EXECUTE/evaluation/PROJECT_COMPLETION_REPORT_Vx.md
+```
+
+The finalizer, not the evaluator, closes the Cycle.
+
+### DIAGNOSIS_REQUIRED
+
+Persist the report with `blocking_findings >= 1`, then call:
+
+```bash
+python scripts/finalize_evaluation.py --evaluation Evaluation_Vx
+```
+
+The finalizer creates an Evaluation-origin Issue and hard-stops into External Agent Diagnosis. Do not repair production code in the Evaluation invocation.
+
+## New version / post-validation debug
+
+After PASS, the Cycle is `CLOSED_VALIDATED`. Do not reopen it. Any future feature, version, refactor, or newly discovered bug introduced as new external scope starts a **new change cycle** via `scripts/start_cycle.py`. No approval authority carries across cycle boundaries.
