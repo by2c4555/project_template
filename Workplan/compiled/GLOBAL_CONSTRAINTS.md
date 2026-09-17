@@ -1,3 +1,3 @@
-# Global Constraints
+# GLOBAL_CONSTRAINTS
 
-Not compiled.
+Not compiled yet.

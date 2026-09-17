@@ -1,14 +1,36 @@
-# v5.0.0 Release Validation
+# v5.1.0 Release Validation
 
-Validated during package construction:
+Baseline studied: `main` v5.0.0 commit `bd0f0a96f5375efdb2e5836867c86a54742414c8`.
 
-- structural validator / Python compilation: PASS;
-- durable Planning Work begin/checkpoint/resume: PASS;
-- token-risk approval request: PASS;
-- wrong challenge rejection + immediate challenge rotation: PASS;
-- valid rotated challenge grant: PASS;
-- stale challenge rejection after state advance: PASS;
-- Scope -> Planning -> Execution -> Builder -> Evaluation -> CLOSED_VALIDATED simulation: PASS;
-- Builder failure -> Diagnosis -> Recovery -> execution resume route simulation: PASS.
+Executed on the generated v5.1.0 release tree:
 
-The shipped template is reset to clean `AWAITING_SCOPE` state after simulations.
+```bash
+python Workplan/scripts/validate.py --full
+```
+
+Result:
+
+```text
+TEMPLATE_VALID: PASS (v5.1.0)
+SCENARIO_VALID: PASS
+```
+
+The executable scenario verifies:
+
+- explicit Research ingest and canonical Scope import;
+- separate physical-package and logical-Scope digests;
+- Planning entry ingest revalidation;
+- provider handoff generation increment;
+- stale generation mutation rejection;
+- semantic checkpoint continuation;
+- final Planning revalidation, accepted-input archive and ingest normalization;
+- deterministic ExecutionManager next/dispatch without user-selected Task ID;
+- interrupted Builder reacquisition and stale Builder fencing;
+- machine-computed `RECONCILE_ACTIVE_UNIT` and CLEAN states;
+- immutable Task evidence completion;
+- deterministic transition to independent Evaluation;
+- Completion Report exact Scope binding;
+- `CLOSED_VALIDATED` final state;
+- Python compilation and required v5.1 structural/constitution checks.
+
+The shipped package is reset to clean `AWAITING_SCOPE` state (schema 4); test mutations occur only in temporary copies.

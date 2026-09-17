@@ -1,55 +1,55 @@
-# Project Template Development Objective — v5.0.0
+# Project Template Development Objective — v5.1.0
 
-> Maintainer reference for developing **Project Template itself**. This is not user-project scope.
+This file is the maintainer/development constitution for **Project Template itself**. It is not user-project scope and must never be treated as Research input for a user project.
 
 ## Purpose
 
-Project Template exists to maximize engineering quality per token/cost.
+Maximize engineering quality per token/cost by assigning work to the cheapest reliable authority:
 
-> **Expensive models = planning, architecture, diagnosis, recovery reasoning, evaluation.**  
-> **Low-cost models = bounded implementation work.**  
-> **Deterministic tools/scripts = authority, state, validation, integrity, resumability, and verification.**
+- **Expensive models**: planning, architecture, diagnosis, recovery reasoning, independent evaluation.
+- **Low-cost models**: bounded implementation under immutable Task contracts.
+- **Deterministic software**: state, authority, gates, integrity, resume, routing, reconciliation and verification.
 
-## User-Mandated Invariants — MUST
+The design must amplify model intelligence rather than spend model intelligence remembering workflow mechanics.
 
-1. **Workplan control-plane boundary.** `Workplan/` is the canonical AI-development control plane. Workflow authority, scripts, prompts, Tasks, state, checkpoints, approvals, evidence, diagnosis, recovery, evaluation, and workflow documentation live under `Workplan/`, except thin platform-required adapters.
-2. **User-project boundary.** Files outside `Workplan/` are user-project space and must not be treated as workflow authority.
-3. **Universal resumability.** Planning, Manager/Builder execution, Diagnosis, Recovery, and Evaluation must recover from arbitrary session loss using durable repository state, without requiring prior chat history.
-4. **Cross-machine portability.** A transferred workspace containing `Workplan/` must preserve enough state for a fresh compatible agent on another machine to identify the current stage and next safe action.
-5. **Interruption loss bound.** An interruption may require repetition/reconciliation of at most the currently active bounded work unit; completed validated units must not be replayed solely because a session/provider/network/machine was lost.
-6. **Mapped expensive reasoning.** Initial External Agent work for Planning, Diagnosis, Recovery, and Evaluation must establish a scope-bound Work Map before deep reasoning; later compatible agents resume from the map and latest valid checkpoint.
-7. **Provider neutrality.** Provider/model identity is metadata, not workflow authority. Compatible agents may hand off by durable state.
-8. **Single human approval interface.** Human token-risk authorization is performed only through `Workplan/scripts/approve.py -- <challenge>`.
-9. **Approval purpose.** Human approval exists only for material token/cost-runaway risk or equivalent expensive-work expansion. Routine checkpointing, resume, provider handoff, bounded progression, and normal transitions inside an approved envelope must not require approval.
-10. **Challenge binding.** Approval challenge must bind to the exact pending approval and authoritative state. Any wrong challenge invalidates that challenge and rotates to a new challenge.
-11. **Approval isolation.** AI uses `Workplan/scripts/tools/approve_req.py` and `approve_res.py`; agents must never execute `approve.py`.
-12. **Minimal state exposure.** Agents consume deterministic bounded projections and transitions instead of loading raw `Workplan/control/STATE.json` when a smaller interface is sufficient.
-13. **Script interface separation.** `Workplan/scripts/*.py` is the human-facing CLI; `Workplan/scripts/tools/*.py` is the bounded AI/advanced-user CLI; `Workplan/scripts/_core/` is internal implementation and not a direct workflow surface.
-14. **Bounded Builder.** Manager dispatches immutable approved Tasks; one fresh Builder works one Task at a time; local repairs are bounded and machine-counted.
-15. **Deterministic authority.** Natural-language chat never grants workflow authority. State transitions must pass deterministic validation.
-16. **Immutable scope/package integrity.** Scope snapshots, approved planning packages, and Task contracts remain bound by exact digests downstream.
-17. **Independent Evaluation.** Evaluation must produce independent evidence; Planning/Builder/Recovery claims are context, not proof.
-18. **Diagnosis/Recovery separation.** Diagnosis establishes evidence/classification; Recovery performs authorized repair work. Root cause must not be assumed from an Evaluation finding.
-19. **Cycle handoff.** A validated cycle produces a Completion Report containing verified actual-system truth for the next research/scope cycle.
-20. **Operational use cases.** Material workflow changes must update `Workplan/USE_CASES/`; a new behavior not demonstrated by an existing use case requires a new use case.
+## MUST invariants
 
-## Design Principles — SHOULD
+1. `Workplan/` is the AI-development control plane; user-project files live outside it except thin platform adapters.
+2. Durable repository state is authoritative; chat/session/provider/process/machine state is disposable.
+3. Research input has an explicit untrusted boundary: `Workplan/ingest/`.
+4. No Planning authority exists until deterministic ingest validation succeeds.
+5. Ingest package identity and canonical logical Scope identity are distinct digests.
+6. Planning revalidates its bound ingest at entry/resume and before `PLAN_READY`.
+7. Accepted Research input is archived durably; archive and history have distinct responsibilities.
+8. Scope and approved planning package integrity are immutable bindings for downstream work.
+9. Work ownership is generation-fenced; stale generations cannot mutate Work.
+10. Action/Resume Tickets are bounded deterministic projections, not a second authority database.
+11. Resume computes reconciliation for mutating roles; it must not delegate workflow reconstruction to the model.
+12. Semantic checkpoints persist verified facts/evidence/decisions and exact next bounded unit; never hidden chain-of-thought.
+13. Context is granted progressively by reason and does not grant additional authority.
+14. Manager routing is deterministic. The normal user does not select Task IDs or manually invoke Builders.
+15. One fresh ordinary Builder executes one immutable Task at a time.
+16. Builder repair attempts are machine-enforced and bounded.
+17. Diagnosis determines evidence-backed root cause and does not repair production code.
+18. Recovery performs the minimum complete proven repair for diagnosed implementation defects.
+19. Evaluation is independent from Planning/Builder/Recovery claims and verifies actual behavior.
+20. PASS/PASS_WITH_FINDINGS requires a Completion Report bound to exact Scope revision/digest.
+21. There is a single human approval interface (`scripts/approve.py`), used only as a token/cost/rework circuit breaker.
+22. Approval challenges remain bound to exact durable state and rotate/reject stale or wrong challenges.
+23. Raw `STATE.json` is internal authority; normal agents consume bounded tools/projections.
+24. Provider/model metadata is not authority and never substitutes for state bindings.
+25. Cross-session and cross-machine continuation must not require prior chat history.
+26. Prompt text must shrink only after equivalent deterministic capability exists and is tested.
+27. Stable internal CLI/API contracts precede optional MCP/general-agent abstractions.
+28. More capability should normally mean more deterministic software, not larger prompts.
+29. README, runtime, use cases, validation and changelog must ship in sync.
+30. Changes to these MUST invariants require explicit owner feedback and same-release updates to this constitution and verification.
 
-- Reason once; persist verified conclusions, evidence pointers, rejected approaches with concise reason, material unknowns, and exact next work.
-- Never persist hidden chain-of-thought.
-- Prefer semantic checkpoints after useful bounded units, not time-based checkpoints.
-- Prefer immutable artifacts then atomic authoritative-pointer updates.
-- Treat chats, sessions, models, providers, and machines as disposable compute.
-- Escalate to expensive reasoning only for material uncertainty, root-cause work, architectural decisions, or independent evaluation.
-- Avoid unnecessary agents, prompts, files, gates, and duplicated state.
+## SHOULD principles
 
-## Canonical Mental Model
-
-```text
-User Project = what is being built
-Workplan     = how AI work is planned, controlled, resumed, verified, and approved
-```
-
-## Owner Feedback / Change Policy
-
-Do not silently weaken a MUST. When the owner changes a MUST or architecture expectation, update this file, the canonical Workplan README flow, validation, affected USE_CASES, and CHANGELOG in the same release.
+- Reason once; persist verified conclusions, evidence pointers, rejected approaches with concise reasons, unknowns and next work.
+- Prefer bounded retrieval to broad context loading; minimum sufficient context is the goal, not minimum tokens at any cost.
+- Treat context capacity and reasoning quality as separate concerns.
+- Prefer the fewest new components consistent with clear ownership.
+- Avoid OS/process locks when durable generation fencing provides the required safety.
+- Avoid duplicate state, memory-summary files and prompt-only authority.

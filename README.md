@@ -1,15 +1,11 @@
-# Project Template v5.0.0
+# Project Template v5.1.0
 
-This repository separates the **user project** from the AI-development control plane.
+A deterministic, token-efficient AI development workflow.
 
-- `Workplan/` is the control plane used to plan, build, diagnose, recover, evaluate, resume, and govern AI work.
-- Files outside `Workplan/` are user-project space, except thin platform adapters such as `.github/agents/`.
+- Expensive models perform planning, architecture, diagnosis/recovery reasoning and independent evaluation.
+- Low-cost Builders perform bounded immutable Tasks.
+- `Workplan/` software owns state, authority, gates, resume, routing, reconciliation and verification.
 
-Normal human commands:
+Normal user surfaces are **External AI** for expensive reasoning and **VS Code Copilot Chat** with `@ExecutionManager` for bounded implementation.
 
-```bash
-python Workplan/scripts/resume.py
-python Workplan/scripts/approve.py -- 583194
-```
-
-Read `Workplan/README.md` for the canonical workflow.
+Start with `Workplan/README.md`. Maintainers evolving this template must also read `Workplan/Objective_dev.md`.

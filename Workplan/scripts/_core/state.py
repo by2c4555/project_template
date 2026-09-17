@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone
 from .paths import STATE_PATH, TRANSITIONS_PATH
 from .io import atomic_write_json
-WORKFLOW_VERSION='5.0.0'; SCHEMA_VERSION=3
+WORKFLOW_VERSION='5.1.0'; SCHEMA_VERSION=4
 
 def now(): return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z')
 
@@ -22,7 +22,6 @@ def save_state(st, event=None, actor='machine', details=None, expected_seq=None)
     current=load_state()
     if expected_seq is not None and int(current.get('state_seq',0))!=int(expected_seq):
         raise SystemExit(f'STATE_TRANSITION: BLOCKED\nexpected_seq={expected_seq} current_seq={current.get("state_seq")}')
-    # caller state must be based on current seq
     if int(st.get('state_seq',0))!=int(current.get('state_seq',0)):
         raise SystemExit(f'STATE_TRANSITION: BLOCKED\nstale state object {st.get("state_seq")} != {current.get("state_seq")}')
     st['state_seq']=int(current.get('state_seq',0))+1
@@ -35,8 +34,4 @@ def save_state(st, event=None, actor='machine', details=None, expected_seq=None)
     return st['state_seq']
 
 def compact(st):
-    return {
-      'state_seq':st.get('state_seq'),'project_state':st.get('project_state'),'lifecycle_stage':st.get('lifecycle_stage'),
-      'active_cycle':st.get('active_cycle'),'active_work':st.get('active_work'),'active_task':st.get('active_task'),
-      'pending_approval': (st.get('pending_approval') or {}).get('approval_id')
-    }
+    return {'state_seq':st.get('state_seq'),'project_state':st.get('project_state'),'lifecycle_stage':st.get('lifecycle_stage'),'active_cycle':st.get('active_cycle'),'active_work':st.get('active_work'),'active_task':st.get('active_task'),'pending_approval':(st.get('pending_approval') or {}).get('approval_id')}
