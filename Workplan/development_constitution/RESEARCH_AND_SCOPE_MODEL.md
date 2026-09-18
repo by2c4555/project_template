@@ -1,84 +1,50 @@
 > HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+
 # Research and Scope Model
 
 ## 1. Purpose
 
-This document defines the boundary between:
+This document owns the boundary:
 
 ```text
 External Research
     ↓
 Research Handoff
     ↓
-Project Template runtime
+Import
     ↓
-Planning Finalization
+Imported Research Package
+    ↓
+Planning Research Investigation & Finalization
+    ↓
+Draft Finalized Scope
+    ↓
+User Scope Approval
     ↓
 Accepted Scope
 ```
 
-It exists because External Research is valuable but cannot be treated as trusted runtime authority.
-
 ## 2. External Research Is Outside Runtime
 
-External Research may occur in:
+External Research may occur in any external environment.
 
-- ChatGPT;
-- another web chat;
-- another external AI agent;
-- a human research process;
-- any other preparation environment.
+Project Template cannot reliably control external prompt adherence, source quality, conversation completeness, user answers, or provider behavior.
 
-Project Template cannot reliably control:
+Therefore External Research is not:
 
-- whether the Research prompt is followed perfectly;
-- whether the user answered every material question;
-- whether sources are current;
-- whether claims are correct;
-- whether the Research AI omitted contradictions;
-- whether confidence is calibrated;
-- whether the external conversation remains available.
-
-Therefore External Research is outside Workplan authority.
-
-It is not:
-
-- a lifecycle stage;
-- a Work item;
-- a Cycle;
-- a runtime role;
-- a resumable Workplan conversation;
-- Scope authority.
+- a Workplan lifecycle stage;
+- runtime Work;
+- Cycle authority;
+- Scope authority;
+- durable runtime conversation state.
 
 ## 3. Research Helper Material
 
-Project Template may provide:
+Project Template may provide prompts, protocols, templates, examples, and recommended handoff structure.
 
-- Research instructions;
-- Research protocols;
-- prompts;
-- Project Details templates;
-- examples;
-- recommended evidence format.
-
-These are external preparation helpers.
-
-They may strongly instruct Research to:
-
-- clarify material product intent;
-- ask the user when product choices are unresolved;
-- research technical facts;
-- inspect repository evidence;
-- provide sources;
-- identify uncertainty;
-- avoid irrelevant context;
-- produce a focused handoff.
-
-Prompt adherence is useful but cannot be runtime authority.
+These improve handoff quality but do not create runtime authority.
 
 ## 4. Research Optimization Target
-
-External Research should optimize for:
 
 ```text
 maximum useful information
@@ -86,115 +52,87 @@ maximum useful information
 minimum irrelevant context
 ```
 
-The Research AI should do as much expensive discovery as practical so scarce Planning capacity is spent on:
+Research should perform broad/deep discovery so scarce Planning capacity is spent on finalization and material judgment.
 
-- semantic finalization;
-- material verification;
-- architectural judgment;
-- execution-authority design.
+## 5. Recommended Handoff Coverage
 
-Research should not intentionally leave obvious factual work for Planning merely because Planning is stronger.
+A strong handoff should include applicable:
 
-## 5. Recommended Research Handoff Coverage
+### Product / Scope Candidate
 
-A strong handoff should contain applicable information in the following classes.
-
-### 5.1 Product / Scope Candidate
-
-- problem/objective;
+- objective;
 - users/actors;
 - required behavior;
 - observable success;
-- mandatory constraints;
-- compatibility requirements;
-- non-goals/exclusions;
-- current-vs-desired behavior;
+- constraints;
+- compatibility;
+- non-goals;
 - unresolved product questions.
 
-### 5.2 Repository / Existing-System Knowledge
+### Repository/System Knowledge
 
-- repository identity/baseline;
-- current relevant behavior;
-- relevant architecture;
-- modules/files/components;
+- relevant current behavior;
+- architecture;
+- modules/files;
 - interfaces;
 - data model;
 - dependencies;
-- existing tests/validation;
-- known technical constraints;
+- tests;
 - likely change surfaces.
 
-### 5.3 External Technical Knowledge
+### External Technical Knowledge
 
-- official documentation findings;
-- version/compatibility findings;
+- official docs;
+- version/compatibility;
 - platform/runtime constraints;
-- feasibility evidence;
-- migration considerations;
-- relevant standards/protocol facts.
+- feasibility;
+- migration considerations.
 
-### 5.4 Design Candidates
-
-Research may prepare non-authoritative candidates:
+### Design Candidates
 
 - architecture options;
-- preliminary interface design;
-- preliminary data-model design;
+- preliminary interfaces;
+- preliminary data model;
 - trade-offs;
-- risk analysis;
-- candidate migration strategy;
-- candidate verification strategy.
+- risks;
+- candidate verification.
 
-Research may recommend one candidate.
+### Evidence Map
 
-Planning owns final choice.
-
-### 5.5 Evidence Map
-
-Material claims should, where practical, preserve:
+For material claims:
 
 ```text
 claim
-source / repository evidence
+source/evidence
 freshness/applicability
-confidence / uncertainty
+confidence/uncertainty
 impact if wrong
 suggested Planning verification need
 ```
 
-The exact artifact schema belongs to runtime/protocol implementation.
+## 6. Research Handoff Status
 
-## 6. Handoff Status
-
-A Research Handoff is:
+Research Handoff is:
 
 ```text
 high-value
-possibly expensive to produce
 focused
 evidence-bearing
+possibly expensive
 non-authoritative
 ```
 
-It must be treated as untrusted input until runtime checks and Planning semantic finalization occur.
-
-## 7. Structural Import Boundary
-
-Project Template runtime begins at handoff import.
+## 7. Structural Import
 
 Deterministic import may validate:
 
 - required files;
-- required top-level fields/sections;
 - syntax/schema;
-- referenced support files;
+- required fields/sections;
+- references;
 - path safety;
-- file integrity/digests;
-- protocol/version compatibility;
-- structurally malformed references;
-- explicitly declared readiness fields where used.
-
-Structural validation should not pretend to prove semantic correctness.
+- integrity/digests;
+- protocol compatibility.
 
 Successful import produces:
 
@@ -202,15 +140,11 @@ Successful import produces:
 Imported Research Package
 ```
 
-not:
+not Accepted Scope.
 
-```text
-Accepted Scope
-```
+## 8. Imported Research Package
 
-## 8. Scope Candidate vs Research Knowledge
-
-Imported information should be interpreted conceptually as:
+Conceptually:
 
 ```text
 Imported Research Package
@@ -218,51 +152,25 @@ Imported Research Package
 └─ Research Knowledge
 ```
 
-### Scope Candidate
+Neither becomes authority merely by import.
 
-Candidate statements about product WHAT / WHY, including:
-
-- objective;
-- required behavior;
-- constraints;
-- compatibility;
-- acceptance;
-- non-goals.
-
-### Research Knowledge
-
-Technical evidence and reasoning that may inform Planning, including:
-
-- repository findings;
-- external technical facts;
-- architecture candidates;
-- interface/data candidates;
-- risks;
-- verification candidates.
-
-Neither class becomes runtime authority merely by import.
-
-## 9. Semantic Finalization Belongs to Planning
-
-Planning must inspect the Imported Research Package and determine whether it is semantically sufficient.
+## 9. Planning Semantic Finalization
 
 Planning may:
 
 - accept supported findings;
 - reject unsupported findings;
 - correct technical conclusions;
+- inspect current repository evidence;
 - investigate missing facts;
 - resolve contradictions;
-- mark evidence stale/inapplicable;
-- request a user decision;
-- choose among design candidates;
-- add technical findings discovered during finalization.
+- identify stale evidence;
+- request user decisions;
+- select design candidates.
 
-Planning must not silently invent a missing material product requirement.
+Planning must not invent missing material product requirements.
 
-## 10. Material Unknown Classification
-
-Planning should classify unresolved unknowns into:
+## 10. Unknown Classification
 
 ```text
 USER_DECISION_REQUIRED
@@ -271,214 +179,111 @@ PLANNING_DECISION
 EXTERNAL_BLOCKER
 ```
 
-### 10.1 USER_DECISION_REQUIRED
+### USER_DECISION_REQUIRED
 
 A material product choice cannot safely be inferred.
 
-Examples:
+### RESEARCH_RESOLVABLE
 
-- mandatory platform support;
-- externally visible behavior;
-- required backward compatibility;
-- destructive/non-destructive policy;
-- business/domain constraint;
-- required acceptance outcome.
+A technical/factual answer can be established by investigation.
 
-Continuation:
+### PLANNING_DECISION
 
-```text
-Planning pauses affected finalization
-    ↓
-USER_ACTION_REQUIRED
-    ↓
-user supplies decision
-    ↓
-Planning resumes
-```
+A technical design choice does not redefine product intent.
 
-### 10.2 RESEARCH_RESOLVABLE
+### EXTERNAL_BLOCKER
 
-The missing answer is factual or technical and can be established from:
+Required evidence/owner/environment is unavailable.
 
-- repository evidence;
-- authoritative external sources;
-- controlled investigation.
+## 11. Draft Finalized Scope
 
-Planning investigates it directly.
+Planning A produces a Draft Finalized Scope when:
 
-### 10.3 PLANNING_DECISION
+- material intent is clear;
+- contradictions are resolved;
+- acceptance intent is clear;
+- technical unknowns are resolved or bounded;
+- required user decisions have been identified.
 
-The unknown is a technical design choice that does not redefine product intent.
+Draft Finalized Scope is not yet Accepted Scope authority.
 
-Planning decides it.
+## 12. User Scope Approval
 
-Examples may include:
+The user reviews the finalized material Scope envelope.
 
-- internal library choice;
-- internal decomposition;
-- interface implementation detail;
-- data structure choice;
-- task sequencing.
+Approval must be bound to the exact subject/revision/digest.
 
-### 10.4 EXTERNAL_BLOCKER
+Only after valid approval does deterministic runtime establish Accepted Scope.
 
-Correctness depends on information/environment/ownership unavailable to Planning.
+## 13. Accepted Scope
 
-The blocker must remain explicit.
-
-Planning must not hide it behind assumptions.
-
-## 11. Scope Acceptance
-
-Planning Finalization produces Accepted Scope only when:
-
-- material product intent is sufficiently clear;
-- material contradictions are resolved;
-- required user decisions are resolved;
-- technical unknowns are resolved or safely bounded;
-- acceptance intent is sufficiently clear;
-- compatibility constraints are sufficiently clear;
-- Planning can proceed without inventing product requirements.
-
-Accepted Scope is then deterministically recorded/bound according to runtime implementation.
-
-## 12. Scope Authority
-
-After acceptance, Scope becomes the product authority for the active Cycle.
-
-Scope authority must be:
+Accepted Scope is:
 
 - explicit;
 - durable;
-- immutable except through an authorized higher-level revision path;
-- digest/binding safe where implementation uses digests;
-- independent of external conversation state.
+- bound;
+- stale-safe;
+- authoritative for product WHAT/WHY during the active Cycle.
 
-Imported Research remains evidence/knowledge.
+Imported Research remains knowledge/evidence and cannot override Accepted Scope.
 
-It does not outrank Accepted Scope.
+## 14. Scope Defect After Acceptance
 
-## 13. Scope Defect After Acceptance
+Execution, Manager, Builder, Recovery, and Evaluation must not silently rewrite Scope.
 
-If later evidence shows Accepted Scope is materially defective or ambiguous:
+If Scope is materially defective:
 
-- Execution must not silently reinterpret it.
-- Builder must not redefine it.
-- Manager must not redefine it.
-- Recovery must not manufacture new product Scope.
+```text
+issue
+    ↓
+Planning / owner boundary
+    ↓
+focused correction / user decision
+    ↓
+new approval if material
+```
 
-The issue must route to the appropriate Planning/owner boundary.
+A new external Research Handoff may be required if product intent itself changed.
 
-A corrected/new external handoff may be required when product intent itself must change.
-
-## 14. Freshness and Applicability
-
-Research evidence can become stale.
+## 15. Freshness
 
 Planning should consider:
 
 - repository revision;
-- package/library version;
+- dependency version;
 - documentation version;
 - platform/runtime version;
 - date-sensitive facts;
 - changed product intent.
 
-A claim that was correct during Research may no longer be applicable during Planning.
+## 16. Efficiency Rule
 
-Freshness checking should be proportional to impact.
-
-## 15. Research-to-Planning Efficiency Rule
-
-Planning should reuse strong Research where:
-
-- evidence is clear;
-- source is suitable;
-- applicability is current;
-- impact is low/moderate;
-- no contradiction exists.
-
-Planning should independently verify where impact is material.
-
-This avoids both failure modes:
+Avoid both:
 
 ```text
 blind trust
-    and
 blind repetition
 ```
 
-## 16. Cross-Cycle Boundary
+Reuse strong evidence.
 
-A completed Cycle may produce durable knowledge that informs later external Research.
+Re-verify material claims.
 
-Canonical boundary:
+## 17. Cross-Cycle Boundary
 
 ```text
 CLOSED_VALIDATED
     ↓
-Completion Report / durable knowledge
+Completion Knowledge Package
     ↓
 outside runtime
     ↓
 new External Research
     ↓
 new Research Handoff
-    ↓
-Import
-    ↓
-Planning Finalization
-    ↓
-new Accepted Scope
 ```
 
-Previous Scope does not silently become the next Cycle's Scope.
-
-Previous Research does not silently become current evidence.
-
-## 17. Anti-Patterns
-
-Do not implement:
-
-### Research as Runtime Authority
-
-```text
-Research Handoff
-    ↓
-immediately immutable Scope
-```
-
-without Planning semantic finalization.
-
-### Research as Runtime Lifecycle
-
-```text
-WORKPLAN_NEXT
-    ↓
-EXECUTE_RESEARCH
-```
-
-for the normal Project Template runtime path.
-
-### Planning as Blind Compiler
-
-```text
-Imported Research
-    ↓
-Tasks
-```
-
-without semantic verification/finalization.
-
-### Planning as Full Re-Research
-
-```text
-ignore Research
-    ↓
-rediscover everything
-```
-
-unless evidence proves the handoff unusable.
+Completion Knowledge Package is not next Scope.
 
 ## 18. Core Invariants
 
@@ -489,13 +294,11 @@ Research Handoff is input, not authority.
 
 Import proves structure/integrity, not semantic truth.
 
-Planning is the mandatory semantic finalizer.
+Planning finalizes semantics.
 
-Accepted Scope is created only after Planning Finalization.
+User Scope Approval authorizes finalized product Scope.
 
-Planning may decide technical design.
+Accepted Scope exists only after valid approval/binding.
 
-Planning may not invent unresolved material product intent.
-
-Active runtime must not depend on external Research chat history.
+Runtime must not depend on external Research chat history.
 ```

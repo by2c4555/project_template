@@ -1,13 +1,10 @@
 > HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+
 # Planning Model
 
 ## 1. Purpose
 
 Planning is the strongest normal reasoning stage inside Project Template runtime.
-
-Planning exists to protect decision quality before lower-cost implementation begins.
-
-Its responsibilities are intentionally broader than "write an implementation plan."
 
 Canonical Planning:
 
@@ -19,150 +16,95 @@ PLANNING
 
 These are logical sub-phases of one Planning authority.
 
-Do not create additional public roles or lifecycle stages merely to represent these sub-phases unless a real deterministic authority requirement is established.
-
 ## 2. Why Planning Is the Finalizer
 
-External Research can be deep and expensive, but Project Template does not control the external environment strongly enough to trust it as authority.
+External Research can be strong but is not runtime-controlled.
 
-Planning is inside runtime and may be:
+Planning can be:
 
-- selected by deterministic routing;
-- bound to a specific repository baseline;
-- given explicit context;
+- deterministically selected;
+- bound to repository state;
 - checkpointed;
 - resumed;
 - constrained by Work authority;
 - required to produce durable artifacts;
-- validated before execution;
-- prevented from granting itself deterministic PASS.
+- validated before execution.
 
-Therefore Planning is the correct semantic finalizer.
+Therefore Planning is the mandatory semantic finalizer.
 
-## 3. Planning Capability Principle
+## 3. Planning Cost Strategy
 
-Planning should use the strongest suitable reasoning available for the project.
+```text
+Research = maximize useful information
+Planning = maximize decision quality
+```
 
-Planning reasoning budget should be spent on:
-
-- ambiguity resolution;
-- contradiction detection;
-- material evidence verification;
-- architecture;
-- compatibility-sensitive decisions;
-- acceptance completeness;
-- authority synthesis;
-- Task/Phase design.
-
-Planning budget should not be wasted on:
-
-- repeating well-supported low-risk Research;
-- rereading irrelevant repository areas;
-- regenerating evidence already durable and sufficient;
-- routine source-code implementation.
+Planning should not redo Research without material reason.
 
 ## 4. Planning Inputs
 
-Planning should receive applicable:
+Applicable inputs:
 
 - Imported Research Package;
 - Scope Candidate;
 - Research Knowledge;
 - current repository baseline;
-- previous Completion Report/knowledge when relevant;
-- current Planning revision issue when applicable;
-- explicit user decisions;
-- deterministic Work ticket/bindings.
-
-Imported Research is not yet Accepted Scope.
+- prior completion knowledge where relevant;
+- user decisions;
+- Planning revision issue/evidence;
+- deterministic bindings.
 
 ## 5. Planning A — Research Investigation & Finalization
 
-### 5.1 Objective
-
-Convert:
-
-```text
-Imported Research Package
-    +
-current repository evidence
-    +
-required user decisions
-```
-
-into:
-
-```text
-Accepted Scope
-    +
-Finalized Research Knowledge
-```
-
-### 5.2 Required Reasoning
-
 Planning should:
 
-1. identify the material product objective;
-2. identify required externally observable behavior;
+1. identify material product objective;
+2. identify observable required behavior;
 3. identify acceptance expectations;
-4. identify mandatory constraints and compatibility boundaries;
-5. identify non-goals/exclusions;
-6. inspect Research contradictions;
-7. inspect missing material information;
-8. identify stale/weak/inapplicable claims;
-9. compare Research claims with current repository evidence;
-10. investigate missing technical facts;
-11. distinguish product decisions from technical decisions;
-12. classify unresolved unknowns;
-13. independently verify material claims;
-14. resolve technical unknowns;
-15. request user action only where product intent is genuinely unresolved;
-16. produce durable finalization decisions;
-17. finalize Accepted Scope;
-18. finalize implementation-relevant Research Knowledge.
+4. identify constraints and compatibility;
+5. identify non-goals;
+6. detect contradictions;
+7. detect material omissions;
+8. inspect current repository selectively;
+9. identify stale/weak evidence;
+10. investigate technical unknowns;
+11. classify unresolved questions;
+12. selectively verify material claims;
+13. distinguish product decisions from technical choices;
+14. request focused user decisions when required;
+15. finalize acceptance interpretation;
+16. produce Draft Finalized Scope;
+17. produce Finalized Research Knowledge;
+18. preserve material decision evidence.
 
-## 6. Claim Triage
+## 6. Claim Materiality
 
-Planning should not verify every Research statement equally.
+### HIGH
 
-Classify claims by materiality.
+Normally verify independently:
 
-### HIGH materiality
-
-Independent verification is normally required when a claim materially affects:
-
-- architecture;
-- public interfaces;
-- backward compatibility;
+- architecture-driving claims;
+- public interface compatibility;
 - persistent data/schema;
 - security/authorization;
 - irreversible behavior;
-- acceptance validity;
+- acceptance-critical claims;
 - platform/runtime support;
 - major migration;
 - major cost/risk;
-- critical implementation feasibility.
+- critical feasibility.
 
-### MEDIUM materiality
+### MEDIUM
 
-Verify when:
+Verify when evidence is weak, conflicting, stale, or integration-sensitive.
 
-- evidence is weak;
-- sources conflict;
-- repository state changed;
-- choice has meaningful integration impact.
+### LOW
 
-### LOW materiality
+Reuse when evidence is sufficient and error impact is low.
 
-May be reused when:
+## 7. Unknown Handling
 
-- evidence is sufficient;
-- applicability is clear;
-- error would not materially redirect implementation.
-
-## 7. Unknown Classification
-
-Every unresolved material unknown should become one of:
+Planning classifies unresolved unknowns as:
 
 ```text
 USER_DECISION_REQUIRED
@@ -171,158 +113,80 @@ PLANNING_DECISION
 EXTERNAL_BLOCKER
 ```
 
-Planning must not leave important unknowns as invisible assumptions.
+No important unknown should remain an invisible assumption.
 
 ## 8. User Decision Boundary
 
-Planning may choose technical HOW.
+Planning decides technical HOW.
 
-Planning may not invent material product WHAT / WHY.
+Planning does not invent product WHAT/WHY.
 
-If a product decision is unresolved:
+User requests should be focused and only for material product decisions.
 
-```text
-Planning checkpoint
-    ↓
-USER_ACTION_REQUIRED
-    ↓
-durable user decision
-    ↓
-Planning resumes
-```
-
-The requested user decision should be as focused as possible.
-
-Do not ask the user to decide implementation details that Planning is supposed to own.
-
-## 9. Research-Resolvable Unknowns
-
-Planning may investigate:
-
-- current repository behavior;
-- library/framework capability;
-- version compatibility;
-- protocol constraints;
-- external technical facts;
-- feasibility;
-- likely migration behavior.
-
-Planning should use the smallest sufficient context/evidence chain.
-
-## 10. Planning Decisions
-
-Planning owns technical decisions that do not redefine product intent.
-
-Examples:
-
-- final architecture;
-- internal module boundaries;
-- interface design;
-- data-model design;
-- internal library selection;
-- decomposition;
-- dependency ordering;
-- verification approach;
-- authorized paths;
-- Builder context;
-- repair policy.
-
-## 11. Finalization Output
-
-Planning A should produce or update durable artifacts that represent:
+## 9. Planning A Output
 
 ```text
-Accepted Scope
+Draft Finalized Scope
 Finalized Research Knowledge
-material decision record
-remaining non-blocking uncertainty
-evidence/provenance references
+Material Decision Record
+Remaining Non-Blocking Uncertainty
+Evidence/Provenance References
 ```
 
-Exact file names and schemas belong to runtime implementation unless separately standardized.
+## 10. Scope Approval Handoff
 
-Accepted Scope must be bindable and immutable for downstream authority.
+Planning A must produce a concise user-reviewable Scope Approval Summary before asking for approval.
 
-## 12. Finalization Completion Criteria
+It should contain:
 
-Research Investigation & Finalization is complete only when:
+- objective;
+- required behavior;
+- compatibility;
+- constraints;
+- non-goals;
+- material Planning resolutions;
+- assumptions;
+- major risks;
+- consequence of approval.
 
-- no unresolved material product decision remains;
-- material contradictions are resolved;
-- technical blockers are resolved or explicitly external;
-- acceptance intent is sufficient;
-- compatibility constraints are sufficient;
-- Scope can be stated without material hidden assumptions;
-- Planning can start implementation planning without redefining product intent.
+Planning A must not continue into expensive Implementation Planning if valid Scope Approval is required but missing.
 
-## 13. Planning B — Implementation Planning
+## 11. Planning B — Implementation Planning
 
-### 13.1 Objective
-
-Convert:
+After Accepted Scope:
 
 ```text
 Accepted Scope
     +
 Finalized Research Knowledge
     +
-current repository state
+current repository
 ```
-
-into:
-
-```text
-Validated Planning Package
-```
-
-### 13.2 Planning Responsibilities
 
 Planning owns applicable:
 
 - final architecture;
-- global constraints;
 - interfaces;
 - data model;
-- technical decisions;
-- known risks;
+- global constraints;
+- decisions;
+- risks;
 - Phase decomposition;
 - Task decomposition;
 - dependencies;
-- authorized production paths;
-- required read context;
-- acceptance criteria mapping;
+- authorized paths;
+- Builder read context;
+- acceptance mapping;
 - verification;
 - evidence requirements;
 - repair policy.
 
-## 14. Planning Package
+## 12. Scope Coverage
 
-The current Project Template implementation may represent Planning authority with artifacts such as:
-
-```text
-plan/IMPLEMENTATION_PLAN.md
-plan/PHASES.json                    # when explicit phases are needed
-tasks/TASK_INDEX.md
-tasks/TASK_*.md
-compiled/PROJECT_BRIEF.md
-compiled/ARCHITECTURE.md
-compiled/GLOBAL_CONSTRAINTS.md
-compiled/INTERFACES.md
-compiled/DATA_MODEL.md
-compiled/DECISIONS.md
-compiled/KNOWN_RISKS.md
-```
-
-This constitution owns the required concerns, not necessarily immutable filenames forever.
-
-If implementation changes filenames/schema, it must preserve equivalent durable authority and migration consistency.
-
-## 15. Scope Coverage
-
-Every material Accepted Scope requirement must remain traceable through:
+Every material requirement must trace through:
 
 ```text
-Scope Requirement
+Accepted Scope
     ↓
 Architecture / Constraint
     ↓
@@ -335,106 +199,60 @@ Evidence
 Independent Evaluation
 ```
 
-Planning must detect orphaned Scope requirements.
+## 13. Phase Design
 
-No material requirement should disappear merely because it was difficult to decompose.
+Use Phases where they improve dependency control, integration safety, verification boundaries, or recovery clarity.
 
-## 16. Phase Design
+A simple project may use an implicit Phase.
 
-Planning should use Phases when they improve:
-
-- dependency control;
-- integration safety;
-- verification boundaries;
-- incremental delivery;
-- recovery clarity.
-
-A simple project may use an implicit phase.
-
-Do not create Phases merely for ceremony.
-
-## 17. Task Design
+## 14. Task Design
 
 Tasks should be:
 
 - explicit;
 - bounded;
-- independently understandable;
-- path-authorized;
 - context-limited;
+- path-limited;
 - verifiable;
-- small enough for a lower-cost Builder;
-- large enough to produce meaningful progress.
+- suitable for a lower-cost Builder.
 
-A Task should state applicable:
+## 15. Authorized Path Design
 
-- objective;
-- phase;
-- dependencies;
-- authorized paths;
-- required read context;
-- acceptance;
-- verification;
-- evidence;
-- repair budget/policy.
+Authorized paths must be minimal sufficient and bound to Task authority.
 
-## 18. Authorized Path Design
+They must not silently expand during an Attempt.
 
-Planning owns the production mutation boundary for a Task.
+## 16. Builder Context Design
 
-Authorized paths should be:
-
-- minimal sufficient;
-- explicit;
-- compatible with task objective;
-- immutable during an Attempt unless a higher authority revises the Task.
-
-Recovery must not silently broaden them.
-
-## 19. Builder Context Design
-
-Builder read context should be selective.
-
-Planning should provide:
-
-- necessary Task contract;
-- relevant interfaces/constraints;
-- directly relevant code/docs;
-- necessary evidence.
-
-Do not default to whole-repository context.
+Provide only necessary Task contracts, constraints, code, interfaces, and evidence.
 
 Context expansion is read authority only.
 
-## 20. Verification Design
+## 17. Verification Design
 
-Planning should define sufficient verification for each Task/Phase.
-
-Verification may include:
+Planning may define:
 
 - unit tests;
 - integration tests;
-- static checks;
 - build/compile;
+- static checks;
 - CLI simulation;
-- mock inputs;
-- sample inputs;
+- mock input;
+- sample input;
 - negative-path tests;
 - migration checks;
 - regression checks.
 
-Verification must map to observable acceptance.
+Verification must map to acceptance.
 
-## 21. Evidence Design
-
-Planning should define what evidence is needed for deterministic gates.
+## 18. Evidence Design
 
 Evidence may include:
 
 - command and exit result;
 - test result;
-- generated artifact;
 - structured output;
+- generated artifact;
 - mutation manifest;
 - relevant logs;
 - before/after state;
@@ -442,19 +260,46 @@ Evidence may include:
 
 A Builder summary is not evidence by itself.
 
-## 22. Repair Policy Design
+## 19. Repair Policy
 
-Planning should define applicable repair limits/policy.
+Hard maximum for ordinary Task-local Repair Attempts:
 
-The system hard maximum for ordinary Task-local Repair Attempts remains 5.
+```text
+5
+```
 
-Planning may choose a lower limit.
+Planning may choose less.
 
-A structural or authority defect may escalate earlier.
+Structural/authority defects may escalate earlier.
 
-## 23. Planning Checkpoints
+## 20. Planning B Output
 
-Planning should preserve semantic progress through durable checkpoints.
+```text
+Validated Planning Package
+```
+
+The exact artifact schema belongs to runtime implementation, but must preserve equivalent authority concerns.
+
+## 21. Execution Approval Handoff
+
+Before `PLAN_READY`, Planning must produce a concise execution review:
+
+- Accepted Scope;
+- architecture;
+- Phases;
+- Task count/shape;
+- major affected areas;
+- destructive changes;
+- compatibility impact;
+- migration impact;
+- execution complexity;
+- important risks;
+- verification strategy;
+- requested execution envelope.
+
+User Execution Approval must bind to the specific Planning revision/digest.
+
+## 22. Planning Checkpoints
 
 Useful logical checkpoints include:
 
@@ -462,153 +307,62 @@ Useful logical checkpoints include:
 RESEARCH_REVIEW_STARTED
 MATERIAL_UNKNOWNS_CLASSIFIED
 RESEARCH_FINALIZATION_COMPLETE
+SCOPE_APPROVAL_PENDING
 SCOPE_ACCEPTED
 ARCHITECTURE_FINALIZED
 TASK_GRAPH_FINALIZED
 VERIFICATION_FINALIZED
+EXECUTION_APPROVAL_PENDING
 PLANNING_PACKAGE_READY
 ```
 
-Exact checkpoint names belong to implementation.
+Exact names belong to implementation.
 
-The purpose is resumability, not lifecycle proliferation.
+## 23. Planning Resume
 
-## 24. Planning Resume
+A fresh Planning session should continue from durable artifacts and checkpoints, not external chat replay.
 
-A fresh Planning session should be able to continue from durable:
+## 24. Planning Revision
 
-- Imported Research Package;
-- current repository baseline/bindings;
-- prior finalization decisions;
-- Accepted Scope if already accepted;
-- Planning artifacts;
-- checkpoints;
-- revision issue/evidence when applicable.
-
-Planning must not require replay of the external Research chat.
-
-## 25. Planning Revision
-
-A later diagnosis may prove:
-
-- Task contract defective;
-- Plan defective;
-- architecture defective;
-- Scope defective/ambiguous.
-
-Planning revision must preserve:
+Revision must preserve:
 
 - issue identity;
 - previous authority;
-- why revision is required;
+- reason for revision;
 - changed decisions;
 - new bindings;
-- supersession of stale authority.
+- supersession of stale authority;
+- whether re-approval is required.
 
-Do not silently mutate bound Planning authority.
+## 25. Anti-Patterns
 
-## 26. Scope Defect During Planning/Execution
+Do not:
 
-If product Scope itself must change:
+- blindly trust Research;
+- blindly repeat all Research;
+- create Tasks before Scope finalization/approval;
+- invent product requirements;
+- over-plan trivial work;
+- use Planning as routine production editor.
 
-- Planning must not disguise it as a technical plan change.
-- Execution agents must not rewrite Scope.
-- Recovery must not rewrite Scope.
-
-Route to the appropriate owner/user/external boundary.
-
-A new/corrected Research Handoff may be required.
-
-## 27. Cost Discipline
-
-The cost strategy is:
+## 26. Planning Invariants
 
 ```text
-Research AI
-    -> broad/deep preparation
-    -> high throughput
+Planning is mandatory semantic finalizer.
 
-Planning AI
-    -> scarce strongest reasoning
-    -> material verification
-    -> final decisions
-    -> authority synthesis
-```
+Planning is strongest normal runtime reasoning.
 
-Planning should ask:
+Scope approval precedes Accepted Scope authority.
 
-```text
-Does redoing this Research materially reduce decision risk?
-```
+Accepted Scope precedes Implementation Planning authority.
 
-If no, reuse the Research.
-
-If yes, verify the minimum sufficient evidence.
-
-## 28. Planning Anti-Patterns
-
-### Blind Trust
-
-```text
-Research said it
-    ↓
-Planning copies it
-```
-
-without material review.
-
-### Blind Repetition
-
-```text
-Research did the work
-    ↓
-Planning discards it
-    ↓
-Planning researches everything again
-```
-
-### Premature Tasking
-
-```text
-Imported Research
-    ↓
-Tasks
-```
-
-before Scope finalization.
-
-### Product Invention
-
-Planning makes a product choice because asking the user is inconvenient.
-
-### Over-Planning
-
-Planning creates unnecessary Phase/Task/context complexity that does not improve execution quality.
-
-### Planning as Production Editor
-
-Planning directly performs routine production implementation instead of creating bounded Builder authority.
-
-## 29. Planning Invariants
-
-```text
-Planning is the mandatory semantic finalizer.
-
-Planning is the strongest normal runtime reasoning stage.
-
-Planning Finalization precedes Accepted Scope authority.
-
-Accepted Scope precedes production execution authority.
+Execution approval precedes PLAN_READY.
 
 Planning reuses strong Research.
 
 Planning selectively verifies material Research.
 
 Planning owns technical HOW.
-
-Planning does not invent unresolved material product WHAT / WHY.
-
-Planning produces bounded authority suitable for lower-cost Builders.
 
 Planning does not own deterministic PASS.
 ```

@@ -1,29 +1,31 @@
 > HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+
 # Project Template Development Constitution
 
 ## Purpose
 
-`Workplan/development_constitution/` defines the human-owned development constitution for **Project Template itself**.
+`Workplan/development_constitution/` is the human-owned development constitution for **Project Template itself**.
 
-These documents keep Project Template development stable across AI sessions, models, providers, machines, and future versions. They define:
+It exists to keep Project Template architecture stable across AI sessions, models, providers, machines, and future versions.
 
-- what Project Template is;
-- what it optimizes;
-- what its runtime boundary is;
-- how Research, Planning, Execution, Diagnosis, Recovery, and Evaluation relate;
-- which authority belongs to deterministic software;
-- which architectural invariants must not drift;
-- how an AI developing Project Template must reason before changing implementation.
+This directory defines:
 
-This directory is:
+- product identity and optimization goals;
+- external Research vs runtime boundaries;
+- Planning responsibilities;
+- user approval and cost-control boundaries;
+- runtime authority;
+- execution architecture;
+- Task/Phase gates;
+- failure and repair;
+- Diagnosis and Recovery;
+- Evaluation and closure;
+- next-version handoff;
+- durable state, binding, and resume;
+- context and token/cost discipline;
+- rules for AI developing Project Template.
 
-```text
-development guidance for Project Template itself
-NOT runtime authority for a user project
-NOT a runtime system prompt
-NOT user-project Scope
-NOT Planning Package authority
-```
+This directory is not runtime authority for a user project.
 
 ## Ownership
 
@@ -35,267 +37,188 @@ AI READABLE
 AI NON-MUTABLE
 ```
 
-An AI may:
+AI may:
 
-- read these files;
-- analyze and compare implementation against them;
-- use them as development guidance;
-- report conflicts;
-- draft proposed changes outside this directory.
+- read;
+- inspect;
+- analyze;
+- compare implementation against it;
+- explain it;
+- use it as development guidance;
+- draft proposals outside the protected repository area.
 
-An AI must not create, edit, modify, rewrite, move, rename, delete, replace, reformat, migrate, or automatically synchronize any file under:
+AI must not create, modify, delete, rename, reformat, migrate, or automatically synchronize files under this directory unless the repository owner explicitly authorizes modification of this protected area.
+
+## Constitutional Layers
+
+```text
+Layer 1
+OBJECTIVE.md
+    ↓
+What must Project Template remain?
+
+Layer 2
+REFERENCE_ARCHITECTURE.md
+    ↓
+How does the complete system fit together?
+
+Layer 3
+Detailed Architecture Models
+    ↓
+How must each subsystem behave?
+
+DEVELOPMENT_PROMPT.md
+    ↓
+How must AI develop Project Template against this constitution?
+
+Implementation + Tests
+```
+
+## Canonical Development Constitution Structure
 
 ```text
 Workplan/development_constitution/
+│
+├─ README.md
+├─ OBJECTIVE.md
+├─ REFERENCE_ARCHITECTURE.md
+├─ DEVELOPMENT_PROMPT.md
+│
+├─ RESEARCH_AND_SCOPE_MODEL.md
+├─ PLANNING_MODEL.md
+│
+└─ architecture/
+   ├─ USER_APPROVAL_AND_COST_CONTROL.md
+   ├─ AUTHORITY_MODEL.md
+   ├─ EXECUTION_MODEL.md
+   ├─ TASK_AND_PHASE_GATES.md
+   ├─ FAILURE_AND_REPAIR_MODEL.md
+   ├─ DIAGNOSIS_AND_RECOVERY.md
+   ├─ EVALUATION_CLOSURE_AND_NEXT_VERSION.md
+   ├─ STATE_BINDING_AND_RESUME.md
+   └─ CONTEXT_AND_COST_MODEL.md
 ```
 
-If requested development conflicts with this constitution:
+## Core End-to-End Boundary
 
 ```text
-AI detects conflict
-    ↓
-AI reports CONSTITUTION_CHANGE_REQUIRED
-    ↓
-AI identifies exact affected constitution
-    ↓
-AI proposes replacement/new content outside this directory
-    ↓
-repository owner reviews and updates constitution explicitly
-    ↓
-AI rereads the complete updated constitution
-    ↓
-development continues
-```
+════════ EXTERNAL ════════
 
-## Core System Boundary
-
-The constitutional boundary is:
-
-```text
-OUTSIDE PROJECT TEMPLATE RUNTIME
-────────────────────────────────
-User
-    ↓
-External Research AI / Web Chat / Human Research
+External Research
     ↓
 Research Handoff
-    │
-    │ high-value input, not authority
-    ▼
 
-PROJECT TEMPLATE RUNTIME
-────────────────────────────────
-Research Import / Structural Validation
+════════ PROJECT TEMPLATE RUNTIME ════════
+
+Import / Structural Validation
     ↓
 Imported Research Package
     ↓
-Planning
-    ├─ Research Investigation & Finalization
-    │      ↓
-    │   Accepted Scope
-    │   Finalized Research Knowledge
-    │
-    └─ Implementation Planning
-           ↓
-       Validated Planning Package
+Planning A
+Research Investigation & Finalization
+    ↓
+Draft Finalized Scope
+    ↓
+USER SCOPE APPROVAL
+    ↓
+Accepted Scope
+    ↓
+Planning B
+Implementation Planning
+    ↓
+Planning Package
+    ↓
+USER EXECUTION APPROVAL
+    ↓
+PLAN_READY
     ↓
 Execution
     ↓
+Task / Phase Gates
+    │
+    ├─ bounded local repair
+    │
+    └─ material authority/cost change
+           ↓
+       Diagnosis / Recovery
+           ↓
+       USER RE-APPROVAL
+           ↓
+       revised authority
+    ↓
 Independent Evaluation
     ↓
+Deterministic Finalization
+    ↓
 CLOSED_VALIDATED
-```
-
-External Research is not a Workplan lifecycle stage.
-
-Planning is the strongest normal runtime reasoning stage and is the mandatory semantic finalizer between external Research input and runtime authority.
-
-## Documents
-
-### `OBJECTIVE.md`
-
-Owns the product constitution:
-
-- product identity;
-- system boundary;
-- optimization objective;
-- engineering principles;
-- authority principles;
-- capability/cost allocation;
-- lifecycle invariants;
-- execution/recovery philosophy;
-- resumability;
-- evaluation;
-- governance;
-- long-term direction.
-
-It answers:
-
-```text
-WHAT are we building?
-WHY are we building it?
-WHAT are we optimizing?
-WHAT must remain true?
-```
-
-### `RESEARCH_AND_SCOPE_MODEL.md`
-
-Owns the external Research and Scope boundary:
-
-- status of External Research;
-- expected Research Handoff quality;
-- Research Handoff as untrusted high-value input;
-- structural import boundary;
-- Scope Candidate vs Research Knowledge;
-- material unknown handling;
-- user-decision boundary;
-- Planning finalization handoff;
-- Accepted Scope creation;
-- cross-Cycle Research handoff.
-
-It answers:
-
-```text
-WHAT may Research prepare?
-WHAT does Project Template trust?
-WHEN does product Scope become authority?
-```
-
-### `PLANNING_MODEL.md`
-
-Owns the Planning reasoning model:
-
-```text
-Planning
-    ├─ Research Investigation & Finalization
-    └─ Implementation Planning
-```
-
-It defines:
-
-- why Planning is the strongest normal runtime reasoning stage;
-- selective independent verification;
-- material unknown classification;
-- Scope finalization;
-- implementation planning;
-- Scope coverage;
-- Phase/Task authority;
-- context/path authority;
-- verification/evidence design;
-- repair policy;
-- checkpoint/resume behavior;
-- Planning revision boundaries.
-
-It answers:
-
-```text
-WHAT must Planning decide?
-WHAT must Planning verify?
-WHAT authority may Planning create?
-```
-
-### `REFERENCE_ARCHITECTURE.md`
-
-Owns the canonical architectural realization:
-
-- environment boundaries;
-- end-to-end control flow;
-- Manager/Builder responsibilities;
-- `Cycle -> Phase -> Task -> Attempt`;
-- Task Gate and Phase Gate;
-- local repair;
-- durable failure evidence;
-- Diagnosis;
-- Recovery;
-- issue lifecycle;
-- Evaluation;
-- closure and next-Cycle boundary;
-- authority matrix;
-- state-machine intent.
-
-It answers:
-
-```text
-HOW should the constitution be realized architecturally?
-```
-
-### `DEVELOPMENT_PROMPT.md`
-
-Owns instructions for an AI developing **Project Template itself**.
-
-It requires development AI to:
-
-- establish current repository truth;
-- preserve the constitution;
-- preserve Research/Planning boundaries;
-- preserve existing good design;
-- find root cause before patching;
-- avoid architecture drift;
-- validate negative paths;
-- execute real verification;
-- report constitution conflicts instead of editing constitution.
-
-## Reading Order
-
-For substantial Project Template development:
-
-```text
-README.md
     ↓
-OBJECTIVE.md
+Completion Knowledge Package
+
+════════ EXTERNAL NEXT VERSION ════════
+
+Completion Knowledge Package
     ↓
-RESEARCH_AND_SCOPE_MODEL.md
+Next-Version External Research
     ↓
-PLANNING_MODEL.md
-    ↓
-REFERENCE_ARCHITECTURE.md
-    ↓
-DEVELOPMENT_PROMPT.md
+new Research Handoff
 ```
 
-Then inspect only relevant runtime implementation, tests, configuration, migration, and documentation.
+## Source-of-Truth Ownership Map
 
-## Authority Boundary
+| Concern | Constitutional Owner |
+|---|---|
+| Product identity, objectives, invariants | `OBJECTIVE.md` |
+| Whole-system architecture | `REFERENCE_ARCHITECTURE.md` |
+| External Research → Accepted Scope | `RESEARCH_AND_SCOPE_MODEL.md` |
+| Planning reasoning and implementation planning | `PLANNING_MODEL.md` |
+| User approvals and cost/authority envelopes | `architecture/USER_APPROVAL_AND_COST_CONTROL.md` |
+| Runtime authority ownership | `architecture/AUTHORITY_MODEL.md` |
+| Manager/Builder execution | `architecture/EXECUTION_MODEL.md` |
+| Task/Phase PASS | `architecture/TASK_AND_PHASE_GATES.md` |
+| Task-local failure and repair | `architecture/FAILURE_AND_REPAIR_MODEL.md` |
+| Escalated Diagnosis and Recovery | `architecture/DIAGNOSIS_AND_RECOVERY.md` |
+| Evaluation, closure, next-version output | `architecture/EVALUATION_CLOSURE_AND_NEXT_VERSION.md` |
+| State, binding, generation, resume | `architecture/STATE_BINDING_AND_RESUME.md` |
+| Context and token/cost allocation | `architecture/CONTEXT_AND_COST_MODEL.md` |
+| Rules for Project Template development AI | `DEVELOPMENT_PROMPT.md` |
 
-These documents guide development of Project Template itself.
+## Reading Rule
 
-They are not:
+For substantial development:
 
-- external Research output;
-- Imported Research Package;
-- Accepted Scope;
-- Planning Package;
-- Builder ticket;
-- Task/Phase Gate evidence;
-- runtime state;
-- final Evaluation evidence.
+1. read `OBJECTIVE.md`;
+2. read `REFERENCE_ARCHITECTURE.md`;
+3. read only the detailed architecture modules relevant to the requested change;
+4. read `DEVELOPMENT_PROMPT.md`;
+5. inspect only relevant implementation/tests/config/docs.
 
-Runtime authority remains in deterministic Workplan state and accepted/bound runtime contracts.
+Do not load every architecture module by default.
 
-## Non-Duplication Rule
+## Conflict Rule
 
-Each document owns one concern:
+If two constitutional files appear inconsistent:
+
+1. preserve the higher-level product intent in `OBJECTIVE.md`;
+2. use `REFERENCE_ARCHITECTURE.md` for whole-system integration;
+3. use the specific detailed architecture module as owner of subsystem semantics;
+4. report the conflict rather than silently choosing a new architecture.
+
+## Update Rule
+
+Correct flow:
 
 ```text
-README.md
-    package map and ownership
-
-OBJECTIVE.md
-    product identity, goals, principles, invariants
-
-RESEARCH_AND_SCOPE_MODEL.md
-    Research input and Scope-authority boundary
-
-PLANNING_MODEL.md
-    Planning reasoning and authority synthesis
-
-REFERENCE_ARCHITECTURE.md
-    runtime/control-plane architecture
-
-DEVELOPMENT_PROMPT.md
-    instructions for AI developing Project Template
+AI identifies constitution conflict
+    ↓
+AI reports exact conflict
+    ↓
+AI proposes reviewable change
+    ↓
+AI does not modify protected constitution
+    ↓
+repository owner explicitly updates constitution
+    ↓
+AI rereads complete current constitution
+    ↓
+development continues
 ```
-
-Cross-reference instead of copying whole sections between files.
-
-A small amount of repeated invariant language is acceptable where needed to prevent ambiguity, but no file should become a second source of truth for another file's concern.
