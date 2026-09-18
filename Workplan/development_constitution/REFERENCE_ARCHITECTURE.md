@@ -37,6 +37,10 @@ Accepted Scope
 Planning B
 Implementation Planning
     ↓
+Candidate Planning Package
+    ↓
+Deterministic Planning Package Validation
+    ↓
 Validated Planning Package
     ↓
 USER EXECUTION APPROVAL
@@ -49,15 +53,19 @@ Task / Phase Gates
     ↓
 Independent Evaluation
     ↓
+Completion Knowledge Package preparation
+    ↓
 Deterministic Finalization
     ↓
 CLOSED_VALIDATED
     ↓
-Completion Knowledge Package
+Completion Knowledge Package exported
 
 ════════ EXTERNAL NEXT VERSION ════════════════
 
-Completion Knowledge Package
+Completion Knowledge Package exported/available
+    ↓
+new external action/request
     ↓
 Next-Version External Research
 ```
@@ -67,13 +75,15 @@ Next-Version External Research
 Project Template coordinates runtime across:
 
 ```text
-1. Research Import Boundary
-2. External Planning Environment
+1. Research Import + Trust Boundary
+2. Runtime-Controlled Planning Reasoning Environment
 3. VS Code Copilot Execution Environment
-4. External Reasoning / Acceptance Environment
+4. Runtime-Controlled External Diagnosis / Recovery / Evaluation Environment
 ```
 
 External Research itself is outside runtime.
+
+`External` in the Diagnosis / Recovery / Evaluation environment describes where strong reasoning may execute; it does **not** mean that lifecycle authority is outside Project Template runtime control.
 
 ### 3.1 Lifecycle Authority Boundaries
 
@@ -159,7 +169,11 @@ Accepted Scope
 Planning B
 Implementation Planning
     ↓
-Planning Package
+Candidate Planning Package
+    ↓
+Deterministic Planning Package Validation
+    ↓
+Validated Planning Package
     ↓
 User Execution Approval
     ↓
@@ -179,6 +193,16 @@ CHANGE_APPROVAL
 Approval details are owned by:
 
 `architecture/USER_APPROVAL_AND_COST_CONTROL.md`
+
+User control actions are separate from approvals:
+
+```text
+PAUSE
+RESUME
+CANCEL
+```
+
+Their lifecycle semantics are owned by `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md`.
 
 ## 7. Execution Hierarchy
 
@@ -321,7 +345,7 @@ Independent Evaluation
     ↓
 PASS / PASS_WITH_FINDINGS
     ↓
-Completion Report
+Completion Knowledge Package preparation
     ↓
 Deterministic Finalization
     ↓
@@ -337,7 +361,7 @@ Blocking evaluation routes through Diagnosis/Recovery/Planning as applicable.
 1. terminal state of the current Cycle;
 2. producer boundary for durable next-version knowledge.
 
-It must produce a Completion Knowledge Package.
+Required Completion Knowledge Package contents must exist and validate before deterministic finalization may establish `CLOSED_VALIDATED`.
 
 ## 15. Completion Knowledge Package
 
@@ -358,6 +382,8 @@ Completion Knowledge Package
 
 It is knowledge, not next Scope.
 
+`CLOSED_VALIDATED` ends the current runtime. The package becomes available to a future separately initiated External Research process; next-version Research does not auto-start.
+
 ## 16. Authority Matrix
 
 | Concern | Authority |
@@ -371,6 +397,7 @@ It is knowledge, not next Scope.
 | Scope approval | User approval + deterministic binding |
 | Accepted Scope | Bound approved Scope |
 | Implementation Planning | Planning |
+| Planning Package structural/binding/traceability validation | Deterministic Workplan/validator |
 | Execution approval | User approval + deterministic binding |
 | PLAN_READY | Deterministic Workplan after valid approval |
 | Routing | Deterministic Workplan |
@@ -381,6 +408,8 @@ It is knowledge, not next Scope.
 | Escalated root-cause reasoning | External Diagnosis |
 | Recovery design | External Recovery |
 | Material re-approval | User |
+| Runtime pause/cancel control | User + deterministic runtime handling |
+| Trust/instruction classification | Deterministic policy + current authority |
 | Final acceptance | Independent Evaluation + deterministic finalization |
 | Durable workflow truth | Repository/filesystem state |
 | Development constitution | Human repository owner |
@@ -403,6 +432,8 @@ Accepted Scope
 PLANNING B
 Implementation Planning
   ↓
+PLANNING PACKAGE VALIDATION
+  ↓
 EXECUTION_APPROVAL
   ↓
 PLAN_READY
@@ -412,6 +443,8 @@ PLAN_READY
 EXECUTION
   ↓
 EVALUATION
+  ↓
+CLOSURE PREPARATION
   ↓
 CLOSED_VALIDATED
 ```
@@ -463,6 +496,8 @@ External Research chat replay must not be required.
 
 - Research/Scope: `RESEARCH_AND_SCOPE_MODEL.md`
 - Planning: `PLANNING_MODEL.md`
+- Runtime Lifecycle / Transitions: `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md`
+- Trust / Input Boundaries: `architecture/TRUST_AND_INPUT_BOUNDARIES.md`
 - User Approval / Cost Control: `architecture/USER_APPROVAL_AND_COST_CONTROL.md`
 - Authority: `architecture/AUTHORITY_MODEL.md`
 - Execution: `architecture/EXECUTION_MODEL.md`

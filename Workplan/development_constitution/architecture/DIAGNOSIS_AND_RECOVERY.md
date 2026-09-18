@@ -10,6 +10,8 @@ Defines escalated reasoning after local execution can no longer safely continue.
 
 Diagnosis is reasoning-only.
 
+`External` describes the reasoning environment/provider boundary. Diagnosis remains runtime-controlled work and does not own lifecycle authority.
+
 Inputs may include:
 
 - Accepted Scope;
@@ -54,20 +56,29 @@ UNKNOWN
 
 ## 5. Deterministic Continuation
 
-Every classification must map to a deterministic continuation.
+Every classification must map to an explicit continuation.
 
-Examples:
+| Classification | Canonical continuation |
+|---|---|
+| `IMPLEMENTATION_DEFECT` | Recovery/local correction under current higher-level authority when legal |
+| `TASK_DEFECT` | Task contract/authority revision; Planning involvement when Task redesign is material |
+| `PLAN_DEFECT` | Planning B revision; return to Planning A if product Scope/acceptance is implicated |
+| `EVALUATION_DEFECT` | Correct/revise Evaluation method/evidence; do not mutate production merely to satisfy a defective evaluator |
+| `SCOPE_DEFECT` | Planning A / owner boundary; revised Scope and new approval if material |
+| `SCOPE_AMBIGUITY` | Focused user decision and Planning A finalization; new Scope approval as required |
+| `ENVIRONMENT_DEFECT` | Environment correction or owner action; resume only after environment is validated |
+| `TOOLING_DEFECT` | Tooling correction/replacement/owner action; do not reinterpret implementation as failed if tool is defective |
+| `VERIFICATION_DEFECT` | Verification contract/reasoning revision through Planning as appropriate; rerun valid verification |
+| `EXTERNAL_BLOCKER` | Explicit blocked state awaiting external/owner action |
+| `UNKNOWN` | Remain blocked / gather bounded additional evidence / escalate; **no production continuation by guess** |
 
-- `IMPLEMENTATION_DEFECT` → Recovery/local correction;
-- `TASK_DEFECT` → Task authority revision;
-- `PLAN_DEFECT` → Planning revision;
-- `SCOPE_DEFECT` / `SCOPE_AMBIGUITY` → Planning/owner boundary;
-- `ENVIRONMENT_DEFECT` → environment/owner action;
-- `EXTERNAL_BLOCKER` → explicit blocked state.
+The deterministic continuation must preserve current authority history and identify whether re-approval is required.
 
 ## 6. External Recovery
 
 Recovery is reasoning-only.
+
+`External` describes where the reasoning may execute; deterministic Workplan still owns continuation, bindings, and authority transitions.
 
 It converts eligible Diagnosis into a durable correction contract.
 
@@ -151,3 +162,5 @@ Repeated failure must either:
 - revise authority;
 - request owner action;
 - terminate as blocked.
+
+`UNKNOWN` must never mean "try arbitrary production changes until something works."

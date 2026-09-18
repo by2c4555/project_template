@@ -76,7 +76,15 @@ Applicable inputs:
 
 ## 5. Planning A — Research Investigation & Finalization
 
-Planning should:
+### 5.1 Early Decision-Blocker Triage
+
+Before spending substantial strong-model reasoning on deep technical investigation, Planning should identify obvious material `USER_DECISION_REQUIRED` items.
+
+If a user decision could materially invalidate or redirect expensive downstream investigation, Planning should request that focused decision early.
+
+Do not ask low-value questions merely to avoid reasonable Planning decisions.
+
+After blocker triage, Planning should:
 
 1. identify material product objective;
 2. identify observable required behavior;
@@ -142,6 +150,18 @@ Planning decides technical HOW.
 Planning does not invent product WHAT/WHY.
 
 User requests should be focused and only for material product decisions.
+
+A user answer that resolves `USER_DECISION_REQUIRED` changes Planning input.
+
+It does not by itself approve the resulting Draft Finalized Scope.
+
+```text
+USER_DECISION_REQUIRED answer
+    ≠
+SCOPE_APPROVAL
+```
+
+After incorporating the answer, Planning A must produce/revise the Draft Finalized Scope and present the normal bound Scope Approval transition.
 
 ## 9. Planning A Output
 
@@ -294,11 +314,40 @@ Structural/authority defects may escalate earlier.
 
 ## 20. Planning B Output
 
+Planning B produces:
+
+```text
+Candidate Planning Package
+```
+
+The exact artifact schema belongs to runtime implementation, but must preserve equivalent authority concerns.
+
+Planning must not self-declare its own package runtime-valid.
+
+### 20.1 Deterministic Planning Package Validation
+
+Before execution approval, deterministic validation must establish applicable structural/binding/traceability readiness:
+
+- required artifacts/fields exist;
+- Accepted Scope binding matches;
+- generation/repository binding matches;
+- material Scope coverage is represented;
+- Phase/Task graph references are valid;
+- dependencies resolve;
+- authorized paths are valid/bounded;
+- verification/evidence contracts exist where required;
+- blocking unknowns/issues are not silently omitted;
+- integrity metadata/digests are valid.
+
+Successful validation produces:
+
 ```text
 Validated Planning Package
 ```
 
-The exact artifact schema belongs to runtime implementation, but must preserve equivalent authority concerns.
+This validator does not judge architecture quality or replace Planning semantic responsibility.
+
+Validation failure routes back to Planning B or the correct earlier boundary.
 
 ## 21. Execution Approval Handoff
 
@@ -381,6 +430,8 @@ Planning is strongest normal runtime reasoning.
 Scope approval precedes Accepted Scope authority.
 
 Accepted Scope precedes Implementation Planning authority.
+
+Deterministic Planning Package validation precedes Execution approval.
 
 Execution approval precedes PLAN_READY.
 

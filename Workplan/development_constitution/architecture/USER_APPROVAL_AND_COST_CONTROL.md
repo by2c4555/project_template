@@ -78,6 +78,60 @@ If an explicit numeric budget/limit exists, crossing it is material.
 
 If no explicit threshold exists and materiality remains uncertain after comparing the change to the approved envelope, treat the change as material only when the potential impact is significant enough that user reconsideration is plausible.
 
+### 2.2 Explicit Approval Rule
+
+Approval must be an explicit user action that deterministic runtime can bind to the current approval subject/revision/digest.
+
+Approval must not be inferred from:
+
+- silence;
+- lack of objection;
+- previous approval;
+- unrelated user input;
+- a user answer to a Planning question;
+- model confidence;
+- "continue" language when the pending approval subject is not deterministically unambiguous.
+
+A UI/chat action such as "approve", "yes", or "proceed" may be valid **only when** runtime can deterministically bind that action to the currently presented pending approval subject and exact bound revision/digest.
+
+```text
+USER_DECISION_REQUIRED answer
+    ≠
+SCOPE_APPROVAL
+
+SCOPE_APPROVAL
+    ≠
+EXECUTION_APPROVAL
+
+EXECUTION_APPROVAL
+    ≠
+CHANGE_APPROVAL
+```
+
+### 2.3 Approval Status Semantics
+
+Implementation must preserve semantics equivalent to:
+
+```text
+PENDING
+APPROVED
+REJECTED
+REVOKED
+STALE
+CONSUMED
+```
+
+Exact enum names are implementation-defined.
+
+- `PENDING`: awaiting explicit decision.
+- `APPROVED`: valid but not yet consumed by the authorized transition.
+- `REJECTED`: user declined the proposed subject.
+- `REVOKED`: user withdrew an approval before consumption.
+- `STALE`: subject/binding changed such that approval no longer applies.
+- `CONSUMED`: approval was validly used for its one-time transition.
+
+Consumed approval remains durable history and cannot be replayed to authorize a different revision.
+
 ## 3. Approval Classes
 
 ```text
@@ -186,9 +240,13 @@ STALE
 
 Old approval must not authorize new authority.
 
-## 10. Single-Use Semantics
+## 10. Single-Use and Revocation Semantics
 
 Where an approval authorizes a one-time transition, it should be consumed or otherwise prevented from being replayed incorrectly.
+
+Before consumption, the user may revoke an approved transition. Revoked approval cannot be consumed.
+
+After consumption, revocation cannot erase historical authority that already existed. To stop/change active work, use the appropriate pause/cancel/change/revision path.
 
 ## 11. Approval Does Not Grant PASS
 
@@ -263,13 +321,42 @@ The system should stop before expensive next-stage work when a material user dec
 
 This is why Scope Approval occurs before full Implementation Planning and Execution Approval occurs before repository mutation.
 
+If the user has approved an explicit numeric budget, token ceiling, monetary ceiling, or bounded cost class, runtime must enforce that envelope before controlled dispatch where cost can be reasonably estimated.
+
+Crossing an explicit approved ceiling is material and requires a new approval/budget expansion.
+
+Unknown cost must be labeled unknown; it must not be fabricated as an exact estimate.
+
 ## 17. Duplicate Approval Rule
 
 Do not ask for duplicate approval for the same already-approved envelope.
 
 A repeated approval request requires a meaningful new or changed boundary.
 
-## 18. Resume
+## 18. User Pause / Resume / Cancel
+
+Pause/resume/cancel are user control actions, not approval classes.
+
+Their lifecycle semantics are owned by `RUNTIME_LIFECYCLE_AND_TRANSITIONS.md`.
+
+Approval logic must not interpret:
+
+```text
+PAUSE
+CANCEL
+```
+
+as rejection, nor interpret:
+
+```text
+RESUME
+```
+
+as a new Scope/Execution/Change approval.
+
+A resume action resumes only authority that remains valid.
+
+## 19. Resume
 
 Approval state must be durable.
 
@@ -281,10 +368,12 @@ A fresh session should know:
 - whether it was consumed;
 - whether it became stale.
 
-## 19. Negative Cases
+## 20. Negative Cases
 
 Must reject:
 
+- inferred approval without an explicit bound user action;
+- approval confused with a `USER_DECISION_REQUIRED` answer;
 - approval for wrong revision;
 - approval for stale digest;
 - approval from wrong subject;
@@ -293,14 +382,16 @@ Must reject:
 - using Scope Approval as Execution Approval;
 - using Execution Approval for material later expansion.
 
-## 20. Core Invariants
+## 21. Core Invariants
 
 ```text
 Approval protects material cost/authority boundaries.
 
 Material means the change could plausibly alter the user's prior approval decision.
 
-Approval is bound to exact subject/revision/digest.
+Approval is explicit and bound to exact subject/revision/digest.
+
+Silence and unrelated user input are not approval.
 
 Material changes invalidate prior approval.
 

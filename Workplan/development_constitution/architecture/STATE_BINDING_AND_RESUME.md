@@ -82,11 +82,17 @@ Resume must compare current authority with original bindings.
 
 Do not silently recalculate and overwrite original bindings.
 
-## 5. Generation Fencing
+## 5. Generation Fencing and Concurrent Writer Control
 
 Generation must prevent stale sessions/agents from completing or mutating newer Work authority.
 
-## 6. Approval State
+Production mutation on the same active authority must be serialized, leased, generation-fenced, or otherwise conflict-detected so two sessions cannot both validly mutate as the current writer.
+
+A stale writer must fail before authoritative completion and should be prevented from mutation where implementation can enforce that boundary.
+
+Generation/lease recovery must not silently transfer authority without durable state.
+
+## 6. Approval and Human-Control State
 
 Approvals must be durable and stale-safe.
 
@@ -95,7 +101,20 @@ A fresh session should know:
 - approval kind;
 - subject;
 - revision/digest;
-- current/stale/consumed status.
+- pending/approved/rejected/revoked/stale/consumed-equivalent status;
+- whether an approval transition was already consumed.
+
+Human-control state must also be durable enough to prevent accidental dispatch after pause/cancel.
+
+A fresh session must be able to determine whether runtime/Cycle is:
+
+- runnable;
+- paused;
+- blocked;
+- cancelled/terminated;
+- closed.
+
+Exact persisted state names belong to implementation.
 
 ## 7. Planning Checkpoints
 
@@ -125,7 +144,35 @@ Escalated issue state must preserve deterministic next action.
 
 No dangling issue should require reconstructing meaning from conversation history.
 
-## 11. Evaluation/Closure Resume
+## 11. Repository Baseline and Replay Safety
+
+A repository baseline must identify actual relevant content state.
+
+A branch name alone is insufficient.
+
+If the workspace contains uncommitted or generated changes, baseline identity must include an equivalent durable content digest/manifest or other mechanism that distinguishes the actual working state from the underlying commit.
+
+Potentially non-idempotent commands or external side effects must not be blindly replayed after uncertain interruption.
+
+## 12. Pause / Interrupted-Action Resume
+
+If pause/cancel occurred while a command or tool action may have been in flight, resume must reconcile actual repository/external state before issuing new work.
+
+Do not assume an interrupted command made no changes.
+
+Where mutation state is uncertain:
+
+```text
+reconcile actual state
+    ↓
+record evidence
+    ↓
+validate authority/bindings
+    ↓
+only then resume
+```
+
+## 13. Evaluation/Closure Resume
 
 A fresh session must determine:
 
@@ -134,11 +181,11 @@ A fresh session must determine:
 - whether `CLOSED_VALIDATED` is valid;
 - whether Completion Knowledge Package exists and matches final baseline.
 
-## 12. Cross-Machine / Provider Resume
+## 14. Cross-Machine / Provider Resume
 
 A new machine/model/provider should continue from durable repository state without requiring full conversation replay.
 
-## 13. Core Invariants
+## 15. Core Invariants
 
 ```text
 runtime ingress does not itself create active Cycle authority
@@ -153,7 +200,19 @@ new authority creates new revision/generation
 
 stale sessions cannot complete newer authority
 
-approval is revision-bound
+concurrent production writers are serialized/fenced/conflict-detected
+
+actual repository baseline includes relevant working-state identity
+
+potentially non-idempotent actions are reconciled before replay
+
+approval is revision-bound and revocation/staleness is durable
+
+pause/cancel state prevents accidental dispatch after restart
+
+interrupted mutation is reconciled before resume
+
+closure package binding is part of closure truth
 
 resume depends on durable state, not chat
 ```

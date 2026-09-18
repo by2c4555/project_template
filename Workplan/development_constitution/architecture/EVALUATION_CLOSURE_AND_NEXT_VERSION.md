@@ -40,6 +40,23 @@ Independent Evaluation should:
 
 Evaluation is not production repair.
 
+### 4.1 Independence Semantics
+
+Independent Evaluation is independent in **authority and evidence posture**.
+
+The evaluator:
+
+- has no production mutation authority;
+- does not treat Builder/Manager self-claims as sufficient proof;
+- evaluates actual repository state and bound evidence;
+- evaluates against current Accepted Scope and Planning acceptance contracts;
+- may run independent read-only or verification checks when authorized;
+- must not weaken acceptance merely because implementation already consumed cost.
+
+A different model/provider may improve independence, but is not required by the Constitution.
+
+The same underlying model may perform Evaluation only when invoked as a separate evaluation role/context with no production mutation authority and with current bound evidence.
+
 ## 5. Evaluation Results
 
 Canonical results may include:
@@ -51,6 +68,10 @@ DIAGNOSIS_REQUIRED
 ```
 
 Exact runtime vocabulary should remain consistent with implementation.
+
+`PASS_WITH_FINDINGS` is valid only when every finding is demonstrably non-blocking relative to Accepted Scope and required acceptance contracts.
+
+If a finding could invalidate required behavior, compatibility, evidence, security, migration safety, or acceptance, the result must not be `PASS_WITH_FINDINGS`; it must route to Diagnosis/Recovery/Planning as appropriate.
 
 ## 6. Blocking Evaluation
 
@@ -68,18 +89,23 @@ Execution/Gates when applicable
 Evaluation again
 ```
 
-## 7. Deterministic Finalization
+## 7. Closure Preparation and Deterministic Finalization
 
 A model Evaluation result does not itself create `CLOSED_VALIDATED`.
 
-Deterministic finalization verifies applicable:
+After an accepted Evaluation result, the required Completion Knowledge Package core information must be prepared.
+
+Deterministic finalization then verifies applicable:
 
 - valid Evaluation result;
+- required Completion Knowledge Package contents;
 - required completion report;
 - correct Scope/Planning bindings;
 - current repository baseline;
 - unresolved blocking issues;
 - final required evidence.
+
+Only then may deterministic runtime establish `CLOSED_VALIDATED`.
 
 ## 8. CLOSED_VALIDATED Semantics
 
@@ -275,9 +301,13 @@ They may remain durable historical evidence/knowledge.
 ```text
 CLOSED_VALIDATED
     ↓
-Completion Knowledge Package
+Completion Knowledge Package exported/available
     ↓
-outside runtime
+RUNTIME ENDS
+    ↓
+(no automatic next-version work)
+    ↓
+new external user/research action
     ↓
 Next-Version External Research
     ↓
@@ -285,6 +315,8 @@ new Research Handoff
     ↓
 next runtime import
 ```
+
+Project Template must not automatically spend model/token/tool cost on next-version Research merely because the previous Cycle closed.
 
 ## 13. Closure Resume
 
@@ -303,5 +335,11 @@ Closure produces next-version knowledge.
 
 Completion knowledge is not next Scope.
 
-Future version begins through new Research + Planning finalization.
+Future version begins through a separately initiated new Research + Planning finalization.
+
+Evaluation is independent in authority and evidence posture.
+
+Required closure knowledge exists before CLOSED_VALIDATED.
+
+Next-version Research does not auto-start.
 ```

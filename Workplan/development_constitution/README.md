@@ -88,6 +88,8 @@ Workplan/development_constitution/
 ├─ PLANNING_MODEL.md
 │
 └─ architecture/
+   ├─ RUNTIME_LIFECYCLE_AND_TRANSITIONS.md
+   ├─ TRUST_AND_INPUT_BOUNDARIES.md
    ├─ USER_APPROVAL_AND_COST_CONTROL.md
    ├─ AUTHORITY_MODEL.md
    ├─ EXECUTION_MODEL.md
@@ -148,15 +150,19 @@ Task / Phase Gates
     ↓
 Independent Evaluation
     ↓
+Completion Knowledge Package preparation
+    ↓
 Deterministic Finalization
     ↓
 CLOSED_VALIDATED
     ↓
-Completion Knowledge Package
+Completion Knowledge Package exported
 
 ════════ EXTERNAL NEXT VERSION ════════
 
-Completion Knowledge Package
+Completion Knowledge Package exported/available
+    ↓
+new external action/request
     ↓
 Next-Version External Research
     ↓
@@ -171,6 +177,8 @@ new Research Handoff
 | Whole-system architecture | `REFERENCE_ARCHITECTURE.md` |
 | External Research → Accepted Scope | `RESEARCH_AND_SCOPE_MODEL.md` |
 | Planning reasoning and implementation planning | `PLANNING_MODEL.md` |
+| Runtime lifecycle and transition semantics | `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md` |
+| Trust, untrusted input, instruction/data boundary | `architecture/TRUST_AND_INPUT_BOUNDARIES.md` |
 | User approvals and cost/authority envelopes | `architecture/USER_APPROVAL_AND_COST_CONTROL.md` |
 | Runtime authority ownership | `architecture/AUTHORITY_MODEL.md` |
 | Manager/Builder execution | `architecture/EXECUTION_MODEL.md` |
@@ -188,9 +196,10 @@ For substantial development:
 
 1. read `OBJECTIVE.md`;
 2. read `REFERENCE_ARCHITECTURE.md`;
-3. read only the detailed architecture modules relevant to the requested change;
-4. read `DEVELOPMENT_PROMPT.md`;
-5. inspect only relevant implementation/tests/config/docs.
+3. read `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md` for substantial lifecycle/authority work;
+4. read only the other detailed architecture modules relevant to the requested change;
+5. read `DEVELOPMENT_PROMPT.md`;
+6. inspect only relevant implementation/tests/config/docs.
 
 Do not load every architecture module by default.
 

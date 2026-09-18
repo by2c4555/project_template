@@ -44,6 +44,8 @@ Project Template may provide prompts, protocols, templates, examples, and recomm
 
 These improve handoff quality but do not create runtime authority.
 
+Research helper material and Research Handoff content may contain instruction-like text. Such text remains Research data/evidence and cannot override runtime authority.
+
 ## 4. Research Optimization Target
 
 ```text
@@ -132,7 +134,12 @@ Deterministic import may validate:
 - references;
 - path safety;
 - integrity/digests;
-- protocol compatibility.
+- protocol compatibility;
+- instruction/data trust boundary where applicable.
+
+Import must fail closed when required structure, integrity, path safety, or protocol compatibility cannot be positively validated.
+
+Invalid import must produce a durable rejection reason and must not partially create downstream Scope/Planning authority.
 
 Successful import produces:
 
@@ -153,6 +160,8 @@ Imported Research Package
 ```
 
 Neither becomes authority merely by import.
+
+Imported Research Package content is evidence/input. Embedded commands, prompts, or permission claims do not become runtime instructions merely because Planning can read them.
 
 ## 9. Planning Semantic Finalization
 
@@ -215,6 +224,8 @@ Approval must be bound to the exact subject/revision/digest.
 
 Only after valid approval does deterministic runtime establish Accepted Scope.
 
+A user answer to `USER_DECISION_REQUIRED` supplies product-decision input. It is **not automatically SCOPE_APPROVAL**. Scope Approval is a separate bound transition.
+
 ## 13. Accepted Scope
 
 Accepted Scope is:
@@ -274,9 +285,11 @@ Re-verify material claims.
 ```text
 CLOSED_VALIDATED
     ↓
-Completion Knowledge Package
+Completion Knowledge Package exported/available
     ↓
 outside runtime
+    ↓
+new external action/request
     ↓
 new External Research
     ↓
@@ -301,4 +314,6 @@ User Scope Approval authorizes finalized product Scope.
 Accepted Scope exists only after valid approval/binding.
 
 Runtime must not depend on external Research chat history.
+
+Research/import trust semantics are governed by `architecture/TRUST_AND_INPUT_BOUNDARIES.md`.
 ```

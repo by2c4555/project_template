@@ -21,8 +21,8 @@ Applicable validation:
 - Recovery binding where applicable;
 - verification result;
 - evidence;
-- mutation manifest;
-- authorized-path compliance;
+- actual mutation manifest, including indirect/generated/rename/delete effects;
+- normalized/symlink-resolved authorized-path compliance;
 - artifact integrity;
 - blocking issue state.
 
@@ -43,6 +43,18 @@ no blocking defect
 =
 Task PASS
 ```
+
+### 3.1 Fail-Closed Task Gate
+
+Task Gate must reject rather than infer PASS when any authority-critical requirement is:
+
+- missing;
+- stale;
+- ambiguous;
+- mismatched;
+- unverifiable.
+
+An incomplete mutation manifest or uncertain mutation target cannot be treated as authorized.
 
 ## 4. Task Gate FAIL
 
@@ -89,12 +101,21 @@ Reject:
 - unauthorized mutation;
 - stale Scope/Planning binding;
 - unresolved blocking issue;
-- mismatched Recovery binding.
+- mismatched Recovery binding;
+- unknown/uncertain actual mutation boundary;
+- unauthorized indirect or symlink-resolved mutation;
+- evidence bound to the wrong repository/generation state.
 
 ## 8. Phase Progression
 
 Only Phase Gate PASS makes dependent Phases eligible.
 
-## 9. Evaluation Eligibility
+## 9. Phase Gate Fail-Closed Rule
+
+Phase Gate must not infer integration/Phase PASS from partial Task success, missing evidence, or stale bindings.
+
+If required Phase-level evidence cannot be positively validated, Phase does not PASS.
+
+## 10. Evaluation Eligibility
 
 Independent Evaluation is eligible only after all required Phase Gates PASS.
