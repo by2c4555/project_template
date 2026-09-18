@@ -75,6 +75,42 @@ Project Template coordinates runtime across:
 
 External Research itself is outside runtime.
 
+### 3.1 Lifecycle Authority Boundaries
+
+Runtime presence, active Cycle authority, and production execution authority are different boundaries:
+
+```text
+Research Handoff enters Import
+    ↓
+PROJECT TEMPLATE RUNTIME INGRESS
+    │
+    │ no active development Cycle authority yet
+    ▼
+Planning A
+Research Investigation & Finalization
+    ↓
+Draft Finalized Scope
+    ↓
+valid SCOPE_APPROVAL
+    ↓
+Accepted Scope is deterministically bound
+    ↓
+ACTIVE DEVELOPMENT CYCLE AUTHORITY BEGINS
+    ↓
+Planning B
+Implementation Planning
+    ↓
+valid EXECUTION_APPROVAL
+    ↓
+PLAN_READY
+    ↓
+PRODUCTION EXECUTION AUTHORITY BEGINS
+```
+
+A provisional Cycle identifier may exist earlier for bookkeeping if implementation requires it, but it must not grant active Cycle authority before Accepted Scope exists.
+
+Detailed binding/resume semantics are owned by `architecture/STATE_BINDING_AND_RESUME.md`.
+
 ## 4. Capability Allocation
 
 ```text
@@ -162,6 +198,10 @@ RECOVERY
 ```
 
 Every Builder dispatch creates a fresh Attempt.
+
+The canonical `Cycle -> Phase -> Task -> Attempt` hierarchy refers to an **active development Cycle**, whose authority begins at Accepted Scope.
+
+No Phase, Task, or production Attempt authority may exist before that boundary.
 
 ## 8. Execution Environment
 
@@ -348,16 +388,26 @@ It is knowledge, not next Scope.
 ## 17. Canonical Runtime Intent
 
 ```text
+RUNTIME INGRESS / PRE-CYCLE AUTHORITY
 IMPORT
   ↓
-PLANNING
-  ├─ Research Investigation & Finalization
-  ├─ Scope Approval
-  ├─ Accepted Scope
-  ├─ Implementation Planning
-  └─ Execution Approval
+PLANNING A
+Research Investigation & Finalization
+  ↓
+SCOPE_APPROVAL
+  ↓
+Accepted Scope
+  ↓
+════════ ACTIVE DEVELOPMENT CYCLE AUTHORITY BEGINS ════════
+  ↓
+PLANNING B
+Implementation Planning
+  ↓
+EXECUTION_APPROVAL
   ↓
 PLAN_READY
+  ↓
+════════ PRODUCTION EXECUTION AUTHORITY BEGINS ════════════
   ↓
 EXECUTION
   ↓
@@ -367,6 +417,8 @@ CLOSED_VALIDATED
 ```
 
 External Research is not a runtime state.
+
+Planning A is runtime activity but occurs before active development Cycle authority.
 
 ## 18. Exception Path
 

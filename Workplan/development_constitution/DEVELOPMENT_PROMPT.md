@@ -132,6 +132,21 @@ Do not create Accepted Scope before valid Scope Approval.
 
 Do not create `PLAN_READY` before valid Execution Approval.
 
+Preserve the three authority boundaries:
+
+```text
+Import
+    = runtime ingress only
+
+Accepted Scope
+    = active development Cycle authority begins
+
+PLAN_READY
+    = production execution authority begins
+```
+
+A provisional pre-Cycle identifier must not grant Task/Builder execution authority.
+
 ## 9. Preserve User Approval Cost Control
 
 Do not remove or bypass:
@@ -214,14 +229,19 @@ For Research/Planning/Approval changes validate at minimum:
 ```text
 Research is not runtime lifecycle
 valid import creates Imported Research Package, not Accepted Scope
-Planning A can detect missing/contradictory Research
+runtime ingress does not itself create active development Cycle authority
+Planning A can run before active Cycle authority
 Scope Approval is revision-bound
 Accepted Scope requires valid Scope Approval
+Accepted Scope binding creates active development Cycle authority
 Planning B requires Accepted Scope
 Execution Approval is revision-bound
 PLAN_READY requires valid Execution Approval
+PLAN_READY creates production execution authority
 material changes stale prior approval
+materiality is evaluated against the previously approved envelope
 routine local repair does not require duplicate approval
+Planning reuses Research but retains final semantic responsibility
 ```
 
 For execution/recovery changes validate:
@@ -242,6 +262,10 @@ Evaluation result is required
 deterministic finalization is required
 CLOSED_VALIDATED binds final repository baseline
 Completion Knowledge Package is produced
+required Completion Knowledge Package core contents are present or durably referenced
+required empty sections are explicit rather than silently omitted
+conditional Repair/Recovery or migration findings are present when applicable
+Completion Knowledge Package matches final Scope/Planning/repository bindings
 Completion Knowledge Package is not next Scope
 ```
 

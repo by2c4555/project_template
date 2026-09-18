@@ -105,15 +105,21 @@ durable reusable knowledge
 future External Research
 ```
 
-Recommended contents:
+The Completion Knowledge Package is a **required closure artifact**.
 
-### Completion Report
+Its exact file layout may vary, but deterministic finalization must verify that the required core information is present or durably referenced.
+
+### 9.1 Required Core Contents
+
+Every `CLOSED_VALIDATED` Cycle must provide:
+
+#### Completion Report
 
 - what was implemented;
 - what was verified;
 - final acceptance result.
 
-### Final Repository Baseline
+#### Final Repository Baseline
 
 - version;
 - commit/revision identifier;
@@ -122,49 +128,106 @@ Recommended contents:
 - Evaluation result;
 - completion artifact digest where applicable.
 
-### Verified Architecture State
+#### Verified Architecture State
 
-- architecture actually implemented;
-- interfaces;
-- data model;
-- important constraints.
+- architecture actually implemented, or a durable reference to the canonical verified architecture state;
+- externally relevant interfaces;
+- persistent data-model state where applicable;
+- important active constraints.
 
-### Scope Outcome
+#### Scope Outcome
 
-- requirement → implementation;
-- requirement → verification;
+- material requirement → implementation outcome;
+- material requirement → verification/evidence;
 - accepted result.
 
-### Accepted Decisions
+#### Accepted Decisions
 
 - material Planning decisions;
-- trade-offs;
-- rationale.
+- important trade-offs;
+- rationale needed for future Research/Planning.
 
-### Known Findings
+#### Known Limitations and Deferred Work
 
-- non-blocking findings;
-- limitations;
-- technical debt.
-
-### Deferred Work
-
+- known non-blocking limitations;
+- technical debt relevant to future work;
 - explicitly deferred items;
-- why deferred;
-- dependencies/constraints.
+- why they were deferred;
+- relevant dependency/constraint.
 
-### Repair / Recovery Lessons
+If none exist, the package must say so explicitly rather than silently omit the section.
 
-- material failures;
-- disproven strategies;
-- successful correction patterns.
-
-### Next-Version Research Seed
+#### Next-Version Research Seed
 
 - suggested follow-up topics;
 - compatibility watchpoints;
 - unresolved opportunities;
 - relevant evidence references.
+
+If no follow-up topic is known, the package must explicitly state that no specific next-version seed is currently identified.
+
+### 9.2 Conditional Contents
+
+Include when applicable:
+
+#### Repair / Recovery Lessons
+
+Required when material Repair/Recovery occurred:
+
+- material failures;
+- disproven strategies;
+- successful correction patterns;
+- lessons likely to prevent repeated cost.
+
+#### Compatibility / Migration Findings
+
+Required when the Cycle changed or materially investigated:
+
+- compatibility boundaries;
+- migration behavior;
+- deprecated behavior;
+- rollout/rollback implications.
+
+#### Non-Blocking Evaluation Findings
+
+Required when Evaluation returns `PASS_WITH_FINDINGS` or equivalent:
+
+- finding;
+- impact;
+- evidence;
+- recommended future attention.
+
+#### External Dependency / Tooling Findings
+
+Include when external services, toolchains, providers, or environment constraints materially affected implementation or verification.
+
+### 9.3 Explicit Empty-State Rule
+
+Required sections must not disappear merely because there is nothing to report.
+
+Use an explicit empty state such as:
+
+```text
+NONE
+[]
+Not applicable
+```
+
+so future Research can distinguish:
+
+```text
+checked and absent
+```
+
+from:
+
+```text
+forgotten or unavailable
+```
+
+### 9.4 Finalization Rule
+
+Deterministic finalization must not establish `CLOSED_VALIDATED` if required Completion Knowledge Package core information is missing, stale against the final repository baseline, or bound to the wrong Scope/Planning authority.
 
 ## 10. Knowledge, Not Scope
 

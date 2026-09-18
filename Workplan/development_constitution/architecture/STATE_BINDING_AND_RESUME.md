@@ -12,6 +12,54 @@ Repository/filesystem state is durable truth.
 
 Chat/session context is disposable.
 
+### 2.1 Runtime / Cycle / Execution State Boundary
+
+The following boundaries must remain distinct:
+
+```text
+Research Handoff enters Import
+    ↓
+runtime exists
+
+Accepted Scope is created and bound
+    ↓
+active development Cycle authority exists
+
+valid Planning Package + valid EXECUTION_APPROVAL
+    ↓
+PLAN_READY
+    ↓
+production execution authority exists
+```
+
+Planning A therefore runs inside runtime before active development Cycle authority.
+
+A provisional Cycle ID or pre-Cycle record may exist earlier for bookkeeping, logging, or checkpointing, but it must not authorize:
+
+- Phase creation as executable authority;
+- Task issuance;
+- Builder mutation;
+- production Attempt issuance;
+- execution PASS progression.
+
+### 2.2 Active Cycle Binding
+
+When Accepted Scope is created, the active Cycle must be durably associated with at least the applicable:
+
+- Cycle identity;
+- Accepted Scope revision/digest;
+- repository baseline used for Scope acceptance;
+- generation;
+- Scope Approval identity/binding.
+
+When `PLAN_READY` is later established, execution authority must additionally bind the applicable:
+
+- Planning Package revision/digest;
+- Execution Approval identity/binding;
+- current generation.
+
+Exact schema belongs to implementation.
+
 ## 3. Binding Principle
 
 Work authority must remain bound to the authority that existed when issued.
@@ -93,6 +141,12 @@ A new machine/model/provider should continue from durable repository state witho
 ## 13. Core Invariants
 
 ```text
+runtime ingress does not itself create active Cycle authority
+
+Accepted Scope binding creates active development Cycle authority
+
+PLAN_READY creates production execution authority
+
 original bindings are immutable history
 
 new authority creates new revision/generation

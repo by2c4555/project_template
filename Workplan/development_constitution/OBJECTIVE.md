@@ -191,6 +191,29 @@ Next-Version External Research
 
 Diagnosis, Recovery, and Change Re-Approval are controlled exception paths.
 
+### 6.1 Runtime, Cycle, and Execution Boundaries
+
+These boundaries are intentionally distinct:
+
+```text
+Project Template runtime ingress
+    begins when a Research Handoff enters Import.
+
+Active development Cycle authority
+    begins only after Planning A has produced Draft Finalized Scope,
+    valid SCOPE_APPROVAL exists,
+    and deterministic binding creates Accepted Scope.
+
+Production execution authority
+    begins only after Planning B has produced a valid Planning Package,
+    valid EXECUTION_APPROVAL exists,
+    and deterministic Workplan establishes PLAN_READY.
+```
+
+Planning A therefore occurs **inside Project Template runtime but before active development Cycle authority**.
+
+Implementation may allocate provisional identifiers or checkpoints before Accepted Scope for bookkeeping, but they must not grant active Cycle authority or production execution authority.
+
 ## 7. Runtime Hierarchy
 
 ```text
@@ -225,6 +248,20 @@ Research may provide:
 Research may recommend conclusions.
 
 Planning must finalize them.
+
+The capability contract is:
+
+```text
+Research
+    = optimized for information production
+
+Planning
+    = optimized for decision correctness
+```
+
+Planning should reuse Research where justified, but **final semantic responsibility must never be delegated back to Research**.
+
+Planning owns the decision that Research evidence is sufficient, insufficient, contradictory, stale, or requires independent verification.
 
 ## 9. Planning Principle
 

@@ -34,6 +34,50 @@ rework exposure
 
 Avoid approval spam.
 
+### 2.1 Materiality Decision Rule
+
+A change is **material** when knowledge of that change at the time of the previous approval could plausibly have caused the approving user to:
+
+- reject the proposal;
+- narrow or change Scope;
+- choose a different architecture/approach;
+- postpone execution;
+- require additional safeguards;
+- reject the additional cost, risk, or rework.
+
+Materiality should be evaluated against the **approved envelope**, not against an arbitrary global threshold.
+
+A change is normally material when it introduces or materially increases one or more of:
+
+- externally observable product behavior;
+- product Scope or non-goals;
+- destructive or difficult-to-reverse behavior;
+- backward-compatibility impact;
+- migration requirement or migration risk;
+- security, privacy, or authorization exposure;
+- external service/monetary cost;
+- model/token cost beyond an explicitly approved budget or cost class;
+- production mutation blast radius;
+- authorized-path expansion;
+- schedule/rework exposure;
+- architectural risk that would reasonably affect the user's approval decision.
+
+A change is normally **not** material when it is an internal implementation detail that remains within the already approved:
+
+- Scope;
+- behavior;
+- compatibility;
+- risk;
+- cost class/budget;
+- authorized paths;
+- repair policy.
+
+Examples of normally non-material changes include equivalent internal refactoring, Task resequencing, or bounded repair already covered by the approved envelope.
+
+If an explicit numeric budget/limit exists, crossing it is material.
+
+If no explicit threshold exists and materiality remains uncertain after comparing the change to the approved envelope, treat the change as material only when the potential impact is significant enough that user reconsideration is plausible.
+
 ## 3. Approval Classes
 
 ```text
@@ -253,6 +297,8 @@ Must reject:
 
 ```text
 Approval protects material cost/authority boundaries.
+
+Material means the change could plausibly alter the user's prior approval decision.
 
 Approval is bound to exact subject/revision/digest.
 

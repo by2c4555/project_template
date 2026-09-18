@@ -41,6 +41,26 @@ Planning = maximize decision quality
 
 Planning should not redo Research without material reason.
 
+### 3.1 Semantic Responsibility Rule
+
+Research may perform more total investigative work than Planning. This is intentional.
+
+Planning does **not** need to reproduce Research in order to own semantic responsibility.
+
+Planning must instead decide whether the available Research is sufficient for each material decision:
+
+```text
+Research produces information and evidence.
+
+Planning judges sufficiency, resolves uncertainty,
+verifies material claims when needed,
+and owns the final semantic decision.
+```
+
+Planning may reuse Research conclusions when justified.
+
+Planning must never treat Research confidence, volume, or recommendation as a substitute for Planning's own responsibility to determine whether the decision is safe to authorize.
+
 ## 4. Planning Inputs
 
 Applicable inputs:
@@ -349,6 +369,12 @@ Do not:
 
 ```text
 Planning is mandatory semantic finalizer.
+
+Research is optimized for information production.
+
+Planning is optimized for decision correctness.
+
+Planning may reuse Research, but cannot delegate final semantic responsibility to Research.
 
 Planning is strongest normal runtime reasoning.
 
