@@ -1,4 +1,4 @@
-# Workplan v5.3.1 — Deterministic Control Plane Reference
+# Workplan v5.3.2 — Deterministic Control Plane Reference
 
 `Workplan/` is the durable authority layer for Project Template. It controls workflow state, role routing, tickets, approvals, immutable bindings, mutation authority, repair/recovery, gates, integrity, resume, and final closure.
 
@@ -14,7 +14,7 @@ The execution hierarchy remains:
 Cycle -> Phase -> Task -> Attempt
 ```
 
-v5.3.1 keeps schema 6 and hardens Research input quality plus VS Code Manager/Builder cost separation.
+v5.3.2 keeps schema 6 and the v5.3 lifecycle while adding the human-owned Development Constitution package and tightening the Manager-debug / Builder-implementation boundary.
 
 ---
 
@@ -106,7 +106,7 @@ Required readiness field:
 product_scope_unknowns: 0
 ```
 
-For new v5.3.1 Research this means no unresolved material product-scope unknown remains. Existing already-accepted v5.3.0 ingest may be revalidated in compatibility mode by immutable digest during patch migration.
+For new v5.3.2 Research this means no unresolved material product-scope unknown remains. Existing already-accepted v5.3.0 ingest may be revalidated in compatibility mode by immutable digest during patch migration.
 
 Validation command:
 
@@ -122,7 +122,7 @@ Only actual `INGEST_VALID: PASS` proves package validity.
 
 `scope.py import` snapshots validated Research into immutable active Scope authority. Scope is product WHAT/WHY, not implementation decomposition.
 
-`Objective_dev.md` is never user-product Scope.
+`development_constitution/OBJECTIVE.md` is never user-product Scope.
 
 Scope bindings are persisted and later checked by Planning, Work, resume, gates, Recovery, and Evaluation.
 
@@ -351,18 +351,28 @@ Only Phase Gate PASS makes dependent phases eligible.
 
 ## 16. Local repair
 
-Ordinary Task-local implementation failures may use a bounded repair path.
+Ordinary Task-local implementation failures use a **Manager-diagnosed / Builder-implemented** bounded repair path.
+
+```text
+Task Gate FAIL
+    -> durable failure evidence
+    -> ExecutionManager local software diagnosis
+    -> explicit Repair reason/strategy
+    -> fresh Builder REPAIR Attempt
+    -> Task Gate
+```
 
 Every repair:
 
+- requires an explicit Manager diagnosis/repair reason;
 - has a fresh Attempt;
 - has a fresh ticket;
-- records parent failure evidence;
+- records parent failure evidence and local diagnosis history;
 - preserves Task authority;
 - consumes deterministic repair budget;
 - passes the normal Task Gate.
 
-A repeated or structural failure can escalate before budget exhaustion.
+The Task contract default remains `2`; supported budgets remain `0..5`; the hard system maximum remains `5`. A repeated, structural, or authority-level failure can escalate before budget exhaustion. Builder does not autonomously select another Repair strategy after failure.
 
 ---
 
@@ -380,6 +390,12 @@ External Diagnosis is reasoning-only. It should identify:
 - recovery boundary.
 
 It does not edit production files.
+
+Continuation is deterministic:
+
+- implementation/environment/tooling/verification defect with Task authority -> Recovery;
+- Task/Plan defect (or a non-Task defect requiring authority redesign) -> Planning revision; the issue becomes `PLAN_REVISION_REQUIRED` and is superseded only by a changed Planning Package;
+- Scope/external/unknown classes -> `OWNER_ACTION_REQUIRED`, surfaced to HUMAN rather than looping into Diagnosis.
 
 ---
 
@@ -460,14 +476,15 @@ After an interruption:
 The core principle is:
 
 ```text
-expensive reasoning = exception/high-value path
-local Builder       = normal implementation path
-deterministic code  = authority/control path
+external strong reasoning = high-value/escalated reasoning
+ExecutionManager          = Task-local debugging / Repair reasoning
+local Builder             = bounded implementation
+deterministic code        = authority/control path
 ```
 
 Workplan model bindings describe capability classes only. Provider/model identity never grants state/gate authority.
 
-Current v5.3.1 bindings:
+Current v5.3.2 bindings:
 
 ```text
 ExecutionManager -> USER_SELECTED
@@ -481,7 +498,10 @@ Builder          -> Project Builder Local
 | Path | Ownership |
 |---|---|
 | `VERSION` | Release version. |
-| `Objective_dev.md` | Project Template development constitution. |
+| `development_constitution/README.md` | Constitution package boundary and human ownership. |
+| `development_constitution/OBJECTIVE.md` | Project identity, development goals, principles, and invariants. |
+| `development_constitution/REFERENCE_ARCHITECTURE.md` | Canonical architecture and software-development flow. |
+| `development_constitution/DEVELOPMENT_PROMPT.md` | Guidance for AI developing Project Template itself. |
 | `ENTRY_PROMPT.md` | Public exact-command bootstrap. |
 | `CHATGPT_PROJECT_INSTRUCTIONS.md` | Compact ChatGPT Project bootstrap. |
 | `external_agent/` | External reasoning role instructions/protocols. |
@@ -493,7 +513,7 @@ Builder          -> Project Builder Local
 | `scripts/tools/` | Operational tool surfaces. |
 | `tests/` | Behavioral validation. |
 | `FILE_SHA256SUMS.txt` | Deterministic release integrity manifest. |
-| `RELEASE_VALIDATION.md` | Release validation specification + actual v5.3.1 record. |
+| `RELEASE_VALIDATION.md` | Release validation specification + actual v5.3.2 record. |
 
 ---
 
@@ -517,7 +537,7 @@ Full validation:
 python Workplan/scripts/validate.py --full
 ```
 
-Full mode runs bounded suites with independent timeout/failure reporting. Required suites currently include command protocol, v5.3 invariants, v5.3.1 hardening, real final acceptance, normal E2E, and Recovery E2E.
+Full mode runs bounded suites with independent timeout/failure reporting. Required suites include command protocol, v5.3 invariants, Research/Builder hardening, Development Constitution hardening, issue-lifecycle regression, migration regressions, final acceptance, normal E2E, and Recovery E2E.
 
 A suite that was not executed successfully is not PASS.
 
@@ -533,16 +553,16 @@ The full release does not ship unrelated empty root project placeholders. User p
 
 ## 26. Migration
 
-For v5.3.0 -> v5.3.1:
+For v5.3.1 -> v5.3.2:
 
 ```text
-MIGRATION_V5_3_0_TO_V5_3_1.md
-scripts/migrate_v530_to_v531.py
+MIGRATION_V5_3_1_TO_V5_3_2.md
+scripts/migrate_v531_to_v532.py
 ```
 
-Schema remains 6. Migration rejects unsafe active-Work boundaries rather than silently reinterpret in-flight authority.
+For v5.3.0, run the supported migration chain through v5.3.1 first. Schema remains 6. Migration rejects unsafe active-Work/pending-approval boundaries rather than silently reinterpret in-flight authority.
 
-Older migration documents remain only where they are needed to explain supported historical state/schema transitions.
+Older migration documents/scripts remain only where needed for supported chained upgrades.
 
 ---
 

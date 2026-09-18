@@ -62,6 +62,16 @@ def _escalate(st, cid, cycle, ex, reason, *, task=None, phase=None, classificati
         'issue_id': iid, 'origin_type': 'EXECUTION', 'task': task, 'phase_id': phase,
         'reason': reason, 'status': 'AWAITING_DIAGNOSIS', 'classification': classification, 'created_at': now()
     }
+    if task:
+        task_state = (ex.get('tasks') or {}).get(task, {})
+        issue['failure_context'] = {
+            'repair_attempts': int(task_state.get('repair_attempts', 0)),
+            'max_repairs': int(task_state.get('max_repairs', 2)),
+            'last_attempt': task_state.get('last_attempt'),
+            'last_gate_errors': list(task_state.get('last_gate_errors') or []),
+            'evidence': task_state.get('evidence'),
+            'local_diagnoses': list(task_state.get('local_diagnoses') or []),
+        }
     cycle.setdefault('issues', []).append(issue); ex['active_issue'] = iid; ex['status'] = 'PAUSED_FOR_DIAGNOSIS'
     cycle['execution'] = ex; st['cycles'][cid] = cycle; st['active_work'] = None
     st['lifecycle_stage'] = 'DIAGNOSIS'; st['project_state'] = 'DIAGNOSIS'; st['next_action'] = 'EXECUTE_DIAGNOSIS'
@@ -114,7 +124,7 @@ p = argparse.ArgumentParser(); sp = p.add_subparsers(dest='cmd', required=True)
 sp.add_parser('status'); sp.add_parser('next'); sp.add_parser('start'); sp.add_parser('dispatch'); sp.add_parser('resume')
 c = sp.add_parser('complete'); c.add_argument('--evidence', required=True)
 f = sp.add_parser('fail'); f.add_argument('--reason', required=True)
-r = sp.add_parser('repair'); r.add_argument('--reason', default='Task Gate failure')
+r = sp.add_parser('repair'); r.add_argument('--reason', required=True)
 g = sp.add_parser('phase-gate'); g.add_argument('--evidence')
 sp.add_parser('finalize')
 a = p.parse_args(); st, cid, cycle = load()
@@ -197,15 +207,20 @@ if a.cmd == 'repair':
     if not tid or not t or t.get('status') != 'GATE_FAILED': raise SystemExit('REPAIR: BLOCKED\nTask Gate failure required')
     if t.get('structural_failure'):
         iid = _escalate(st, cid, cycle, ex, 'structural Task Gate failure: ' + '; '.join(t.get('last_gate_errors') or []), task=tid, phase=t.get('phase_id')); print('REPAIR: DIAGNOSIS_REQUIRED'); print('issue:', iid); raise SystemExit(2)
+    reason = (a.reason or '').strip()
+    if not reason: raise SystemExit('REPAIR: BLOCKED\nManager diagnosis/repair reason is required')
     used = int(t.get('repair_attempts', 0)); limit = int(t.get('max_repairs', 2))
     if used >= limit:
         iid = _escalate(st, cid, cycle, ex, 'bounded local repair limit exceeded', task=tid, phase=t.get('phase_id')); print('REPAIR: DIAGNOSIS_REQUIRED'); print('issue:', iid); raise SystemExit(2)
     parent = t.get('active_attempt') or t.get('last_attempt'); ordinal = used + 1
+    diagnoses = list(t.get('local_diagnoses') or [])
+    diagnoses.append({'repair_ordinal': ordinal, 'parent_attempt_id': parent, 'reason': reason, 'failure_evidence': t.get('evidence'), 'recorded_at': now()})
+    t['local_diagnoses'] = diagnoses
     t['repair_attempts'] = ordinal; t['status'] = 'IN_PROGRESS'; ex['tasks'][tid] = t; cycle['execution'] = ex; st['cycles'][cid] = cycle
-    save_state(st, event='LOCAL_REPAIR_GRANTED', actor='tool:execution', details={'task': tid, 'repair_ordinal': ordinal, 'parent_attempt': parent})
-    mode, meta, ticket = W.acquire('BUILDER', 'vscode', 'Builder', tid, attempt_kind='REPAIR', parent_attempt_id=parent, repair_ordinal=ordinal, failure_evidence=t.get('evidence'), production_baseline=t.get('task_baseline'))
+    save_state(st, event='LOCAL_REPAIR_GRANTED', actor='tool:execution', details={'task': tid, 'repair_ordinal': ordinal, 'parent_attempt': parent, 'reason': reason})
+    mode, meta, ticket = W.acquire('BUILDER', 'vscode', 'Builder', tid, attempt_kind='REPAIR', parent_attempt_id=parent, repair_ordinal=ordinal, repair_objective=reason, failure_evidence=t.get('evidence'), production_baseline=t.get('task_baseline'))
     st = load_state(); cycle = st['cycles'][cid]; ex = cycle['execution']; ex['tasks'][tid]['active_attempt'] = meta['attempt_id']; ex['tasks'][tid]['last_attempt'] = meta['attempt_id']; cycle['execution'] = ex; st['cycles'][cid] = cycle
-    save_state(st, event='REPAIR_DISPATCHED', actor='tool:execution', details={'task': tid, 'attempt': meta['attempt_id'], 'repair_ordinal': ordinal, 'parent_attempt': parent})
+    save_state(st, event='REPAIR_DISPATCHED', actor='tool:execution', details={'task': tid, 'attempt': meta['attempt_id'], 'repair_ordinal': ordinal, 'parent_attempt': parent, 'repair_objective': reason})
     print('REPAIR: ALLOWED'); print('attempt:', meta['attempt_id']); print('repair_ordinal:', ordinal); print('ticket:', json.dumps(ticket, sort_keys=True)); raise SystemExit
 if a.cmd == 'fail':
     tid = st.get('active_task')

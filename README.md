@@ -1,17 +1,18 @@
-# Project Template v5.3.1
+# Project Template v5.3.2
 
 Project Template is a repository-resident control plane for AI-assisted software development. It separates expensive reasoning from bounded implementation, keeps workflow authority in deterministic files/scripts, and makes repository state resumable across chat sessions, providers, and model changes.
 
-v5.3.1 keeps the v5.3 architecture intact:
+v5.3.2 keeps the v5.3 architecture intact:
 
 ```text
 Research -> Plan -> Manage -> Build -> Verify/Gate -> Evaluate
 ```
 
-The release hardens two practical boundaries:
+The release hardens three development boundaries without changing schema 6 or the v5.3 lifecycle:
 
-1. **Research quality before Planning** — External Research must produce a canonical ingest package using a dedicated instruction, detailed research protocol, and deterministic ingest validation.
-2. **VS Code model/cost separation** — the user-selected Manager model coordinates execution while normal implementation is delegated to a pinned local/low-cost Builder model.
+1. **Human-owned development constitution** — Project Template development intent and reference architecture now live under `Workplan/development_constitution/`; AI may read those files but must not edit them.
+2. **Architecture-drift prevention** — new-version AI development starts from `DEVELOPMENT_PROMPT.md` and must report constitution conflicts instead of silently redesigning Project Template.
+3. **Manager/Builder capability separation** — Manager owns Task-local software debugging and repair reasoning; the pinned low-cost Builder performs bounded implementation and returns unexpected failures instead of autonomously debugging/retrying.
 
 The workflow schema remains **6** and the authoritative execution hierarchy remains:
 
@@ -37,47 +38,45 @@ Project Template is designed around the following rules:
 
 ---
 
-## 2. What changed in v5.3.1
+## 2. What changed in v5.3.2
 
-v5.3.1 is a hardening release, not a workflow redesign.
+v5.3.2 is a **constitution and architecture-alignment hardening release**, not a workflow redesign.
 
-### Research / ingest hardening
+### Human-owned development constitution
 
-New Research handoffs must use:
+Project Template development authority now lives in:
 
-- `Workplan/external_agent/RESEARCH_INSTRUCTION.md`
-- `Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md`
-- `Workplan/templates/PROJECT_DETAILS_TEMPLATE.md`
-
-The Research package must pass:
-
-```bash
-python Workplan/scripts/tools/ingest.py check
+```text
+Workplan/development_constitution/
+  README.md
+  OBJECTIVE.md
+  REFERENCE_ARCHITECTURE.md
+  DEVELOPMENT_PROMPT.md
 ```
 
-New handoffs require protocol marker `EXTERNAL_RESEARCH_PROTOCOL_V1`, canonical scope sections, valid supporting-file declarations, and `product_scope_unknowns: 0` only after all material scope unknowns are actually resolved.
+Every file declares on its first line that AI may read it as development guidance but must not edit, modify, rewrite, move, rename, or delete it. Constitution changes are made externally by the repository owner.
 
-Already-accepted v5.3.0 ingest remains digest-revalidatable so a patch upgrade does not silently rewrite approved Scope.
+The previous monolithic `Workplan/Objective_dev.md` is removed so there is no duplicate constitution source of truth.
 
-### VS Code Manager / Builder hardening
+### Software-development identity and capability ladder
 
-Workspace agents are intentionally asymmetric:
+Project Template is explicitly defined as an AI-assisted **software-development control plane**.
 
-- `.github/agents/manager.agent.md`
-  - agent name: `ExecutionManager`
-  - no `model:` entry: uses the model selected by the user in VS Code Chat;
-  - no production `edit` tool;
-  - may invoke only `Builder`.
-- `.github/agents/builder.agent.md`
-  - hidden from normal user invocation;
-  - model pinned to `Project Builder Local`;
-  - owns bounded production editing for Task/Repair/Recovery tickets.
+Execution remains asymmetric:
 
-This means a paid Manager model does not need to perform routine implementation work.
+- `ExecutionManager` uses the user-selected reasoning-capable model for coordination, Task-local debugging, and Repair strategy;
+- `Builder` remains hidden, pinned to `Project Builder Local`, and owns bounded production editing;
+- deterministic Workplan continues to own routing, retry budget, tickets, bindings, gates, and closure.
 
-### Cleanup
+A failed Builder must return evidence to Manager. Each local Repair Attempt is based on a Manager-provided diagnosis/repair reason. The existing hard ceiling remains `5`; structural failures may escalate earlier.
 
-The full release removes stale compatibility/placeholder material that no longer contributes authority, including the old Builder100K agent alias, duplicate Research template/protocol files, legacy `Workplan/project_details.md`, and empty root project placeholder directories.
+### Migration and cleanup
+
+The runtime schema remains **6**. v5.3.1 state migrates to v5.3.2 only at a safe boundary. The older `5.3.0 -> 5.3.1` migration remains usable as the first step of a chained upgrade.
+
+Release-specific test filenames from v5.3.1 were replaced with responsibility-based suites such as constitution hardening, migration regression, and final acceptance.
+
+Diagnosis continuation is also repaired: Plan/Task defects require an actual Planning Package revision before the old issue is superseded, while Scope/external/unknown classes stop at human resolution instead of re-entering Diagnosis.
 
 ---
 
@@ -85,7 +84,7 @@ The full release removes stale compatibility/placeholder material that no longer
 
 Minimum repository/runtime requirements:
 
-- Python 3.11+ recommended; release validation was executed with Python 3.13;
+- Python 3.11+ recommended; final v5.3.2 validation was executed with Python 3.13.5;
 - a filesystem/worktree writable by the selected execution tools;
 - VS Code for the built-in Manager/Builder agent workflow;
 - a VS Code language model registered with display name `Project Builder Local` for Builder execution;
@@ -288,7 +287,7 @@ Research must establish:
 - remaining genuinely non-blocking unknowns;
 - source/evidence mapping.
 
-Research must not create Tasks/Phases, modify production code, or use `Workplan/Objective_dev.md` as user-product Scope.
+Research must not create Tasks/Phases, modify production code, or use `Workplan/development_constitution/OBJECTIVE.md` as user-product Scope.
 
 ### Canonical output
 
@@ -565,7 +564,11 @@ The release intentionally keeps only repository-level material that participates
 Workplan/
   VERSION
   README.md
-  Objective_dev.md
+  development_constitution/
+    README.md
+    OBJECTIVE.md
+    REFERENCE_ARCHITECTURE.md
+    DEVELOPMENT_PROMPT.md
   ENTRY_PROMPT.md
   CHATGPT_PROJECT_INSTRUCTIONS.md
   RELEASE_VALIDATION.md
@@ -596,7 +599,6 @@ Workplan/
   evaluation/
   history/
   archive/
-  knowledge/
   USE_CASES/
   scripts/
   tests/
@@ -633,14 +635,17 @@ Full validation covers:
 - release integrity manifest;
 - exact command protocol;
 - v5.3 deterministic invariants;
-- v5.3.1 hardening rules;
-- v5.3.1 real final-acceptance scenario;
+- Research/Builder boundary hardening;
+- Development Constitution hardening;
+- issue-lifecycle regression;
+- migration regressions;
+- real final acceptance;
 - normal end-to-end execution;
 - Diagnosis/Recovery end-to-end execution.
 
 A skipped, timed-out, or unexecuted suite is not PASS.
 
-See `Workplan/RELEASE_VALIDATION.md` for the release procedure and actual v5.3.1 acceptance record.
+See `Workplan/RELEASE_VALIDATION.md` for the release procedure and actual v5.3.2 acceptance record.
 
 ---
 
@@ -667,23 +672,28 @@ A stale, missing, extra, or digest-mismatched release file causes integrity vali
 
 ---
 
-## 23. Upgrade from v5.3.0
+## 23. Upgrade to v5.3.2
 
-Read:
+From v5.3.1, read:
 
 ```text
-Workplan/MIGRATION_V5_3_0_TO_V5_3_1.md
+Workplan/MIGRATION_V5_3_1_TO_V5_3_2.md
 ```
 
-The patch preserves schema 6. State migration is allowed only at a safe boundary and rejects active Work where deterministic equivalence cannot be guaranteed.
+and run at a safe boundary:
 
-Migration tool:
+```bash
+python Workplan/scripts/migrate_v531_to_v532.py
+```
+
+From v5.3.0, use the supported chain:
 
 ```bash
 python Workplan/scripts/migrate_v530_to_v531.py
+python Workplan/scripts/migrate_v531_to_v532.py
 ```
 
-Do not blindly overwrite an active repository without following migration rules.
+Schema remains 6. Do not blindly overwrite active Work or pending approval state.
 
 ---
 
@@ -707,7 +717,7 @@ Do not let Builder expand authority. Return to deterministic Workplan/Planning/R
 
 ### Verification fails
 
-Use the bounded repair path if allowed. Structural defects may route directly to Diagnosis/Recovery.
+Return the failure evidence to Manager. Manager performs bounded local debugging and supplies the Repair reason/strategy before the fresh Builder Repair Attempt. Structural defects or exhausted repair budgets route to External Diagnosis/Recovery.
 
 ### Chat/provider session is lost
 
@@ -725,14 +735,17 @@ Narrow the failing suite. Do not repeatedly rerun a giant workflow without diagn
 |---|---|
 | `README.md` | Primary user/operator guide. |
 | `Workplan/README.md` | Advanced control-plane/operator reference. |
-| `Workplan/Objective_dev.md` | Development constitution and invariants for Project Template itself. |
+| `Workplan/development_constitution/README.md` | Human-owned constitution package boundary and ownership rules. |
+| `Workplan/development_constitution/OBJECTIVE.md` | Product identity, development goals, principles, and invariants. |
+| `Workplan/development_constitution/REFERENCE_ARCHITECTURE.md` | Canonical architecture and flow for realizing the Objective. |
+| `Workplan/development_constitution/DEVELOPMENT_PROMPT.md` | Entry guidance for AI developing a new Project Template version. |
 | `Workplan/ENTRY_PROMPT.md` | Exact public-command/bootstrap protocol. |
 | `Workplan/CHATGPT_PROJECT_INSTRUCTIONS.md` | Compact ChatGPT Project bootstrap. |
 | `Workplan/external_agent/RESEARCH_INSTRUCTION.md` | Machine-selected Research role instruction. |
 | `Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md` | Detailed Research methodology and ingest handoff protocol. |
 | `Workplan/templates/PROJECT_DETAILS_TEMPLATE.md` | Canonical Research output template. |
 | `Workplan/RELEASE_VALIDATION.md` | Authoritative candidate validation/release procedure and acceptance record. |
-| `Workplan/MIGRATION_V5_3_0_TO_V5_3_1.md` | Patch migration rules. |
+| `Workplan/MIGRATION_V5_3_1_TO_V5_3_2.md` | Current patch migration rules; older migration documents support chained upgrades. |
 | `Workplan/CHANGELOG.md` | Release history. |
 
 ---

@@ -22,6 +22,8 @@ def continuation(st=None):
     if st.get('pending_approval'):
         p = st['pending_approval']
         return {'current_result':'Human approval is required before the requested command may proceed.','current_stage':stage,'next_surface':'HUMAN','next_command':None,'why':'A deterministic token/cost/rework gate is pending.','approval_id':p['approval_id'],'challenge':p['challenge'],'expires_at':p.get('expires_at'),'human_command':f"python Workplan/scripts/approve.py -- {p['challenge']}"}
+    if st.get('next_action') == 'OWNER_OR_EXTERNAL_RESOLUTION_REQUIRED':
+        return {'current_result':'The diagnosed issue requires owner/external resolution before workflow continuation.','current_stage':stage,'next_surface':'HUMAN','next_command':None,'why':'Diagnosis found a scope/external/unknown class that Workplan cannot repair within current authority.'}
     if stage in ROLE_COMMAND:
         cmd = ROLE_COMMAND[stage]
         return {'current_result':f'{stage.title()} work is ready or resumable.','current_stage':stage,'next_surface':'EXTERNAL_AI','next_command':cmd,'why':'Material reasoning is assigned to an external reasoning model.'}

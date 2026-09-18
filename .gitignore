@@ -40,10 +40,6 @@ Workplan/evaluation/*
 !Workplan/evaluation/.gitkeep
 Workplan/archive/*
 !Workplan/archive/.gitkeep
-Workplan/execution/logs/*
-!Workplan/execution/logs/.gitkeep
-Workplan/knowledge/resolutions/*
-!Workplan/knowledge/resolutions/.gitkeep
 Workplan/ingest/*
 !Workplan/ingest/.gitkeep
 

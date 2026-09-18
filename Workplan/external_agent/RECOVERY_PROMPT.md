@@ -1,4 +1,4 @@
-# External Recovery Role Constitution — v5.3.1
+# External Recovery Role Constitution — v5.3.2
 
 This file is machine-selected after `EXECUTE_RECOVERY`.
 

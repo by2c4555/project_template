@@ -16,11 +16,19 @@ if not issue: raise SystemExit('DIAGNOSIS: BLOCKED\nno active issue')
 dp=ROOT/a.diagnosis
 if not dp.is_file(): raise SystemExit('DIAGNOSIS: BLOCKED\ndiagnosis artifact missing')
 issue.update({'classification':a.classification,'diagnosis':a.diagnosis,'diagnosis_digest':sha256_file(dp),'status':'DIAGNOSED'})
+ex=cycle.get('execution') or {}
 if a.classification in {'IMPLEMENTATION_DEFECT','ENVIRONMENT_DEFECT','TOOLING_DEFECT','VERIFICATION_DEFECT'} and issue.get('task'):
     st['lifecycle_stage']='RECOVERY'; st['project_state']='RECOVERY'; st['next_action']='EXECUTE_RECOVERY'
 elif a.classification in {'TASK_DEFECT','PLAN_DEFECT'} or (a.classification in {'IMPLEMENTATION_DEFECT','ENVIRONMENT_DEFECT','TOOLING_DEFECT','VERIFICATION_DEFECT'} and not issue.get('task')):
-    # Recovery implementation requires immutable Task authority. A phase-level issue
-    # without a Task must return to Planning rather than inventing write authority.
+    # Recovery implementation requires immutable Task authority. Task/Plan defects
+    # return to Planning, and the diagnosed issue is superseded only after a changed
+    # Planning Package is accepted.
+    issue['status']='PLAN_REVISION_REQUIRED'
+    issue['previous_planning_package_digest']=(cycle.get('planning') or {}).get('candidate_package_digest')
+    ex['active_issue']=None; cycle['execution']=ex
     st['lifecycle_stage']='PLANNING'; st['project_state']='PLANNING'; st['next_action']='EXECUTE_PLANNING'
-else: st['next_action']='OWNER_OR_EXTERNAL_RESOLUTION_REQUIRED'
+else:
+    issue['status']='OWNER_ACTION_REQUIRED'
+    ex['active_issue']=None; cycle['execution']=ex
+    st['next_action']='OWNER_OR_EXTERNAL_RESOLUTION_REQUIRED'
 st['cycles'][cid]=cycle; save_state(st,event='DIAGNOSIS_REGISTERED',actor='tool:diagnosis',details={'issue':issue['issue_id'],'classification':a.classification}); print('DIAGNOSIS: REGISTERED'); print('classification:',a.classification); print('continuation:',continuation(load_state()))

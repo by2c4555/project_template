@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.3.2 — Human-Owned Development Constitution
+
+- Kept schema 6 and the existing runtime lifecycle/hierarchy unchanged.
+- Replaced the monolithic `Workplan/Objective_dev.md` with the human-owned `Workplan/development_constitution/` package.
+- Added `OBJECTIVE.md`, `REFERENCE_ARCHITECTURE.md`, and `DEVELOPMENT_PROMPT.md` with non-overlapping ownership: constitution, architecture, and new-version AI development guidance.
+- Marked every constitution file AI-readable but AI-non-mutable on its first line; constitution changes are performed externally by the repository owner.
+- Made Project Template identity explicit as an AI-assisted **software-development control plane**, not a general autonomous-agent framework.
+- Clarified the capability ladder: Manager performs Task-local software debugging/repair reasoning; low-cost Builder performs bounded implementation and returns failures instead of autonomously debugging/retrying.
+- Added deterministic v5.3.1 -> v5.3.2 state migration while preserving schema 6 and existing authority.
+- Repaired Diagnosis continuation: Task/Plan defects now require a changed Planning Package before the old issue is `SUPERSEDED`; owner/external-resolution classes route to HUMAN instead of looping back into Diagnosis.
+- Persisted Manager local diagnosis/Repair reasons into Task history and escalated failure context so External Diagnosis receives the local repair history.
+- Updated current documentation, agent headers, state/config version markers, validation, migration guidance, and release integrity for v5.3.2.
+- Removed obsolete `Workplan/Objective_dev.md` rather than retaining duplicate constitution authority.
+
 ## 5.3.1 — Research Ingress & Local Builder Cost Boundary
 
 - Kept schema 6 and the existing `Research -> Plan -> Manage -> Build` lifecycle unchanged.

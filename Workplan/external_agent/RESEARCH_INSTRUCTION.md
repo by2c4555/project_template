@@ -1,4 +1,4 @@
-# Research Instruction — Project Template v5.3.1
+# Research Instruction — Project Template v5.3.2
 
 This is the machine-selected Research role instruction for `EXECUTE_RESEARCH`.
 

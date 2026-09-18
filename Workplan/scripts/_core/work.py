@@ -153,7 +153,7 @@ def reconcile(meta):
 
 
 def acquire(role, tool='unknown', model='unknown', task_id=None, *, attempt_kind='INITIAL', parent_attempt_id=None,
-            repair_ordinal=None, issue_id=None, recovery_contract_digest=None, failure_evidence=None,
+            repair_ordinal=None, repair_objective=None, issue_id=None, recovery_contract_digest=None, failure_evidence=None,
             required_changes=None, regression_verification=None, recovery_authorized_paths=None, recovery_verification=None,
             recovery_completion_criteria=None, production_baseline=None):
     role = role.upper()
@@ -203,7 +203,7 @@ def acquire(role, tool='unknown', model='unknown', task_id=None, *, attempt_kind
         'next_unit': 'TASK_PREFLIGHT' if role == 'BUILDER' else 'INIT_MAP',
         'last_agent': {'tool': tool, 'model': model, 'at': now()}, 'created_at': now(),
         'input_bindings': binding, 'context_paths': list(initial_context), 'production_baseline': dict(production_baseline) if production_baseline is not None else snapshot_production(),
-        'failure_evidence': failure_evidence, 'required_changes': required_changes or [],
+        'failure_evidence': failure_evidence, 'repair_objective': repair_objective, 'required_changes': required_changes or [],
         'regression_verification': regression_verification or [], 'recovery_authorized_paths': recovery_authorized_paths or [],
         'recovery_verification': recovery_verification or [], 'recovery_completion_criteria': recovery_completion_criteria or [],
     }

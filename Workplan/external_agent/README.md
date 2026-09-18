@@ -1,4 +1,4 @@
-# External Agent Roles — Project Template v5.3.1
+# External Agent Roles — Project Template v5.3.2
 
 `Workplan/external_agent/` contains bounded reasoning-role instructions selected by deterministic Workplan commands. These files guide model behavior; they do **not** replace Workplan state, tickets, approvals, bindings, gates, or validation.
 

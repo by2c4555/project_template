@@ -1,4 +1,4 @@
-# ChatGPT Project Instructions — Project Template v5.3.1
+# ChatGPT Project Instructions — Project Template v5.3.2
 
 Use the current repository Workplan as workflow authority. Repository/filesystem state is durable; chat history, memory, and model confidence are not authority.
 
@@ -27,7 +27,7 @@ When `WORKPLAN_NEXT` selects `EXECUTE_RESEARCH`:
 7. resolve every material product-scope unknown before `READY_FOR_PLANNING` / `product_scope_unknowns: 0`;
 8. run `python Workplan/scripts/tools/ingest.py check` and require actual `INGEST_VALID: PASS`.
 
-Research defines product WHAT/WHY and acceptance authority. It must not create implementation Tasks, modify production code, or treat `Workplan/Objective_dev.md` as user-project Scope.
+Research defines product WHAT/WHY and acceptance authority. It must not create implementation Tasks, modify production code, or treat `Workplan/development_constitution/OBJECTIVE.md` as user-project Scope.
 
 ## Planning
 
@@ -49,7 +49,7 @@ Workplan, not either model, selects Phase/Task/Attempt and owns PASS/FAIL author
 
 ## Failure / recovery
 
-Use local bounded repair only when Workplan permits it. Structural or exhausted failures route through deterministic Diagnosis/Recovery. Diagnosis and Recovery are reasoning-only; production repair occurs through a fresh Builder Attempt.
+On Task-local failure, Builder returns evidence and stops. ExecutionManager performs bounded local software debugging and supplies the Repair reason/strategy before Workplan issues a fresh Builder REPAIR Attempt. Local repair remains bounded (hard maximum 5); structural or exhausted failures route to External Diagnosis/Recovery. External Diagnosis and Recovery are reasoning-only; production correction returns through Builder and normal gates.
 
 ## Evaluation
 

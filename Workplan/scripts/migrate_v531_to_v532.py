@@ -10,8 +10,8 @@ from _core.state import now
 
 STATE = ROOT / 'Workplan/control/STATE.json'
 TRANSITIONS = ROOT / 'Workplan/control/TRANSITIONS.jsonl'
-OLD = '5.3.0'
-NEW = '5.3.1'
+OLD = '5.3.1'
+NEW = '5.3.2'
 SCHEMA = 6
 
 
@@ -21,17 +21,17 @@ def main():
     schema = st.get('schema_version')
 
     if found == NEW and schema == SCHEMA:
-        print('MIGRATION_V530_TO_V531: ALREADY_CURRENT')
+        print('MIGRATION_V531_TO_V532: ALREADY_CURRENT')
         return
     if found != OLD or schema != SCHEMA:
         raise SystemExit(
-            'MIGRATION_V530_TO_V531: BLOCKED\n'
+            'MIGRATION_V531_TO_V532: BLOCKED\n'
             f'expected workflow={OLD} schema={SCHEMA}; found workflow={found} schema={schema}'
         )
     if st.get('active_work') is not None:
-        raise SystemExit('MIGRATION_V530_TO_V531: BLOCKED\nactive_work must be null; finish/reset the active Work first')
+        raise SystemExit('MIGRATION_V531_TO_V532: BLOCKED\nactive_work must be null; finish/reset the active Work first')
     if st.get('pending_approval') is not None:
-        raise SystemExit('MIGRATION_V530_TO_V531: BLOCKED\npending_approval must be null; resolve/expire it before migration')
+        raise SystemExit('MIGRATION_V531_TO_V532: BLOCKED\npending_approval must be null; resolve/expire it before migration')
 
     st['workflow_version'] = NEW
     st['state_seq'] = int(st.get('state_seq', 0)) + 1
@@ -42,7 +42,7 @@ def main():
     rec = {
         'timestamp': now(),
         'state_seq': st['state_seq'],
-        'event': 'MIGRATE_V530_TO_V531',
+        'event': 'MIGRATE_V531_TO_V532',
         'actor': 'machine',
         'cycle_id': st.get('active_cycle'),
         'details': {'from': OLD, 'to': NEW, 'schema_version': SCHEMA},
@@ -50,12 +50,9 @@ def main():
     with TRANSITIONS.open('a', encoding='utf-8', newline='\n') as f:
         f.write(json.dumps(rec, sort_keys=True) + '\n')
 
-    # Do not call current-release load_state() here. This historical migration may
-    # run from a newer release tree as the first step of a chained upgrade.
-    check = json.loads(STATE.read_text(encoding='utf-8'))
-    if check.get('workflow_version') != NEW or check.get('schema_version') != SCHEMA:
-        raise SystemExit('MIGRATION_V530_TO_V531: BLOCKED\npost-write verification failed')
-    print('MIGRATION_V530_TO_V531: PASS')
+    from _core.state import load_state
+    load_state()
+    print('MIGRATION_V531_TO_V532: PASS')
     print('workflow_version:', NEW)
     print('schema_version:', SCHEMA)
     print('state_seq:', st['state_seq'])

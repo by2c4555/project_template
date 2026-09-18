@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from .paths import STATE_PATH, TRANSITIONS_PATH
 from .io import atomic_write_json
 
-WORKFLOW_VERSION = '5.3.1'
+WORKFLOW_VERSION = '5.3.2'
 SCHEMA_VERSION = 6
 
 
@@ -22,7 +22,7 @@ def load_state():
             'WORKPLAN_STATE: MIGRATION_REQUIRED\n'
             f'expected workflow={WORKFLOW_VERSION} schema={SCHEMA_VERSION}; '
             f'found workflow={st.get("workflow_version")} schema={st.get("schema_version")}\n'
-            'see Workplan/MIGRATION_V5_3_0_TO_V5_3_1.md (or MIGRATION_V5_2_TO_V5_3.md for v5.2)'
+            'see Workplan/MIGRATION_V5_3_1_TO_V5_3_2.md (or earlier migration documents for older versions)'
         )
     return st
 

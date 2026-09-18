@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json, os, shutil, subprocess, sys, tempfile
+import shutil, sys, tempfile
 from pathlib import Path
 
 SOURCE = Path(__file__).resolve().parents[2]
@@ -133,27 +133,9 @@ def main():
         assert rebound['package_digest'] == binding['package_digest']
         assert rebound['scope_digest'] == binding['scope_digest']
 
-        # Deterministic 5.3.0 -> 5.3.1 state migration succeeds only at a safe boundary.
-        sp = root / 'Workplan/control/STATE.json'
-        st = json.loads(sp.read_text(encoding='utf-8'))
-        st['workflow_version'] = '5.3.0'
-        st['active_work'] = None
-        st['pending_approval'] = None
-        sp.write_text(json.dumps(st, indent=2, sort_keys=True) + '\n', encoding='utf-8')
-        env = dict(os.environ)
-        env['PYTHONDONTWRITEBYTECODE'] = '1'
-        r = subprocess.run([sys.executable, str(root / 'Workplan/scripts/migrate_v530_to_v531.py')], cwd=root, text=True, capture_output=True, env=env, timeout=10)
-        assert r.returncode == 0, r.stdout + r.stderr
-        migrated = json.loads(sp.read_text(encoding='utf-8'))
-        assert migrated['workflow_version'] == '5.3.1' and migrated['schema_version'] == 6
 
-        migrated['workflow_version'] = '5.3.0'
-        migrated['active_work'] = 'WORK_9999'
-        sp.write_text(json.dumps(migrated, indent=2, sort_keys=True) + '\n', encoding='utf-8')
-        r = subprocess.run([sys.executable, str(root / 'Workplan/scripts/migrate_v530_to_v531.py')], cwd=root, text=True, capture_output=True, env=env, timeout=10)
-        assert r.returncode != 0 and 'active_work must be null' in (r.stdout + r.stderr)
 
-    print('V531_HARDENING_VALID: PASS')
+    print('RESEARCH_BUILDER_HARDENING_VALID: PASS')
 
 
 if __name__ == '__main__':

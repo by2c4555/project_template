@@ -1,8 +1,8 @@
-# External Research Protocol Prompt — Project Template v5.3.1
+# External Research Protocol Prompt — Project Template v5.3.2
 
 Protocol ID: `EXTERNAL_RESEARCH_PROTOCOL_V1`
 
-> Filename note: `RESEARCH_POTOCAL_PROMPT.md` is the canonical repository filename for v5.3.1. The protocol identifier remains correctly named `EXTERNAL_RESEARCH_PROTOCOL_V1` for compatibility with deterministic ingest validation.
+> Filename note: `RESEARCH_POTOCAL_PROMPT.md` is the canonical repository filename for v5.3.2. The protocol identifier remains correctly named `EXTERNAL_RESEARCH_PROTOCOL_V1` for compatibility with deterministic ingest validation.
 
 Use this protocol only after Workplan accepts `EXECUTE_RESEARCH` and selects `Workplan/external_agent/RESEARCH_INSTRUCTION.md`.
 
@@ -24,7 +24,7 @@ Preferred order when applicable:
 4. authoritative external documentation required by the task;
 5. accepted assumptions explicitly recorded in the handoff.
 
-Do not use old chat summaries or memory when they conflict with current repository/source evidence. Do not treat `Workplan/Objective_dev.md` as user-product Scope; it governs development of Project Template itself.
+Do not use old chat summaries or memory when they conflict with current repository/source evidence. Do not treat `Workplan/development_constitution/OBJECTIVE.md` as user-product Scope; it governs development of Project Template itself.
 
 When external research is necessary, prefer primary/official sources for technical facts, versions, specifications, APIs, laws, standards, or vendor behavior. Record concise source references and the exact claim each source supports. Do not copy large passages into the ingest package.
 

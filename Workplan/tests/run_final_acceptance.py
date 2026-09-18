@@ -310,7 +310,7 @@ None.
         nxt = cmd(root, 'WORKPLAN_NEXT')
         assert nxt['continuation']['next_command'] == 'EXECUTE_RESEARCH'
 
-    print('V531_FINAL_ACCEPTANCE_VALID: PASS')
+    print('FINAL_ACCEPTANCE_VALID: PASS')
 
 
 if __name__ == '__main__':
