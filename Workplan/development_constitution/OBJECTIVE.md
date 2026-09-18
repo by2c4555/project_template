@@ -1,15 +1,17 @@
 > HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
-
 # Project Template Development Objective
 
 ## 1. Product Identity
 
 Project Template is an **AI-assisted software-development control plane**.
 
-Its purpose is to coordinate high-quality development of a software repository across:
+Its purpose is to convert externally prepared product/research information into reliable software-development authority, then coordinate high-quality repository implementation, verification, recovery, and final acceptance.
 
-- requirement and Scope research;
-- repository and technical research;
+Project Template runtime coordinates:
+
+- Research Handoff import and structural validation;
+- Research Investigation & Finalization by Planning;
+- authoritative Scope finalization;
 - architecture and implementation planning;
 - bounded source-code implementation;
 - CLI/tool execution;
@@ -20,11 +22,58 @@ Its purpose is to coordinate high-quality development of a software repository a
 - independent final acceptance;
 - durable cross-session continuation.
 
+Project Template does **not** perform or govern the external user-facing Research conversation.
+
+External Research may be performed by:
+
+- ChatGPT;
+- another web chat;
+- another AI system;
+- a human researcher;
+- another preparation process.
+
+Project Template may provide Research prompts, protocols, instructions, and templates to improve the quality and focus of that external work.
+
+Those helper materials do not make Research a runtime lifecycle stage, Work item, Cycle, or source of runtime authority.
+
 Project Template is not intended to become a general-purpose autonomous-agent framework.
 
 Its architecture exists specifically to improve software-development quality, reliability, cost efficiency, auditability, and resumability.
 
-## 2. Core Objective
+## 2. System Boundary Principle
+
+The constitutional boundary is:
+
+```text
+OUTSIDE PROJECT TEMPLATE RUNTIME
+External Research
+    ↓
+Research Handoff
+    ↓
+
+PROJECT TEMPLATE RUNTIME
+Research Import / Structural Validation
+    ↓
+Imported Research Package
+    ↓
+Planning
+    ├─ Research Investigation & Finalization
+    └─ Implementation Planning
+    ↓
+Execution
+    ↓
+Independent Evaluation
+    ↓
+CLOSED_VALIDATED
+```
+
+A Research Handoff is high-value input.
+
+It is not Accepted Scope merely because it exists or passes structural validation.
+
+Planning is the mandatory semantic finalizer.
+
+## 3. Core Objective
 
 Maximize:
 
@@ -42,20 +91,43 @@ while keeping workflow authority:
 - provider-neutral;
 - independently verifiable.
 
-The intended allocation is:
+The intended capability allocation is:
 
 ```text
-strong external reasoning
-    -> high-value technical reasoning
+External Research AI
+    -> maximize useful, focused information
+    -> clarify user intent as far as practical
+    -> perform broad repository/technical research
+    -> collect evidence
+    -> prepare candidate Scope and technical knowledge
 
-reasoning-capable Manager
-    -> local software debugging and repair reasoning
+Planning AI
+    -> strongest normal runtime reasoning
+    -> investigate missing material facts
+    -> resolve contradictions
+    -> selectively verify material claims
+    -> finalize Research semantically
+    -> finalize Accepted Scope
+    -> create implementation authority
 
-low-cost Builder
-    -> bounded implementation
+Manager
+    -> local execution reasoning
+    -> Task-local debugging
+    -> bounded repair strategy
 
-deterministic software
-    -> authority, state, routing, gates, validation, recovery control
+Builder
+    -> lower-cost bounded implementation
+
+Deterministic Workplan
+    -> import integrity
+    -> state
+    -> routing
+    -> tickets
+    -> bindings
+    -> gates
+    -> retry limits
+    -> validation
+    -> closure
 
 repository/filesystem state
     -> durable truth
@@ -64,14 +136,14 @@ chat/session state
     -> disposable context
 ```
 
-## 3. Engineering Principles
+## 4. Engineering Principles
 
 Project Template development should preserve these principles:
 
 1. Deterministic mechanisms before prompt complexity.
 2. Durable repository state before conversational memory.
 3. Bounded contracts before open-ended autonomy.
-4. Strong reasoning only where it materially improves software quality.
+4. Use strong reasoning where wrong decisions have high downstream cost.
 5. Use the lowest-cost capable Builder for routine implementation.
 6. Executed verification before claimed completion.
 7. Immutable execution bindings.
@@ -82,11 +154,19 @@ Project Template development should preserve these principles:
 12. One source of truth per concern.
 13. Preserve existing valid work before rewriting.
 14. Fix root causes rather than accumulating compensating mechanisms.
-15. Internal rigor may increase, but normal user workflow should become simpler rather than more complex.
+15. Internal rigor may increase, but normal user workflow should become simpler.
+16. External preparation must not be confused with runtime authority.
+17. Research should maximize useful information, not authority.
+18. Planning must finalize Research before implementation authority exists.
+19. Planning should reuse strong Research rather than blindly repeat it.
+20. Material Research claims should be independently verified when failure would materially affect architecture, compatibility, acceptance, security, irreversible behavior, or major cost/risk.
+21. Planning must not invent unresolved material product requirements.
+22. Technical choices that do not redefine product intent belong to Planning.
+23. No runtime role may convert confidence into authority without deterministic acceptance/binding.
 
-## 4. Authority Model
+## 5. Authority Model
 
-Workflow authority comes from deterministic Workplan state and accepted contracts.
+Workflow authority comes from deterministic Workplan state and accepted runtime contracts.
 
 Authority does not come from:
 
@@ -96,36 +176,53 @@ Authority does not come from:
 - model confidence;
 - chat context;
 - prompt self-assertion;
-- a model claim of PASS;
-- an implementation summary.
+- an external Research conversation;
+- an imported Research Handoff by itself;
+- a candidate architecture;
+- an implementation summary;
+- a model statement of PASS.
 
-A capable model may still be rejected when lifecycle stage, ticket, binding, generation, authorized path, approval, evidence, or gate authority is invalid.
+External Research material is **untrusted, high-value input**.
 
-Prompts guide model behavior.
+Structural import may prove that the handoff is readable, internally referential, and well-formed.
 
-Deterministic software owns execution authority.
+Structural import does not prove that Research is:
 
-## 5. Canonical Software-Development Lifecycle
+- semantically complete;
+- correct;
+- non-contradictory;
+- current;
+- sufficient for implementation authority.
 
-The normal lifecycle is conceptually:
+Planning owns semantic finalization.
+
+Deterministic software owns authority transitions and binding.
+
+## 6. Canonical Software-Development Lifecycle
+
+The normal Project Template runtime lifecycle is conceptually:
 
 ```text
-Research
+IMPORT
     ↓
-Planning
+PLANNING
+    ├─ Research Investigation & Finalization
+    └─ Implementation Planning
     ↓
-Execution
+EXECUTION
     ↓
-Independent Evaluation
+INDEPENDENT EVALUATION
     ↓
 CLOSED_VALIDATED
 ```
+
+External Research occurs before runtime ingress and is not a runtime lifecycle stage.
 
 Diagnosis and Recovery are controlled exception paths.
 
 They must not become alternative normal workflows or permanent loops.
 
-## 6. Canonical Runtime Hierarchy
+## 7. Canonical Runtime Hierarchy
 
 Execution authority remains organized as:
 
@@ -135,42 +232,130 @@ Cycle -> Phase -> Task -> Attempt
 
 Required invariants:
 
+- no production Task authority exists before Accepted Scope and valid Planning authority;
 - every Task belongs to exactly one Phase;
 - each Builder dispatch creates a fresh Attempt;
 - Attempt kinds include `INITIAL`, `REPAIR`, and `RECOVERY`;
 - a simple project may use an implicit Phase when appropriate;
 - normal users should not manually manage Phase, Task, Attempt, generation, ticket, or digest internals.
 
-## 7. Research and Scope Principle
+## 8. External Research Principle
 
-Research owns product **WHAT / WHY**.
+External Research should do as much useful preparation as practical before handoff.
 
-Research should establish trustworthy Scope and supporting knowledge before Planning.
+It should aim to produce:
 
-Research may investigate:
+- clear product objective;
+- required behavior;
+- observable acceptance expectations;
+- mandatory constraints;
+- compatibility requirements;
+- non-goals;
+- repository findings;
+- current-system findings;
+- interface/data/dependency findings;
+- external technical evidence;
+- feasibility findings;
+- risks;
+- candidate architecture options;
+- preliminary interface/data-model ideas;
+- candidate verification strategy;
+- unresolved questions;
+- evidence/source mapping.
 
-- repository state;
-- implementation feasibility;
-- external technology;
-- compatibility;
-- preliminary architectural options.
+The optimization target is:
 
-Preliminary architecture produced during Research is **knowledge**, not final architecture authority.
+```text
+maximum useful information
+/
+minimum irrelevant context
+```
 
-Authoritative product Scope must remain explicit and immutable for the active Cycle after acceptance.
+Research may recommend conclusions.
 
-Research must not silently become implementation Planning.
+Those conclusions remain non-authoritative until Planning finalizes them.
 
-## 8. Planning Principle
+The active Project Template workflow must not depend on the external Research session remaining available.
 
-Planning is high-value technical reasoning.
+## 9. Research Import Principle
+
+Research import is an ingress, structure, integrity, and safety boundary.
+
+It may validate applicable:
+
+- required files;
+- required fields/sections;
+- syntax/schema;
+- declared supporting files;
+- path safety;
+- digest/integrity;
+- protocol compatibility;
+- structurally invalid references.
+
+Successful import produces:
+
+```text
+Imported Research Package
+```
+
+not:
+
+```text
+Accepted Scope
+```
+
+Semantic finalization requires Planning reasoning.
+
+## 10. Planning Principle
+
+Planning is the strongest normal reasoning stage inside Project Template runtime.
+
+Planning has two mandatory logical responsibilities:
+
+```text
+A. Research Investigation & Finalization
+B. Implementation Planning
+```
+
+These responsibilities should normally remain one Planning role/lifecycle authority rather than becoming extra roles merely for organizational convenience.
+
+### 10.1 Research Investigation & Finalization
+
+Planning must:
+
+- inspect Imported Research;
+- detect material gaps and contradictions;
+- inspect current repository evidence as needed;
+- investigate missing technical facts;
+- identify stale/weak/inapplicable evidence;
+- classify unresolved questions;
+- selectively verify architecture-driving claims;
+- distinguish product decisions from technical decisions;
+- request user action when a material product decision cannot be safely inferred;
+- finalize acceptance interpretation;
+- produce Accepted Scope;
+- produce Finalized Research Knowledge.
+
+The intended division is:
+
+```text
+Research
+    -> broad/deep preparation
+
+Planning
+    -> selective independent verification
+    -> semantic finalization
+    -> authoritative synthesis
+```
+
+### 10.2 Implementation Planning
 
 Planning converts:
 
 ```text
-approved Scope
+Accepted Scope
     +
-Research Knowledge
+Finalized Research Knowledge
     +
 current repository state
 ```
@@ -197,9 +382,45 @@ Planning owns applicable:
 
 Every material Scope requirement must remain traceable into implementation and acceptance.
 
-Material Planning authority must not silently change after approval.
+Material Planning authority must not silently change after binding.
 
-## 9. Execution Environment Principle
+## 11. User Decision Principle
+
+Planning may investigate technical unknowns.
+
+Planning may make technical design decisions that do not redefine product intent.
+
+Planning must not invent a missing material product requirement.
+
+When a material product decision remains unresolved:
+
+```text
+Planning
+    ↓
+USER_ACTION_REQUIRED
+    ↓
+user decision
+    ↓
+Planning Finalization resumes
+```
+
+## 12. Selective Independent Verification Principle
+
+Planning should independently verify Research claims when the claim materially affects:
+
+- final architecture;
+- public/compatibility-sensitive interfaces;
+- schema or data migration;
+- security/authorization boundaries;
+- irreversible behavior;
+- acceptance validity;
+- major cost/risk;
+- platform/runtime compatibility;
+- critical implementation feasibility.
+
+Planning should not spend scarce reasoning budget reproducing low-risk Research whose evidence is sufficient, current, and applicable.
+
+## 13. Execution Environment Principle
 
 Normal production implementation uses the **VS Code Copilot Agent execution environment**.
 
@@ -218,7 +439,7 @@ Deterministic Workplan
 
 This environment choice must not make workflow authority dependent on a specific model vendor.
 
-## 10. Manager Capability Principle
+## 14. Manager Capability Principle
 
 Manager is the local software reasoning layer during execution.
 
@@ -235,9 +456,9 @@ Manager should have sufficient reasoning capability to:
 
 Manager is not the normal production editor.
 
-Manager coordinates and reasons; Builder performs the bounded repository mutation.
+Manager coordinates and reasons; Builder performs bounded repository mutation.
 
-## 11. Builder Capability Principle
+## 15. Builder Capability Principle
 
 Builder is intentionally the lower-cost implementation worker.
 
@@ -270,7 +491,7 @@ diagnose -> edit -> retry -> diagnose -> edit -> retry
 
 loop.
 
-## 12. Task and Phase Gate Authority
+## 16. Task and Phase Gate Authority
 
 Only deterministic Task Gate logic may mark a Task PASS.
 
@@ -291,9 +512,9 @@ Gate decisions should validate applicable:
 
 A model statement never replaces gate evidence.
 
-## 13. Local Debugging and Repair Principle
+## 17. Local Debugging and Repair Principle
 
-Ordinary Task-local software failures should first use the local capability ladder:
+Ordinary Task-local software failures should first use:
 
 ```text
 Builder failure
@@ -319,9 +540,9 @@ A structural failure, authority conflict, or clearly invalid repair boundary may
 
 No sixth local Repair Attempt is permitted for the same failure chain.
 
-## 14. Durable Failure Principle
+## 18. Durable Failure Principle
 
-Every authoritative failure must leave sufficient durable evidence for a fresh capable model/session to:
+Every authoritative runtime failure must leave sufficient durable evidence for a fresh capable model/session to:
 
 - diagnose;
 - repair;
@@ -343,25 +564,29 @@ Failure history must preserve applicable:
 
 Failed strategies must not be silently overwritten.
 
-## 15. Escalation Principle
+External Research conversation failure is outside Project Template runtime authority.
+
+Research Import and Planning Finalization failures are runtime boundary failures and must fail closed before production authority is created.
+
+## 19. Escalation Principle
 
 External strong reasoning is an exception path for failures that exceed local execution reasoning.
 
 Escalation is appropriate when applicable:
 
 - local repair is exhausted;
-- the failure is structural;
+- failure is structural;
 - Task authority is insufficient;
 - Planning authority is defective;
-- Scope authority is defective;
+- Accepted Scope appears defective;
 - verification authority is defective;
 - environment/tooling lies outside local authority;
 - repeated strategies are disproven;
 - correctness cannot be reliably determined.
 
-Escalation should happen because stronger reasoning is materially needed, not merely because another model is available.
+Escalation should happen because materially stronger reasoning is needed, not merely because another model is available.
 
-## 16. Diagnosis and Recovery Principle
+## 20. Diagnosis and Recovery Principle
 
 External Diagnosis is reasoning-only.
 
@@ -372,11 +597,12 @@ It determines:
 - affected authority;
 - violated invariant/contract;
 - blast radius;
+- classification;
 - correct recovery boundary.
 
 External Recovery is reasoning-only.
 
-It converts Diagnosis into a durable correction contract.
+It converts eligible Diagnosis results into a durable correction contract.
 
 Production correction returns through:
 
@@ -394,9 +620,11 @@ Recovery must not directly mark implementation PASS.
 
 Recovery must not silently broaden immutable Task authority.
 
-## 17. Issue Lifecycle Principle
+Recovery must not manufacture new product Scope.
 
-Every escalated issue must have a deterministic continuation and a deterministic terminal disposition.
+## 21. Issue Lifecycle Principle
+
+Every escalated runtime issue must have a deterministic continuation and deterministic terminal disposition.
 
 A resolved or superseded historical issue must not accidentally block later valid execution.
 
@@ -407,20 +635,24 @@ Issue handling must avoid:
 - permanent Diagnosis loops;
 - stale blockers after approved authority replacement.
 
-## 18. Context Principle
+## 22. Context Principle
 
 Context expansion is read authority only.
 
 Additional context must never silently expand:
 
-- Scope;
+- Accepted Scope;
 - Task objective;
 - authorized write paths;
 - repair authority.
 
+Imported/Finalized Research may be read context.
+
+Only accepted and bound contracts create runtime authority.
+
 Builder context should remain selective and bounded.
 
-## 19. Immutable Binding and Generation Principle
+## 23. Immutable Binding and Generation Principle
 
 Work and Attempt authority must remain bound to the authority that existed when issued.
 
@@ -430,7 +662,7 @@ Original bindings must not be silently recalculated and overwritten.
 
 Generation fencing must prevent stale sessions or agents from completing or mutating newer Work authority.
 
-## 20. Resume Principle
+## 24. Resume Principle
 
 Repository state is durable.
 
@@ -438,8 +670,9 @@ Chat/session state is disposable.
 
 A fresh session, model, provider, or machine should be able to continue from durable:
 
-- state;
-- Scope;
+- runtime state;
+- Imported/Finalized Research artifacts where relevant;
+- Accepted Scope;
 - Planning authority;
 - tickets;
 - Attempts;
@@ -447,9 +680,9 @@ A fresh session, model, provider, or machine should be able to continue from dur
 - failure evidence;
 - bindings.
 
-Full conversation replay must not be required.
+External Research chat history must not be required to resume an active runtime workflow.
 
-## 21. Human Approval Principle
+## 25. Human Approval Principle
 
 Human approval must remain:
 
@@ -462,15 +695,20 @@ Human approval must remain:
 
 AI must not grant its own human approval.
 
-Approval mechanisms should exist only where a genuine new cost, authority, or rework boundary justifies them.
+Approval mechanisms should exist only where genuine new cost, authority, or rework boundaries justify them.
 
 Avoid duplicate approvals for the same already-approved envelope.
 
-## 22. Independent Evaluation Principle
+## 26. Independent Evaluation Principle
 
 Independent Evaluation occurs after required execution gates pass.
 
-Evaluation verifies actual repository outcomes against approved Scope and Planning authority.
+Evaluation verifies actual repository outcomes against:
+
+- Accepted Scope;
+- Planning authority;
+- gate evidence;
+- current repository state.
 
 Evaluation is review/acceptance, not production repair.
 
@@ -480,9 +718,9 @@ Final closure requires deterministic acceptance authority.
 
 It does not claim perfection outside Scope.
 
-## 23. Cross-Cycle Knowledge Principle
+## 27. Cross-Cycle Knowledge Principle
 
-A completed Cycle may produce durable knowledge for future Research.
+A completed Cycle may produce durable knowledge for future external Research.
 
 Examples include:
 
@@ -492,25 +730,61 @@ Examples include:
 - non-blocking findings;
 - lessons from repair/recovery.
 
-Previous knowledge may inform the next Cycle.
+Conceptually:
 
-It must not silently become the new Cycle's Scope authority.
+```text
+CLOSED_VALIDATED
+    ↓
+Completion knowledge
+    ↓
+outside Project Template runtime
+    ↓
+future External Research
+    ↓
+new Research Handoff
+    ↓
+Import
+    ↓
+Planning Finalization
+    ↓
+new Accepted Scope
+```
 
-New Scope must be established explicitly.
+Previous Scope does not silently become new Scope authority.
 
-## 24. Provider and Model Neutrality
+Previous completion knowledge does not silently create a new Cycle.
+
+## 28. Provider and Model Neutrality
 
 Model selection affects capability and cost.
 
 It does not grant workflow authority.
 
-Project Template should describe capability classes rather than depend on vendor identity wherever practical.
+External Research may use any suitable provider or process.
 
-The execution adapter may require a supported local model alias or environment-specific configuration without making core authority provider-specific.
+Planning should use the strongest suitable reasoning available because it is the mandatory semantic finalizer and execution-authority synthesizer.
 
-## 25. User Experience Principle
+Core runtime authority remains provider-neutral.
 
-Normal users should interact with a simple software-development flow.
+## 29. User Experience Principle
+
+Normal users should experience a simple flow:
+
+```text
+prepare Research externally
+    ↓
+supply Research Handoff
+    ↓
+Project Template imports it
+    ↓
+Planning finalizes Research
+    ↓
+only unresolved material product decisions return to user
+    ↓
+Planning creates implementation authority
+    ↓
+Execution
+```
 
 Users should not need to understand or manually manage:
 
@@ -522,9 +796,9 @@ Users should not need to understand or manually manage:
 - repair counters;
 - checkpoint internals.
 
-Internal deterministic rigor should reduce user burden.
+Internal rigor should reduce user burden.
 
-## 26. Development Constitution Principle
+## 30. Development Constitution Principle
 
 `Workplan/development_constitution/` is human-owned development guidance for Project Template itself.
 
@@ -532,29 +806,29 @@ AI may read it.
 
 AI must not edit, modify, rewrite, move, rename, or delete it.
 
-If a future Project Template requirement conflicts with this constitution:
+If a future requirement conflicts with this constitution:
 
 ```text
 AI reports constitution conflict
     ↓
-AI proposes change
+AI proposes change outside protected area
     ↓
-repository owner updates constitution externally
+repository owner updates constitution explicitly
     ↓
-AI rereads constitution
+AI rereads complete constitution
     ↓
 development continues
 ```
 
-The AI must not make the constitution follow its latest patch.
-
-## 27. Change Governance
+## 31. Change Governance
 
 A material Project Template change should consider:
 
 - root cause;
 - constitution impact;
 - architecture impact;
+- Research/Planning boundary impact;
+- authority impact;
 - token/cost impact;
 - context impact;
 - reliability impact;
@@ -563,15 +837,29 @@ A material Project Template change should consider:
 - test impact;
 - documentation impact.
 
-Do not add a new role, lifecycle stage, authority path, retry path, prompt, alias, or source of truth merely because it makes one local problem easier to implement.
+Do not add a new role, lifecycle stage, authority path, retry path, prompt, alias, or source of truth merely because it makes one local problem easier.
 
-Preserve working architecture unless a real architectural gap is established.
+Do not make External Research authoritative merely to reduce Planning work.
 
-## 28. Direction of Travel
+Do not make Planning repeat all Research merely because Planning is stronger.
+
+Preserve:
+
+```text
+Research = maximize useful information
+Planning = maximize decision quality
+```
+
+## 32. Direction of Travel
 
 Project Template should move toward:
 
-- less model-managed workflow;
+- richer but focused external Research handoffs;
+- less wasted Planning re-research;
+- stronger Planning semantic finalization;
+- stronger selective independent verification;
+- clearer Scope authority;
+- less model-managed workflow after Planning;
 - more deterministic authority;
 - less repeated expensive reasoning;
 - more bounded low-cost implementation;
@@ -579,7 +867,7 @@ Project Template should move toward:
 - less broad context;
 - more selective context;
 - fewer duplicate sources of truth;
-- fewer unnecessary roles and lifecycle states;
+- fewer unnecessary roles/lifecycle states;
 - stronger durable failure evidence;
 - safer resume and recovery;
 - simpler normal user operation;

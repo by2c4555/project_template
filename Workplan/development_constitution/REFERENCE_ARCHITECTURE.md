@@ -1,37 +1,86 @@
 > HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
-
 # Project Template Reference Architecture
 
 ## 1. Purpose
 
-This document is the canonical architectural interpretation of `OBJECTIVE.md`.
+This document is the canonical architectural realization of `OBJECTIVE.md`.
 
-`OBJECTIVE.md` defines **what Project Template must remain and optimize for**.
+Detailed Research/Scope semantics are owned by `RESEARCH_AND_SCOPE_MODEL.md`.
 
-This document defines **how those principles are organized into software-development environments, roles, authority boundaries, and control flow**.
+Detailed Planning semantics are owned by `PLANNING_MODEL.md`.
 
-It does not duplicate the full Development Objective and is not runtime authority for a user project.
+This document owns:
+
+- system/environment boundaries;
+- end-to-end runtime flow;
+- execution hierarchy;
+- Manager/Builder roles;
+- deterministic Workplan responsibilities;
+- Task/Phase gates;
+- local repair;
+- durable failure records;
+- external Diagnosis/Recovery;
+- issue lifecycle;
+- Evaluation;
+- closure;
+- authority matrix;
+- canonical state-machine intent.
+
+It is development guidance, not runtime authority for a user project.
 
 ## 2. System Context
 
-Project Template coordinates software development across four environments:
+Project Template separates external preparation from runtime authority.
 
 ```text
-1. External Research Environment
-2. External Planning Environment
-3. VS Code Copilot Execution Environment
-4. External Reasoning / Acceptance Environment
+OUTSIDE PROJECT TEMPLATE RUNTIME
+────────────────────────────────────────
+External Research Environment
+    ↓
+Research Handoff
+    │
+    │ high-value, non-authoritative input
+    ▼
+
+PROJECT TEMPLATE RUNTIME
+────────────────────────────────────────
+Research Import / Structural Validation
+    ↓
+Imported Research Package
+    ↓
+External Planning Environment
+    ├─ Research Investigation & Finalization
+    │      ↓
+    │   Accepted Scope
+    │   Finalized Research Knowledge
+    │
+    └─ Implementation Planning
+           ↓
+       Validated Planning Package
+           ↓
+        PLAN_READY
+    ↓
+VS Code Copilot Execution Environment
+    ↓
+External Reasoning / Acceptance Environment
+    ↓
+CLOSED_VALIDATED
 ```
 
 The main capability allocation is:
 
 ```text
-External strong reasoning
-    -> Research
-    -> Planning
-    -> escalated Diagnosis
-    -> Recovery reasoning
-    -> Independent Evaluation
+External Research AI
+    -> broad product/technical preparation
+    -> evidence gathering
+    -> candidate design analysis
+
+Planning AI
+    -> strongest normal runtime reasoning
+    -> Research semantic finalization
+    -> selective independent verification
+    -> Accepted Scope synthesis
+    -> authoritative implementation planning
 
 Manager AI
     -> execution coordination
@@ -46,6 +95,7 @@ Builder AI
     -> Manager-defined repair changes
 
 Deterministic Workplan
+    -> import integrity
     -> state
     -> routing
     -> tickets
@@ -58,90 +108,98 @@ Deterministic Workplan
 
 ## 3. External Research Environment
 
-### 3.1 Purpose
+External Research is outside runtime.
 
-Research converts user intent and available evidence into:
+Its recommended responsibilities and handoff contents are defined in `RESEARCH_AND_SCOPE_MODEL.md`.
 
-```text
-Scope Authority
-    +
-Research Knowledge
-```
-
-Research owns product WHAT / WHY.
-
-### 3.2 Canonical Flow
+Architecturally:
 
 ```text
-══════════════ EXTERNAL RESEARCH ENVIRONMENT ══════════════
-
-User
- │
- ▼
-External Research AI talks with User
- │
- ├─ Scope Acquisition
- ├─ Implementation Research
- ├─ Repository Analysis
- ├─ Repository Selection
- ├─ External Technical Research
- ├─ Compatibility / constraint research
- └─ Preliminary Architecture Design
- │
- ▼
-Approved Research Handoff
- │
- ├─ project_details.md
- │      └─ SCOPE AUTHORITY
- │
- └─ docs/*.md
-        └─ KNOWLEDGE / EVIDENCE
- │
- ▼
-Research Handoff Validation
+External Research
+    ↓
+Research Handoff
+    ↓
+runtime ingress
 ```
 
-### 3.3 Authority Boundary
+Research may provide:
 
-`project_details.md` owns product Scope.
+- Scope Candidate;
+- Research Knowledge;
+- candidate architecture/design;
+- evidence;
+- unresolved questions.
 
-Research knowledge may include preliminary architecture and implementation analysis, but those are non-authoritative technical inputs to Planning.
+Research does not create runtime authority.
 
-Research must not create authoritative implementation Tasks or mutate production code.
+## 4. Research Import Boundary
 
-## 4. External Planning Environment
+Import is deterministic runtime ingress.
 
-### 4.1 Purpose
+Applicable validation may include:
 
-Planning converts approved Scope and Research Knowledge into executable technical authority.
+- file/package structure;
+- schema/syntax;
+- path safety;
+- declared support-file presence;
+- integrity/digest;
+- protocol compatibility.
 
-### 4.2 Canonical Flow
+Successful import produces:
+
+```text
+Imported Research Package
+```
+
+It does not produce Accepted Scope.
+
+Semantic finalization belongs to Planning.
+
+## 5. External Planning Environment
+
+Planning is the strongest normal runtime reasoning stage.
+
+Detailed Planning behavior is defined in `PLANNING_MODEL.md`.
+
+Canonical Planning flow:
 
 ```text
 ══════════════ EXTERNAL PLANNING ENVIRONMENT ══════════════
 
-External Planning AI
-(strongest suitable reasoning model)
+Imported Research Package
+        +
+Current repository
+        +
+Applicable previous durable knowledge
  │
- ├─ Read Scope Authority
- ├─ Read all Research Knowledge
- ├─ Inspect current repository
- ├─ Verify technical research
- ├─ Additional external research when required
- ├─ Validate preliminary architecture
- ├─ Improve / Finalize Architecture
- ├─ Interface Design
- ├─ Data Model Design
- ├─ Constraint Design
- ├─ Phase Design
- ├─ Task Design
- ├─ Dependency Design
- ├─ Verification Design
- ├─ Evidence Design
- ├─ Builder Context Design
- ├─ Authorized Path Design
- ├─ Repair Policy Design
- └─ Scope Coverage Validation
+ ▼
+Planning AI
+ │
+ ├─ Research Investigation & Finalization
+ │    ├─ detect gaps/contradictions
+ │    ├─ inspect current repository selectively
+ │    ├─ investigate missing technical facts
+ │    ├─ classify material unknowns
+ │    ├─ selectively verify material claims
+ │    ├─ request user decisions when required
+ │    ├─ finalize acceptance interpretation
+ │    ├─ finalize Accepted Scope
+ │    └─ finalize Research Knowledge
+ │
+ ├─ Implementation Planning
+ │    ├─ Final Architecture
+ │    ├─ Interface Design
+ │    ├─ Data Model Design
+ │    ├─ Constraint Design
+ │    ├─ Phase Design
+ │    ├─ Task Design
+ │    ├─ Dependency Design
+ │    ├─ Verification Design
+ │    ├─ Evidence Design
+ │    ├─ Builder Context Design
+ │    ├─ Authorized Path Design
+ │    ├─ Repair Policy Design
+ │    └─ Scope Coverage Validation
  │
  ▼
 Validated Planning Package
@@ -150,10 +208,13 @@ Validated Planning Package
 PLAN_READY
 ```
 
-### 4.3 Planning Authority
+Material Planning authority is bound before execution.
 
-The validated Planning Package owns applicable:
+## 6. Planning Authority Boundary
 
+Planning may create applicable authority for:
+
+- Accepted Scope after semantic finalization;
 - final architecture;
 - interfaces;
 - data model;
@@ -168,11 +229,11 @@ The validated Planning Package owns applicable:
 - evidence requirements;
 - repair policy.
 
-Material Planning authority is bound before execution.
+Planning does not own deterministic Task PASS, Phase PASS, or final closure.
 
-## 5. Execution Environment
+## 7. Execution Environment
 
-### 5.1 Mandatory Environment
+### 7.1 Mandatory Environment
 
 Normal production implementation is performed through:
 
@@ -188,7 +249,7 @@ Builder
 
 This environment is specifically for software repository development.
 
-### 5.2 Manager AI
+### 7.2 Manager AI
 
 Manager is the local reasoning and debugging layer.
 
@@ -208,9 +269,9 @@ Manager is expected to use a reasoning-capable model, normally stronger than Bui
 
 Manager is not the normal production editor.
 
-### 5.3 Builder AI
+### 7.3 Builder AI
 
-Builder is the low-cost bounded implementation worker.
+Builder is the lower-cost bounded implementation worker.
 
 Typical Builder responsibilities:
 
@@ -223,15 +284,24 @@ Typical Builder responsibilities:
 - produce structured evidence;
 - stop.
 
-Builder must not invent a new repair strategy after a failure.
+Builder must not:
+
+- expand Scope;
+- redesign Planning authority;
+- expand authorized write paths;
+- choose lifecycle stage;
+- grant deterministic PASS;
+- invent an unrestricted repair strategy after failure;
+- enter an open-ended diagnose/edit/retry loop.
 
 Unexpected failure returns control to Manager.
 
-### 5.4 Deterministic Workplan
+### 7.4 Deterministic Workplan
 
 Workplan selects and enforces:
 
 - current lifecycle continuation;
+- Planning/Execution/Evaluation routing;
 - Phase;
 - Task;
 - Attempt kind;
@@ -239,14 +309,15 @@ Workplan selects and enforces:
 - authorized paths;
 - repair count;
 - binding validity;
+- generation validity;
 - Task Gate;
 - Phase Gate;
 - external escalation;
 - final closure.
 
-Neither Manager nor Builder owns deterministic PASS authority.
+No model owns deterministic PASS authority.
 
-## 6. Execution Hierarchy
+## 8. Execution Hierarchy
 
 ```text
 Cycle
@@ -265,9 +336,17 @@ RECOVERY
 
 Every Builder dispatch creates a fresh Attempt.
 
-## 7. Canonical Execution Flow
+No production Attempt may be issued before:
 
-The normal Task-local repair path is:
+```text
+Accepted Scope
+    +
+valid bound Planning Package
+```
+
+## 9. Canonical Execution Flow
+
+The normal Task-local path is:
 
 ```text
 ════════════════ EXECUTION ENVIRONMENT ════════════════
@@ -373,7 +452,7 @@ All Required Phases PASS
 External Evaluation
 ```
 
-### 7.1 Repair Limit
+## 10. Repair Limit
 
 For an ordinary Task-local failure chain:
 
@@ -411,7 +490,7 @@ A structural defect, invalid authority boundary, or clearly non-local failure ma
 
 No sixth local Repair Attempt is allowed for the same failure chain.
 
-## 8. Task Gate
+## 11. Task Gate
 
 Task Gate owns deterministic Task PASS.
 
@@ -451,7 +530,7 @@ Task Gate
 PASS / FAIL
 ```
 
-## 9. Phase Gate
+## 12. Phase Gate
 
 Phase Gate owns Phase progression.
 
@@ -466,14 +545,15 @@ It validates applicable:
 
 Only Phase Gate PASS makes dependent Phases eligible.
 
-## 10. Durable Failure Record
+## 13. Durable Failure Record
 
-Every authoritative failure produces or contributes to durable failure evidence.
+Every authoritative runtime failure produces or contributes to durable failure evidence.
 
 Applicable sources include:
 
 ```text
-RESEARCH
+RESEARCH_IMPORT
+PLANNING_FINALIZATION
 PLANNING
 BUILDER
 TASK_GATE
@@ -484,6 +564,8 @@ CONTROL_PLANE
 ENVIRONMENT
 TOOLING
 ```
+
+External Research conversation failure is outside runtime.
 
 A normalized Failure Record should preserve enough information for a fresh reasoning model to understand the failure without prior chat.
 
@@ -510,11 +592,11 @@ prior repair strategies
 status
 ```
 
-Exact schema belongs to implementation, not this architecture document.
+Exact runtime schema belongs to implementation.
 
-## 11. External Reasoning Environment
+## 14. External Reasoning Environment
 
-External Reasoning contains:
+External runtime reasoning contains:
 
 ```text
 External Diagnosis
@@ -522,9 +604,13 @@ External Recovery
 External Evaluation
 ```
 
+External Research is not part of this runtime environment.
+
+Planning is normal runtime reasoning, not an exception path.
+
 For ordinary Task implementation failure, External Diagnosis is not the first repair path.
 
-The default local path is:
+Default local path:
 
 ```text
 Task FAIL
@@ -540,13 +626,13 @@ repeat bounded local loop
 
 External reasoning is used when the problem is structural, outside local authority, exhausted, or otherwise requires materially stronger reasoning.
 
-## 12. External Diagnosis
+## 15. External Diagnosis
 
 External Diagnosis is reasoning-only.
 
 Inputs should include applicable:
 
-- approved Scope;
+- Accepted Scope;
 - Planning Package;
 - current repository state;
 - Failure Record;
@@ -568,13 +654,15 @@ classification
 correct recovery boundary
 ```
 
-Typical classifications:
+Canonical classification vocabulary should align with runtime implementation. Applicable classes include:
 
 ```text
 IMPLEMENTATION_DEFECT
 TASK_DEFECT
 PLAN_DEFECT
+EVALUATION_DEFECT
 SCOPE_DEFECT
+SCOPE_AMBIGUITY
 ENVIRONMENT_DEFECT
 TOOLING_DEFECT
 VERIFICATION_DEFECT
@@ -584,11 +672,13 @@ UNKNOWN
 
 Every classification must have a deterministic continuation.
 
-## 13. External Recovery
+A Scope defect must not be silently rewritten by execution/recovery agents.
+
+## 16. External Recovery
 
 External Recovery is reasoning-only.
 
-It converts Diagnosis into a durable Recovery Contract.
+It converts eligible Diagnosis results into a durable Recovery Contract.
 
 Canonical flow:
 
@@ -616,9 +706,11 @@ Phase Gate
 
 Recovery cannot directly mark a Task PASS.
 
-If the required correction exceeds current Task authority, Recovery must route back to the appropriate Scope/Planning authority rather than silently broaden the Task.
+If the required correction exceeds current Task authority, Recovery must route to the appropriate Planning/owner boundary rather than silently broaden the Task.
 
-## 14. Issue Lifecycle
+Recovery cannot create new product Scope.
+
+## 17. Issue Lifecycle
 
 Escalated issues require deterministic status progression.
 
@@ -631,6 +723,16 @@ AWAITING_DIAGNOSIS
     ↓
 DIAGNOSED
     ↓
+appropriate continuation
+    ├─ RECOVERY_READY
+    ├─ PLAN_REVISION_REQUIRED
+    ├─ OWNER_ACTION_REQUIRED
+    └─ other explicit terminal/continuation state
+```
+
+Recovery-capable path may continue:
+
+```text
 RECOVERY_READY
     ↓
 IN_RECOVERY
@@ -638,20 +740,19 @@ IN_RECOVERY
 RESOLVED
 ```
 
-Alternative terminal/continuation states may include:
+Alternative dispositions may include:
 
 ```text
 SUPERSEDED
 PLAN_REVISION_REQUIRED
-SCOPE_REVISION_REQUIRED
 OWNER_ACTION_REQUIRED
 ```
 
-A replaced/resolved historical issue must not remain accidentally blocking.
-
 Exact state names belong to implementation.
 
-## 15. Independent Evaluation
+A replaced/resolved historical issue must not remain accidentally blocking.
+
+## 18. Independent Evaluation
 
 Evaluation begins after required Phase Gates PASS.
 
@@ -663,7 +764,7 @@ All Required Phase Gates PASS
         ▼
 External Evaluation AI
         │
-        ├─ Read approved Scope
+        ├─ Read Accepted Scope
         ├─ Read Planning Package
         ├─ Read gate evidence
         ├─ Inspect current repository
@@ -692,18 +793,20 @@ Failure Record
     ↓
 External Diagnosis
     ↓
-Recovery / higher-level correction
+Recovery / Planning / owner correction
     ↓
-Manager → Builder → Gates
+Manager → Builder → Gates when applicable
     ↓
 Evaluation again
 ```
 
 Evaluation does not repair production code directly.
 
-## 16. CLOSED_VALIDATED and Next Research Cycle
+## 19. CLOSED_VALIDATED and Next Cycle
 
 Closure produces durable completion knowledge.
+
+A completed Cycle does not automatically start another Cycle.
 
 Conceptually:
 
@@ -712,16 +815,26 @@ CLOSED_VALIDATED
         ↓
 Completion Report
         │
-        │ knowledge input only
+        │ durable knowledge only
         ▼
-Next Research Cycle
+════════ OUTSIDE PROJECT TEMPLATE RUNTIME ════════
+User / External Research Process
         ↓
 new Research Handoff
         ↓
-new Scope
+════════ PROJECT TEMPLATE RUNTIME ════════════════
+Research Import
+        ↓
+Planning Finalization
+        ↓
+new Accepted Scope
+        ↓
+Implementation Planning
+        ↓
+new execution authority
 ```
 
-The next Cycle may use:
+A future Research process may use:
 
 - previous Completion Report;
 - previous Research Knowledge;
@@ -730,13 +843,17 @@ The next Cycle may use:
 
 Previous Scope does not silently become new Scope authority.
 
-## 17. Authority Matrix
+## 20. Authority Matrix
 
 | Concern | Authority |
 |---|---|
 | User intent | User |
-| Product Scope | Approved Research Handoff / immutable Scope |
-| Research knowledge | Research artifacts |
+| External Research process | Outside Project Template runtime |
+| Research Handoff | External high-value input |
+| Import structure/integrity | Deterministic import/validation |
+| Research semantic finalization | Planning |
+| Product Scope | Planning-finalized + deterministically bound Accepted Scope |
+| Finalized Research Knowledge | Planning-finalized durable knowledge |
 | Final architecture | Approved Planning Package |
 | Phase/Task decomposition | Approved Planning Package |
 | Routing | Deterministic Workplan |
@@ -751,21 +868,32 @@ Previous Scope does not silently become new Scope authority.
 | Durable workflow truth | Repository/filesystem state |
 | Development constitution | Human repository owner |
 
-## 18. Canonical State-Machine Intent
+## 21. Canonical State-Machine Intent
 
-Normal lifecycle:
+Normal runtime:
 
 ```text
-RESEARCH
+IMPORT
    ↓
 PLANNING
-   ↓
+   ├─ Research Investigation & Finalization
+   │      ↓
+   │  Accepted Scope
+   │
+   └─ Implementation Planning
+          ↓
+       PLAN_READY
+          ↓
 EXECUTION
    ↓
 EVALUATION
    ↓
 CLOSED_VALIDATED
 ```
+
+External Research is not a runtime state.
+
+The two Planning responsibilities are logical sub-phases of Planning and need not become separate public lifecycle stages.
 
 Task-local side loop:
 
@@ -797,14 +925,31 @@ Task Gate
                   ↓
               DIAGNOSIS
                   ↓
-               RECOVERY
-                  ↓
-       appropriate authoritative stage
+       RECOVERY / PLANNING /
+          OWNER ACTION
 ```
 
 Diagnosis and Recovery must not become permanent loops.
 
-## 19. Development Constitution Boundary
+## 22. Resume Architecture
+
+A fresh runtime session should be able to continue from durable:
+
+- current lifecycle state;
+- Imported Research Package where relevant;
+- Planning checkpoints;
+- Accepted Scope;
+- Planning Package;
+- tickets;
+- Attempts;
+- gate evidence;
+- Failure Records;
+- issue state;
+- immutable bindings.
+
+External Research conversation replay must not be required.
+
+## 23. Development Constitution Boundary
 
 This Reference Architecture is human-owned.
 
@@ -821,9 +966,9 @@ propose change outside development_constitution/
         ↓
 STOP affected redesign
         ↓
-repository owner updates constitution externally
+repository owner updates constitution explicitly
         ↓
-AI rereads constitution
+AI rereads complete constitution
         ↓
 development resumes
 ```

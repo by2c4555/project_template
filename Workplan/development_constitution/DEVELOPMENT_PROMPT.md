@@ -1,5 +1,4 @@
 > HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
-
 # Project Template Development Prompt
 
 ## Purpose
@@ -8,7 +7,7 @@ This prompt is used only when an AI is developing, reviewing, diagnosing, or imp
 
 It is not a runtime prompt for a user project's:
 
-- Research;
+- External Research;
 - Planning;
 - Manager;
 - Builder;
@@ -23,7 +22,10 @@ Its purpose is to prevent Project Template architecture from drifting because of
 Before substantial Project Template development, read:
 
 ```text
+Workplan/development_constitution/README.md
 Workplan/development_constitution/OBJECTIVE.md
+Workplan/development_constitution/RESEARCH_AND_SCOPE_MODEL.md
+Workplan/development_constitution/PLANNING_MODEL.md
 Workplan/development_constitution/REFERENCE_ARCHITECTURE.md
 Workplan/VERSION
 ```
@@ -36,49 +38,52 @@ Workplan/development_constitution/
 
 You must not:
 
+- create;
 - edit;
 - modify;
 - rewrite;
+- reformat;
 - move;
 - rename;
 - delete;
-- replace
+- replace;
+- migrate;
+- automatically synchronize
 
 any file in that directory.
 
-This restriction applies even when a constitution change appears technically desirable.
-
-If the constitution conflicts with the requested development:
+If the constitution conflicts with requested development:
 
 ```text
 report CONSTITUTION_CHANGE_REQUIRED
     ↓
-identify the exact conflict
+identify exact conflict
     ↓
-propose the required human change
+draft proposed change outside protected directory
     ↓
-do not edit development_constitution/
+do not modify protected constitution
     ↓
-stop the affected architecture-changing work
+complete unaffected authorized work
+    ↓
+stop affected architecture-changing work
 ```
 
-The repository owner must update the constitution externally.
+The repository owner must explicitly update the constitution.
 
-After the owner changes it, reread the complete constitution before continuing.
+After owner changes it, reread the complete constitution before continuing.
 
 ## 2. Establish Current Baseline
 
-For substantial work, establish the current repository baseline once.
+For substantial work, establish current repository truth once.
 
 At minimum inspect:
 
 ```text
 Workplan/VERSION
-Workplan/development_constitution/OBJECTIVE.md
-Workplan/development_constitution/REFERENCE_ARCHITECTURE.md
+complete Development Constitution
+relevant runtime implementation
+relevant tests/config/docs/migration
 ```
-
-Then inspect only the implementation, tests, configuration, migration, and documentation relevant to the requested change.
 
 Use current repository state as implementation truth.
 
@@ -95,12 +100,13 @@ requested outcome
 current behavior
 root cause / actual gap
 affected invariant
+affected authority boundary
 affected architecture boundary
 minimum robust correction
 token/context impact
 reliability impact
 resume/recovery impact
-compatibility impact
+compatibility/migration impact
 validation required
 ```
 
@@ -110,7 +116,7 @@ Do not implement a symptom-level workaround when the responsible mechanism can b
 
 Do not rewrite working architecture from zero.
 
-Classify material existing mechanisms as:
+Classify relevant mechanisms:
 
 ```text
 KEEP
@@ -122,7 +128,7 @@ REMOVE
 
 Preserve anything that already satisfies the Development Objective and Reference Architecture.
 
-Do not weaken an invariant merely to make obsolete implementation or tests pass.
+Do not weaken an invariant merely to make obsolete implementation/tests pass.
 
 ## 5. Architecture Drift Guard
 
@@ -154,73 +160,170 @@ extend existing mechanism
 introduce new mechanism
 ```
 
-A local defect must not silently redefine the architecture.
+A local defect must not silently redefine architecture.
 
-## 6. Software-Development Identity
+## 6. Preserve External Research Boundary
 
-Project Template is an AI-assisted **software-development control plane**.
+External Research is outside Project Template runtime.
 
-Keep development focused on software engineering:
+Project Template may ship:
 
-- Scope and requirement research;
-- repository analysis;
-- architecture/planning;
-- source-code implementation;
-- CLI/tool execution;
-- controlled file operations;
-- debugging;
-- verification;
-- repair/recovery;
-- acceptance.
+- Research prompts;
+- Research protocols;
+- Research templates;
+- examples.
 
-Do not generalize it into a general autonomous-agent platform unless the human owner first changes the Development Constitution.
+These are external preparation helpers.
 
-## 7. Capability Allocation
-
-Preserve the intended capability ladder:
+They must not become:
 
 ```text
-External strong reasoning
-    -> Research
-    -> Planning
-    -> escalated Diagnosis
-    -> Recovery reasoning
-    -> Independent Evaluation
-
-Manager
-    -> execution coordination
-    -> Task-local debugging
-    -> failure analysis
-    -> repair strategy
-    -> Builder supervision
-
-Builder
-    -> low-cost bounded implementation
-    -> CLI/file operations
-    -> straightforward code changes
-    -> Manager-defined Repair changes
-    -> verification execution
-
-Deterministic Workplan
-    -> authority
-    -> routing
-    -> tickets
-    -> bindings
-    -> repair limits
-    -> gates
-    -> validation
-    -> closure
+runtime lifecycle authority
+Research Work authority
+Cycle authority
+approval authority
+resume authority
+execution authority
 ```
 
-Do not move difficult debugging responsibility to Builder merely because Builder can edit files.
+Normal runtime routing must not require `EXECUTE_RESEARCH`.
 
-Do not move routine implementation to expensive reasoning models merely because they are capable of editing code.
+A utility may display/export Research helper material only if doing so does not create runtime Research authority.
 
-## 8. Builder Failure Rule
+## 7. Preserve Import Semantics
+
+Research Import is structural/integrity validation.
+
+Do not equate:
+
+```text
+structurally valid Research Handoff
+```
+
+with:
+
+```text
+semantically final Accepted Scope
+```
+
+Successful import creates an Imported Research Package.
+
+Planning semantic finalization creates Accepted Scope.
+
+## 8. Preserve Planning as Mandatory Semantic Finalizer
+
+Planning is the strongest normal runtime reasoning stage.
+
+Do not reduce Planning to a Task compiler.
+
+Planning must perform:
+
+```text
+A. Research Investigation & Finalization
+B. Implementation Planning
+```
+
+Planning A must be able to:
+
+- detect Research gaps/contradictions;
+- inspect current repository evidence;
+- investigate missing technical facts;
+- classify unknowns;
+- selectively verify material Research;
+- request material product decisions from user;
+- finalize Scope;
+- finalize Research Knowledge.
+
+Planning B must create applicable:
+
+- architecture;
+- interfaces;
+- data model;
+- constraints;
+- Phases;
+- Tasks;
+- dependencies;
+- paths/context;
+- verification/evidence;
+- repair policy.
+
+No production execution authority may exist before Planning finalization is valid.
+
+## 9. Do Not Waste Planning Capacity
+
+Planning is expensive and constrained.
+
+Research should carry broad/deep discovery work.
+
+The design target is:
+
+```text
+Research = maximize useful information
+Planning = maximize decision quality
+```
+
+Planning should independently verify the minimum sufficient evidence for material claims.
+
+Do not force Planning to reproduce low-risk Research merely for ritual independence.
+
+## 10. Preserve User Decision Boundary
+
+Planning may decide technical HOW.
+
+Planning must not invent unresolved material product WHAT / WHY.
+
+When needed:
+
+```text
+material product unknown
+    ↓
+USER_ACTION_REQUIRED
+    ↓
+user response
+    ↓
+Planning Finalization resumes
+```
+
+Do not ask the user to decide technical details that Planning is responsible for.
+
+## 11. Avoid Unnecessary Lifecycle Expansion
+
+Research Investigation & Finalization and Implementation Planning are logical Planning sub-phases.
+
+Do not create separate public lifecycle roles/stages for them unless deterministic authority, recovery, or resume requirements prove such separation necessary.
+
+Prefer Planning checkpoints over lifecycle proliferation.
+
+## 12. Preserve Capability Allocation
+
+```text
+External Research
+    -> broad/deep preparation outside runtime
+
+Planning
+    -> strongest normal runtime reasoning
+    -> semantic finalization
+    -> implementation authority synthesis
+
+Manager
+    -> local execution reasoning/debugging
+
+Builder
+    -> lower-cost bounded implementation
+
+Deterministic Workplan
+    -> authority/state/routing/tickets/gates
+```
+
+Do not move open-ended debugging to Builder.
+
+Do not move routine production implementation to Planning.
+
+## 13. Builder Failure Rule
 
 A failed Builder must not autonomously enter an open-ended debug/edit/retry loop.
 
-The intended Task-local repair pattern is:
+Intended local repair:
 
 ```text
 Builder Attempt
@@ -229,7 +332,7 @@ FAIL
     ↓
 durable Failure Record
     ↓
-Manager local diagnosis
+Manager diagnosis
     ↓
 Manager-defined repair strategy
     ↓
@@ -238,15 +341,13 @@ fresh Builder REPAIR Attempt
 Task Gate
 ```
 
-Repeat only within the approved bounded repair policy.
+The hard local maximum is 5 Repair Attempts per Task failure chain.
 
-The hard local maximum is 5 Repair Attempts for one failure chain.
+Structural/authority failures may escalate earlier.
 
-Structural or authority-level defects may escalate earlier.
+## 14. Deterministic Authority Rule
 
-## 9. Deterministic Authority Rule
-
-Prefer deterministic software over prompt enforcement when a behavior is truly an authority invariant.
+Prefer deterministic software over prompt enforcement when a behavior is an authority invariant.
 
 Use applicable:
 
@@ -264,34 +365,30 @@ filesystem evidence
 test
 ```
 
-Prompts should explain behavior.
+Prompts explain behavior.
 
-They should not become the sole source of execution authority.
+They do not replace authority enforcement.
 
-Do not create deterministic machinery merely for cosmetic prompt preferences; use it where it protects a real authority, reliability, recovery, or validation boundary.
-
-## 10. Context and Cost Discipline
+## 15. Context and Cost Discipline
 
 Use selective context.
 
-Do not load the whole repository by default.
-
-Use strong models for reasoning that materially benefits from stronger reasoning.
-
-Use low-cost models for bounded implementation.
+Do not load whole repository by default.
 
 Do not repeatedly pay for reasoning already preserved in durable:
 
+- Research evidence;
+- finalization decisions;
+- Accepted Scope;
 - architecture;
-- decisions;
 - Task contracts;
 - failure records;
 - checkpoints;
 - evidence.
 
-## 11. Failure and Recovery Review
+## 16. Failure and Recovery Review
 
-For a material failure, determine:
+For a material runtime failure determine:
 
 ```text
 what failed
@@ -311,12 +408,53 @@ Preserve previous valid work and failure history.
 
 Do not restart from zero unless existing work is proven unusable.
 
-## 12. Constitution Conflict
+## 17. Import and Planning Failure Rules
+
+### Import Failure
+
+```text
+fail closed
+    ↓
+report structural/integrity defect
+    ↓
+do not create Accepted Scope
+```
+
+### Planning Finalization Blocker
+
+```text
+classify unknown
+    ↓
+resolve technically
+or
+request user action
+or
+preserve external blocker
+```
+
+Do not hide a blocker as an assumption.
+
+## 18. Scope Defect Boundary
+
+Accepted Scope exists only after Planning semantic finalization.
+
+After acceptance:
+
+- Builder must not rewrite it;
+- Manager must not rewrite it;
+- Recovery must not rewrite it;
+- Evaluation must not rewrite it.
+
+If later evidence shows Scope is materially defective, route to Planning/owner/external correction as appropriate.
+
+## 19. Constitution Conflict
 
 If implementation pressure suggests changing:
 
 - Project Template product identity;
-- Research/Planning responsibility;
+- External Research boundary;
+- Planning-as-finalizer responsibility;
+- Accepted Scope authority;
 - VS Code execution boundary;
 - Manager/Builder capability boundary;
 - `Cycle -> Phase -> Task -> Attempt`;
@@ -325,11 +463,9 @@ If implementation pressure suggests changing:
 - Diagnosis/Recovery separation;
 - final Evaluation responsibility;
 - durable-state philosophy;
-- human ownership of this constitution;
+- human ownership of constitution;
 
-do not silently change implementation to a different architecture.
-
-Report:
+report:
 
 ```text
 CONSTITUTION_CHANGE_REQUIRED
@@ -356,44 +492,110 @@ Compatibility/migration impact:
 ...
 ```
 
-Then stop the affected architecture-changing implementation.
+Do not modify protected constitution.
 
-## 13. Implementation Design
+## 20. Implementation Design
 
 When no constitution change is required:
 
 1. inspect current relevant implementation;
 2. identify root cause;
 3. preserve required invariants;
-4. choose the simplest robust design;
-5. prefer deterministic mechanisms over prompt complexity where authority requires it;
-6. make the smallest coherent change;
-7. update only relevant tests/docs/config/migration;
+4. choose simplest robust design;
+5. prefer deterministic mechanisms where authority requires;
+6. make smallest coherent change;
+7. update relevant tests/docs/config/migration;
 8. keep version consistency;
-9. preserve resumability and provider neutrality.
+9. preserve resumability/provider neutrality.
 
-## 14. Validation
+For Research/Planning boundary work inspect applicable:
+
+```text
+root README / Quick Start
+ENTRY_PROMPT / user entry instructions
+command routing
+WORKPLAN_NEXT
+Research helper files
+ingest/import
+Planning acquisition
+Planning checkpoints
+Accepted Scope creation/binding
+Planning Package validation
+Cycle/authority creation
+tests
+migration/version docs
+release validation
+```
+
+## 21. Validation
 
 Do not claim correctness because:
 
-- the prompt looks correct;
+- a prompt looks correct;
 - code appears reasonable;
 - a model says PASS;
 - a file exists.
 
 Execute verification.
 
-Prefer focused bounded suites first.
+Prefer focused suites first, then broader validation.
 
 Test negative paths for authority boundaries.
 
-Then execute broader release validation when appropriate.
+For Research/Planning architecture validate at minimum:
+
+```text
+Research remains outside runtime lifecycle
+Research helper files do not create runtime authority
+invalid import fails closed
+valid import creates Imported Research Package, not Accepted Scope
+Planning can detect missing/contradictory Research
+Planning can request user action for material product unknowns
+Planning can investigate technical unknowns
+Planning selectively verifies material Research
+Planning Finalization creates/binds Accepted Scope
+Implementation Planning cannot become PLAN_READY before Scope acceptance
+execution cannot start without Accepted Scope + valid Planning Package
+active runtime can resume without external Research chat history
+```
 
 Never report unexecuted validation as PASS.
 
-## 15. Release Consistency
+## 22. Simulation / Mock / Sample Validation
 
-A new Project Template version must describe one coherent design across applicable:
+When real external dependencies or user workflows cannot be exercised directly, use representative:
+
+- mock Research Handoffs;
+- incomplete handoffs;
+- contradictory handoffs;
+- stale evidence samples;
+- valid handoffs;
+- user-decision blockers;
+- technical unknown samples;
+- Planning revision samples.
+
+Simulation must not replace real verification where real verification is available.
+
+## 23. Migration and Compatibility
+
+When migrating from old Research-as-runtime or immediate-Scope-import behavior, inspect:
+
+- `RESEARCH` lifecycle state;
+- Research Work records;
+- `EXECUTE_RESEARCH`;
+- bootstrap routing;
+- old ingest-to-Scope behavior;
+- existing Cycle records;
+- Planning assumptions;
+- old tests/docs.
+
+Do not silently reinterpret unsafe in-flight state.
+
+Prefer explicit migration or rejection boundaries.
+
+## 24. Release Consistency
+
+A release must describe one coherent design across applicable:
 
 ```text
 VERSION
@@ -409,11 +611,30 @@ release validation
 integrity metadata
 ```
 
-Do not ship mixed-version behavior or stale canonical paths.
+Do not ship mixed behavior, such as:
 
-## 16. Development Result
+```text
+docs: Planning finalizes Research
+runtime: import immediately creates immutable Scope
+```
 
-For substantial Project Template changes, report:
+## 25. Packaging Protection
+
+Before normal implementation packaging:
+
+```text
+Workplan/development_constitution/**
+```
+
+must have no create/modify/delete changes relative to the verified baseline unless the user explicitly authorized protected-area modification.
+
+If unintended changes exist, restore baseline before producing the implementation package.
+
+A constitution proposal must remain outside the implementation ZIP unless the user explicitly authorizes protected-area modification.
+
+## 26. Development Result
+
+For substantial changes report:
 
 ```text
 verified baseline
@@ -421,7 +642,9 @@ requested outcome
 root cause
 constitution impact
 reference architecture impact
-architecture change required: YES / NO
+Research boundary status
+Planning Finalization status
+Scope authority status
 invariants preserved
 files changed
 behavior changed
@@ -429,16 +652,25 @@ tests actually executed
 observed validation results
 migration impact
 known limitations
+artifact
 ```
 
-Do not claim the repository was updated when only a proposal or isolated candidate was created.
+Do not claim repository modification when only a proposal/candidate was created.
 
 ## Core Rule
 
 ```text
-Do not make the constitution follow the latest patch.
+External Research prepares the best handoff it can.
 
-Make each patch preserve the human-approved constitution.
+Planning is the strongest controlled reasoning stage.
 
-When the constitution must change, the human changes it first.
+Planning finalizes Research before Accepted Scope and implementation authority.
+
+Research must not become runtime authority.
+
+Planning must not blindly trust Research.
+
+Planning must not blindly repeat Research.
+
+Deterministic software owns authority transitions and PASS.
 ```
