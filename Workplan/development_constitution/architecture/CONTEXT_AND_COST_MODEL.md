@@ -52,12 +52,16 @@ When the user supplies a Research budget/constraint, Project Template Research p
 
 Planning should receive:
 
+- current archived Research revision;
 - relevant Research;
 - relevant current repository evidence;
 - material prior knowledge;
+- prior Research revision report/carry-forward knowledge when applicable;
 - current authority/issue state.
 
 Do not force Planning to reread irrelevant code or repeat sufficient evidence.
+
+When a replacement Research revision is imported after `RESEARCH_REVISION_REQUIRED`, prefer delta reconciliation over full replay.
 
 ## 7. Builder Context
 
@@ -138,6 +142,9 @@ The correct response to insufficient budget is to narrow/re-approve/block, not s
 
 Do not repeatedly pay for reasoning already preserved in durable:
 
+- archived Research revisions;
+- Research revision reports;
+- Planning carry-forward knowledge;
 - Research evidence;
 - Planning decisions;
 - Accepted Scope;
@@ -146,6 +153,28 @@ Do not repeatedly pay for reasoning already preserved in durable:
 - Failure Records;
 - checkpoints;
 - Completion Knowledge Package.
+
+### 10.1 Research Revision Delta Rule
+
+For a new Research revision following an insufficient predecessor, Planning should normally consume:
+
+```text
+new Research revision
++ predecessor Research Revision Required report
++ Planning carry-forward knowledge
++ selective predecessor evidence when materially needed
++ current repository evidence when materially needed
+```
+
+Planning should explicitly determine:
+
+- what changed;
+- which previous gaps are resolved;
+- which prior findings remain valid;
+- which findings are stale/superseded;
+- what still requires verification.
+
+Do not reload/reason over the complete prior Research/repository context merely because the provider/model changed. Provider/session memory is not a reason to discard durable verified reasoning.
 
 ## 11. Verification Cost
 
@@ -190,7 +219,9 @@ Approval spam has user and token cost.
 
 Completion Knowledge Package reduces future Research cost by preserving verified outcomes, decisions, and lessons.
 
-It remains knowledge only; future Scope must still be re-established.
+The same delta-reconciliation principle used for Research revisions may be used by a later separately initiated version to avoid rediscovering unchanged verified facts.
+
+It remains knowledge only; future Research/Scope/Planning authority must still be re-established.
 
 ## 15. Core Invariants
 
@@ -198,6 +229,8 @@ It remains knowledge only; future Scope must still be re-established.
 selective context
 
 reuse durable reasoning
+
+delta-reconcile Research revisions instead of replaying unchanged context
 
 strong model for material judgment
 

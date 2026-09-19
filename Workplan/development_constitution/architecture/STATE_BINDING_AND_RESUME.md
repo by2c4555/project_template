@@ -20,6 +20,12 @@ The following boundaries must remain distinct:
 Research Handoff enters Import
     ↓
 runtime exists
+    ↓
+successful import creates immutable archived Research revision
+    ↓
+consumed ingest package is cleared
+    ↓
+Planning binds to archived Research identity
 
 Accepted Scope is created and bound
     ↓
@@ -42,7 +48,24 @@ A provisional Cycle ID or pre-Cycle record may exist earlier for bookkeeping, lo
 - production Attempt issuance;
 - execution PASS progression.
 
-### 2.2 Active Cycle Binding
+### 2.2 Research Revision Binding
+
+Every successfully consumed Research Handoff must have durable identity equivalent to:
+
+- Research revision ID;
+- package digest;
+- archive location/reference;
+- import time;
+- predecessor Research revision when applicable;
+- revision reason/report reference when applicable.
+
+Planning Work created against a Research revision must preserve that Research revision/digest as immutable historical binding.
+
+A replacement Research Handoff creates new Research identity and explicit new Planning revision/binding. Do not mutate prior Planning Work to point at the new Research digest.
+
+`Workplan/ingest/` location itself is not durable identity.
+
+### 2.3 Active Cycle Binding
 
 When Accepted Scope is created, the active Cycle must be durably associated with at least the applicable:
 
@@ -66,6 +89,8 @@ Work authority must remain bound to the authority that existed when issued.
 
 Applicable bindings may include:
 
+- Research revision/digest;
+- predecessor Research/Planning revision where applicable;
 - Cycle;
 - Scope revision/digest;
 - Planning revision/digest;
@@ -81,6 +106,8 @@ Applicable bindings may include:
 Resume must compare current authority with original bindings.
 
 Do not silently recalculate and overwrite original bindings.
+
+In particular, a Planning Work item bound to Research revision `Rn` must never be silently rebound to replacement Research revision `Rn+1`. Preserve history and create explicit successor Planning authority.
 
 ## 5. Generation Fencing and Concurrent Writer Control
 
@@ -119,6 +146,14 @@ Exact persisted state names belong to implementation.
 ## 7. Planning Checkpoints
 
 Planning should preserve progress through durable checkpoints rather than depending on chat memory.
+
+When Research is returned for revision, durable state should preserve applicable:
+
+- last safe Planning checkpoint;
+- Research Revision Required report reference;
+- Planning carry-forward knowledge reference;
+- predecessor Research/Planning identity;
+- exact gaps/evidence requests needed for continuation.
 
 ## 8. Attempt History
 
@@ -185,10 +220,16 @@ A fresh session must determine:
 
 A new machine/model/provider should continue from durable repository state without requiring full conversation replay.
 
+Planner/Evaluator provider identity may change, but the new provider must consume current canonical bindings/artifacts through the adapter boundary rather than reconstructing authority from the previous provider session.
+
 ## 15. Core Invariants
 
 ```text
 runtime ingress does not itself create active Cycle authority
+
+successful Research import creates immutable Research revision identity and clears consumed ingest input
+
+Research/Planning predecessor bindings remain immutable history across Research revision
 
 Accepted Scope binding creates active development Cycle authority
 

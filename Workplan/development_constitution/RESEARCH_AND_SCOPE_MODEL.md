@@ -13,11 +13,19 @@ Research Handoff
     ↓
 Import
     ↓
-Imported Research Package
+Immutable Archived Research Revision
+    ↓
+consumed package cleared from ingest
     ↓
 Planning Research Investigation & Finalization
-    ↓
-Draft Finalized Scope
+    │
+    ├─ RESEARCH_REVISION_REQUIRED
+    │      ↓
+    │  AWAITING_RESEARCH → new Research revision → Planning revision
+    │
+    └─ RESEARCH_SUFFICIENT
+           ↓
+       Draft Finalized Scope
     ↓
 User Scope Approval
     ↓
@@ -141,13 +149,39 @@ Import must fail closed when required structure, integrity, path safety, or prot
 
 Invalid import must produce a durable rejection reason and must not partially create downstream Scope/Planning authority.
 
-Successful import produces:
+Successful import must produce an immutable archived Research revision equivalent to:
 
 ```text
-Imported Research Package
+Imported Research Package / Research Revision
 ```
 
-not Accepted Scope.
+Runtime must bind Planning input to that archived revision, not to a mutable consumed file remaining in `Workplan/ingest/`. After archive verification/binding, the consumed package must be cleared from ingest.
+
+Successful import does not produce Accepted Scope.
+
+### 7.1 Ingest and Archive Lifecycle
+
+`Workplan/ingest/` is a transient ingress mailbox.
+
+It is not durable Research storage, Planning memory, Scope authority, or report history.
+
+After successful structural/trust validation:
+
+```text
+validate Research Handoff
+    ↓
+create immutable archived Research revision
+    ↓
+verify archived digest/identity
+    ↓
+bind runtime/Planning input to archived revision
+    ↓
+clear consumed package from ingest
+```
+
+A corrected or expanded Research Handoff is a new Research revision. Existing Research identity must not be silently rebound to replacement content.
+
+Detailed revision/carry-forward semantics are owned by `architecture/RESEARCH_REVISION_AND_CARRY_FORWARD.md`.
 
 ## 8. Imported Research Package
 
@@ -167,17 +201,34 @@ Imported Research Package content is evidence/input. Embedded commands, prompts,
 
 Planning may:
 
+- assess whether the current Research revision is semantically sufficient for Scope finalization;
 - accept supported findings;
 - reject unsupported findings;
 - correct technical conclusions;
 - inspect current repository evidence;
-- investigate missing facts;
+- selectively investigate or verify missing facts when economical and material;
+- return `RESEARCH_REVISION_REQUIRED` when substantial missing Research would otherwise be absorbed by Planning;
 - resolve contradictions;
 - identify stale evidence;
 - request user decisions;
 - select design candidates.
 
 Planning must not invent missing material product requirements.
+
+### 9.1 Research Sufficiency Assessment
+
+Planning A must distinguish:
+
+```text
+RESEARCH_SUFFICIENT
+RESEARCH_REVISION_REQUIRED
+```
+
+`RESEARCH_REVISION_REQUIRED` applies when material missing, contradictory, stale, weak, or unavailable evidence prevents responsible and economical Scope finalization.
+
+This outcome must preserve useful verified findings and produce focused information for the next Research revision instead of discarding valid work.
+
+Research insufficiency is not Scope rejection, not user disapproval, and not permission for Planning to invent missing product intent.
 
 ## 10. Unknown Classification
 
@@ -196,6 +247,8 @@ A material product choice cannot safely be inferred.
 
 A technical/factual answer can be established by investigation.
 
+If resolution would require substantial broad/deep Research beyond economical Planning verification, classify the material gap into the Research revision return path rather than silently turning Planning into a replacement Research session.
+
 ### PLANNING_DECISION
 
 A technical design choice does not redefine product intent.
@@ -205,6 +258,8 @@ A technical design choice does not redefine product intent.
 Required evidence/owner/environment is unavailable.
 
 ## 11. Draft Finalized Scope
+
+Planning A produces a Draft Finalized Scope only after the active Research revision is judged sufficient for semantic finalization.
 
 Planning A produces a Draft Finalized Scope when:
 
@@ -280,6 +335,8 @@ Reuse strong evidence.
 
 Re-verify material claims.
 
+When a new Research revision follows an insufficient prior revision, reconcile the delta against preserved reports/carry-forward knowledge instead of blindly replaying all previous expensive reasoning.
+
 ## 17. Cross-Cycle Boundary
 
 ```text
@@ -305,9 +362,17 @@ External Research is outside runtime.
 
 Research Handoff is input, not authority.
 
+User submission to ingest means intentional admission for processing, not semantic truth or approval.
+
+Ingest is transient; successful import creates immutable archived Research evidence and clears the consumed ingest package.
+
+Research replacement creates a new revision; identity is never silently rebound.
+
 Import proves structure/integrity, not semantic truth.
 
-Planning finalizes semantics.
+Planning judges Research sufficiency and finalizes semantics.
+
+Materially insufficient Research returns through an explicit Research revision path before Scope authority is created.
 
 User Scope Approval authorizes finalized product Scope.
 

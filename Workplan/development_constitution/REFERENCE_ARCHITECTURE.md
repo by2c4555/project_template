@@ -23,12 +23,28 @@ Research Handoff
 
 Research Import / Structural Validation
     ↓
-Imported Research Package
+Immutable Archived Research Revision
+    ↓
+consumed package cleared from ingest
+    ↓
+Planner Adapter
     ↓
 Planning A
 Research Investigation & Finalization
-    ↓
-Draft Finalized Scope
+    │
+    ├─ RESEARCH_REVISION_REQUIRED
+    │      ↓
+    │  Human-facing Research Revision Report
+    │      ↓
+    │  AWAITING_RESEARCH
+    │      ↓
+    │  new Research Handoff / revision
+    │      ↓
+    │  Planning A revision / delta reconciliation
+    │
+    └─ RESEARCH_SUFFICIENT
+           ↓
+       Draft Finalized Scope
     ↓
 USER SCOPE APPROVAL
     ↓
@@ -50,6 +66,8 @@ PLAN_READY
 VS Code Copilot Execution
     ↓
 Task / Phase Gates
+    ↓
+Evaluation Adapter
     ↓
 Independent Evaluation
     ↓
@@ -76,10 +94,13 @@ Project Template coordinates runtime across:
 
 ```text
 1. Research Import + Trust Boundary
-2. Runtime-Controlled Planning Reasoning Environment
+2. Runtime-Controlled External High-Reasoning Planning Environment
 3. VS Code Copilot Execution Environment
 4. Runtime-Controlled External Diagnosis / Recovery / Evaluation Environment
+5. Deterministic State / Authority / Reporting Surfaces
 ```
+
+Planner and Evaluation providers may change. Provider/model-specific behavior must cross a canonical adapter boundary before becoming runtime-consumable artifacts or results. Adapter semantics are owned by `architecture/AGENT_ADAPTER_BOUNDARIES.md`.
 
 External Research itself is outside runtime.
 
@@ -96,10 +117,15 @@ PROJECT TEMPLATE RUNTIME INGRESS
     │
     │ no active development Cycle authority yet
     ▼
+Planner Adapter
+    ↓
 Planning A
 Research Investigation & Finalization
-    ↓
-Draft Finalized Scope
+    │
+    ├─ insufficient Research → AWAITING_RESEARCH + new Research revision
+    └─ sufficient Research
+           ↓
+       Draft Finalized Scope
     ↓
 valid SCOPE_APPROVAL
     ↓
@@ -127,6 +153,11 @@ Detailed binding/resume semantics are owned by `architecture/STATE_BINDING_AND_R
 External Research
     -> broad/deep preparation
 
+Planner / Evaluation Adapters
+    -> provider/model invocation boundary
+    -> canonical context/output normalization
+    -> no lifecycle or approval authority
+
 Planning
     -> strongest normal runtime reasoning
     -> semantic finalization
@@ -142,6 +173,7 @@ Builder
 
 Deterministic Workplan
     -> state
+    -> Research revision identity/archive binding
     -> routing
     -> approvals
     -> tickets
@@ -150,6 +182,10 @@ Deterministic Workplan
     -> gates
     -> repair limits
     -> closure
+
+Human-Facing Report Surface
+    -> one discoverable project report history
+    -> presentation/reference only, never authority
 ```
 
 ## 5. Planning Boundary
@@ -180,6 +216,17 @@ User Execution Approval
 PLAN_READY
 ```
 
+
+### 5.1 Research Revision Boundary
+
+A consumed Research Handoff becomes an immutable archived Research revision before Planning depends on it.
+
+`Workplan/ingest/` is a transient ingress mailbox, not durable Research storage. After successful import/archive verification, runtime binds to the archived Research revision and the consumed package is cleared from ingest.
+
+Planning A may return `RESEARCH_REVISION_REQUIRED` when material missing, contradictory, stale, or weak evidence prevents responsible Scope finalization. This is a normal controlled outcome, not Scope rejection and not implementation failure.
+
+A replacement Research Handoff creates a new Research revision and new Planning revision/binding. Valid prior reasoning may be carried forward as knowledge, but prior Research/Planning identity is never silently rebound.
+
 ## 6. User Approval Points
 
 Normal material approval points:
@@ -193,6 +240,8 @@ CHANGE_APPROVAL
 Approval details are owned by:
 
 `architecture/USER_APPROVAL_AND_COST_CONTROL.md`
+
+Research insufficiency is also separate from approvals. `RESEARCH_REVISION_REQUIRED` returns the workflow to an awaiting-Research boundary without creating an approval rejection.
 
 User control actions are separate from approvals:
 
@@ -341,6 +390,8 @@ USER RE-APPROVAL REQUIRED
 After required Phase Gates pass:
 
 ```text
+Evaluation Adapter
+    ↓
 Independent Evaluation
     ↓
 PASS / PASS_WITH_FINDINGS
@@ -390,7 +441,10 @@ It is knowledge, not next Scope.
 |---|---|
 | User intent | User |
 | External Research | Outside runtime |
-| Research Handoff | External input |
+| Research Handoff | External input intentionally submitted for processing; not semantic truth/authority |
+| Research revision identity/archive binding | Deterministic import/runtime |
+| Research semantic sufficiency | Planning |
+| Planner/Evaluation provider adaptation | Adapter boundary; no approval/lifecycle authority |
 | Import structure/integrity | Deterministic import |
 | Research semantic finalization | Planning |
 | Draft Finalized Scope | Planning |
@@ -411,6 +465,7 @@ It is knowledge, not next Scope.
 | Runtime pause/cancel control | User + deterministic runtime handling |
 | Trust/instruction classification | Deterministic policy + current authority |
 | Final acceptance | Independent Evaluation + deterministic finalization |
+| Human-facing report history | `Workplan/reports/` presentation/reference surface; no runtime authority |
 | Durable workflow truth | Repository/filesystem state |
 | Development constitution | Human repository owner |
 
@@ -420,10 +475,22 @@ It is knowledge, not next Scope.
 RUNTIME INGRESS / PRE-CYCLE AUTHORITY
 IMPORT
   ↓
+ARCHIVE RESEARCH REVISION + CLEAR INGEST
+  ↓
 PLANNING A
 Research Investigation & Finalization
-  ↓
-SCOPE_APPROVAL
+  │
+  ├─ RESEARCH_REVISION_REQUIRED
+  │      ↓
+  │  AWAITING_RESEARCH
+  │      ↓
+  │  NEW RESEARCH REVISION
+  │      ↓
+  │  PLANNING A REVISION
+  │
+  └─ RESEARCH_SUFFICIENT
+         ↓
+     SCOPE_APPROVAL
   ↓
 Accepted Scope
   ↓
@@ -478,7 +545,8 @@ revised authority
 A fresh runtime session should be able to continue from durable:
 
 - state;
-- Imported Research Package where relevant;
+- immutable archived Research revision(s) and lineage;
+- Research revision reports/carry-forward knowledge where relevant;
 - Planning checkpoints;
 - approvals;
 - Accepted Scope;
@@ -497,6 +565,9 @@ External Research chat replay must not be required.
 - Research/Scope: `RESEARCH_AND_SCOPE_MODEL.md`
 - Planning: `PLANNING_MODEL.md`
 - Runtime Lifecycle / Transitions: `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md`
+- Research Revision / Carry-Forward: `architecture/RESEARCH_REVISION_AND_CARRY_FORWARD.md`
+- Reporting / Human Review: `architecture/REPORTING_AND_HUMAN_REVIEW.md`
+- Agent Adapter Boundaries: `architecture/AGENT_ADAPTER_BOUNDARIES.md`
 - Trust / Input Boundaries: `architecture/TRUST_AND_INPUT_BOUNDARIES.md`
 - User Approval / Cost Control: `architecture/USER_APPROVAL_AND_COST_CONTROL.md`
 - Authority: `architecture/AUTHORITY_MODEL.md`

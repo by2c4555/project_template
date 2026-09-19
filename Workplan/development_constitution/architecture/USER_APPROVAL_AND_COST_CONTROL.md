@@ -273,6 +273,8 @@ The workflow should return to the correct Planning boundary.
 
 Do not throw away valid prior Research unnecessarily.
 
+Planning's `RESEARCH_REVISION_REQUIRED` outcome is **not** a user approval rejection. It is a semantic sufficiency return path to `AWAITING_RESEARCH`; importing a replacement Research revision does not itself constitute Scope Approval.
+
 ## 13. Scope Rejection
 
 ```text
@@ -380,7 +382,9 @@ Must reject:
 - replayed one-time approval;
 - approval for a superseded Planning Package;
 - using Scope Approval as Execution Approval;
-- using Execution Approval for material later expansion.
+- using Execution Approval for material later expansion;
+- treating Research submission/revision as Scope Approval;
+- treating `RESEARCH_REVISION_REQUIRED` as user rejection/cancellation.
 
 ## 21. Core Invariants
 

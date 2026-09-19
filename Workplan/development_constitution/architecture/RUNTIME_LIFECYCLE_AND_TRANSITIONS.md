@@ -12,6 +12,8 @@ It defines:
 - when active development Cycle authority exists;
 - when production execution authority exists;
 - required transition preconditions;
+- canonical state/stage and event vocabulary;
+- Research revision/awaiting-Research loop;
 - deterministic transition ownership;
 - pause/resume/cancel behavior;
 - blocked and exception continuations;
@@ -26,6 +28,7 @@ Architecture diagrams may use conceptual stage names such as:
 ```text
 IMPORT
 PLANNING_A
+AWAITING_RESEARCH
 SCOPE_APPROVAL_PENDING
 ACTIVE_CYCLE
 PLANNING_B
@@ -45,6 +48,58 @@ Implementation does **not** have to persist each name as a separate enum value.
 What is mandatory is that equivalent authority boundaries, preconditions, postconditions, and forbidden transitions are enforced deterministically.
 
 Do not create extra persisted lifecycle states merely to mirror documentation wording.
+
+### 2.1 Canonical Stage / Condition Dictionary
+
+The following names are normative conceptual meanings even when implementation persists equivalent fields rather than exact enum names:
+
+| Name | Kind | Required meaning |
+|---|---|---|
+| `IMPORT` | stage | Research Handoff is being structurally/trust validated |
+| `PLANNING_A` | stage | pre-Cycle Research sufficiency/finalization reasoning |
+| `AWAITING_RESEARCH` | condition | no valid continuation to Scope finalization until a new Research revision is imported |
+| `SCOPE_APPROVAL_PENDING` | condition | Draft Finalized Scope awaits bound user decision |
+| `ACTIVE_CYCLE` | authority condition | Accepted Scope is bound; active development Cycle authority exists |
+| `PLANNING_B` | stage | implementation Planning under Accepted Scope |
+| `EXECUTION_APPROVAL_PENDING` | condition | Validated Planning Package awaits bound user decision |
+| `PLAN_READY` | authority condition | production execution authority exists |
+| `EXECUTION` | stage | production Task/Phase work is active |
+| `EVALUATION` | stage | independent acceptance reasoning is eligible/active |
+| `CLOSURE_PREPARATION` | stage | closure knowledge is being prepared/validated |
+| `CLOSED_VALIDATED` | terminal authority state | successful runtime/Cycle has deterministically closed |
+| `PAUSED` | control condition | new controlled dispatch is prohibited until valid resume |
+| `BLOCKED` | control condition | required prerequisite/authority/evidence is unavailable |
+| `CANCELLED` | terminal/control condition | further runtime/Cycle authority is terminated without successful closure |
+
+### 2.2 Canonical Event Dictionary
+
+Equivalent implementation events must preserve these meanings:
+
+```text
+IMPORT_ACCEPTED
+IMPORT_REJECTED
+RESEARCH_SUFFICIENT
+RESEARCH_REVISION_REQUIRED
+RESEARCH_REVISION_IMPORTED
+SCOPE_APPROVED
+SCOPE_REJECTED
+SCOPE_REVOKED
+PLANNING_PACKAGE_VALID
+PLANNING_PACKAGE_INVALID
+EXECUTION_APPROVED
+EXECUTION_REJECTED
+MATERIAL_CHANGE_IDENTIFIED
+PAUSE_REQUESTED
+RESUME_REQUESTED
+CANCEL_REQUESTED
+ALL_REQUIRED_PHASES_PASS
+EVALUATION_ACCEPTED
+EVALUATION_BLOCKING
+FINALIZATION_PASS
+FINALIZATION_FAIL
+```
+
+Model output may propose semantic events such as `RESEARCH_SUFFICIENT` or Evaluation findings. Deterministic runtime owns the actual lifecycle transition and must validate required bindings/preconditions.
 
 ## 3. Transition Authority
 
@@ -76,14 +131,30 @@ Research Handoff
 
 Import / Structural + Trust Validation
     ↓
-Imported Research Package
+Immutable Archived Research Revision
+    ↓
+consumed package cleared from ingest
 
 ════════ PRE-CYCLE RUNTIME ══════
 
 Planning A
 Research Investigation & Finalization
-    ↓
-Draft Finalized Scope
+    │
+    ├─ RESEARCH_REVISION_REQUIRED
+    │      ↓
+    │  persist report + carry-forward knowledge
+    │      ↓
+    │  AWAITING_RESEARCH
+    │      ↓
+    │  new Research Handoff
+    │      ↓
+    │  new archived Research revision
+    │      ↓
+    │  Planning A revision / delta reconciliation
+    │
+    └─ RESEARCH_SUFFICIENT
+           ↓
+       Draft Finalized Scope
     ↓
 SCOPE_APPROVAL_PENDING
     ↓
@@ -149,19 +220,61 @@ Runtime ingress does not imply:
 
 Invalid import must fail closed and remain outside downstream Planning authority.
 
+A successful import must durably create/verify an immutable archived Research revision, bind runtime input to that revision, and clear the consumed package from `Workplan/ingest/` before Planning depends on the input.
+
+Ingest location is transport state, not durable Research identity.
+
 ## 6. Planning A / Pre-Cycle Runtime
 
 Planning A occurs inside Project Template runtime but before active development Cycle authority.
 
 Planning A may:
 
-- inspect imported Research;
+- inspect the current archived Research revision;
+- assess semantic Research sufficiency;
 - inspect current repository evidence;
 - investigate technical unknowns;
 - request focused user decisions;
 - produce Draft Finalized Scope.
 
 Planning A must not create executable Phase/Task/Builder authority.
+
+### 6.1 Research Revision Transition
+
+When Planning A determines that material missing, contradictory, stale, weak, or unavailable evidence prevents responsible Scope finalization:
+
+```text
+PLANNING_A
+    ↓
+RESEARCH_REVISION_REQUIRED
+    ↓
+persist Research Revision Required report
++ persist Planning carry-forward knowledge
++ preserve current Research/Planning history
+    ↓
+AWAITING_RESEARCH
+```
+
+`RESEARCH_REVISION_REQUIRED` is a normal controlled semantic outcome. It is not `SCOPE_REJECTED`, not user cancellation, and not an implementation failure.
+
+While `AWAITING_RESEARCH`, runtime must not create Accepted Scope or begin Planning B.
+
+A valid replacement Research Handoff must:
+
+```text
+create new Research revision identity
++ preserve predecessor lineage
++ archive/verify new input
++ clear consumed ingest package
++ create explicit new Planning revision/binding
++ reference prior carry-forward knowledge
+    ↓
+PLANNING_A
+```
+
+The prior Planning Work must not be silently rebound from the old Research digest to the new Research digest.
+
+Detailed knowledge/revision semantics are owned by `RESEARCH_REVISION_AND_CARRY_FORWARD.md`.
 
 ## 7. Scope Approval Transition
 
@@ -217,7 +330,20 @@ This validation proves structural/binding/traceability readiness.
 
 It does **not** replace Planning's semantic responsibility for architecture quality.
 
-Validation failure returns to Planning B or the correct earlier authority boundary.
+Validation failure must route according to the defect source:
+
+```text
+Planning-package structural/design defect
+    → PLANNING_B
+
+Accepted Scope/product-intent defect
+    → PLANNING_A / Scope revision boundary
+
+Research evidence defect that prevents responsible Scope correction
+    → RESEARCH_REVISION_REQUIRED → AWAITING_RESEARCH
+```
+
+Do not use an unspecified "earlier boundary" when the defect class is known.
 
 ## 10. Execution Approval Transition
 
@@ -423,7 +549,42 @@ A future Research process requires a new external action/request and eventually 
 
 Previous Cycle authority must never silently become authority for the new version.
 
-## 19. No Implicit Transition Rule
+## 19. Canonical Transition Matrix
+
+This matrix is normative at the semantic level. Exact persisted enum/command names may differ, but implementation and agents must not invent competing lifecycle routes.
+
+| ID | FROM | EVENT / PRECONDITION | TO / EFFECT |
+|---|---|---|---|
+| `L-001` | outside runtime | valid Research Handoff submitted | `IMPORT` |
+| `L-002` | `IMPORT` | `IMPORT_ACCEPTED` after structural/trust validation | archive immutable Research revision, clear ingest, enter `PLANNING_A` |
+| `L-003` | `IMPORT` | `IMPORT_REJECTED` | remain outside downstream Planning; persist rejection reason |
+| `L-010` | `PLANNING_A` | `RESEARCH_REVISION_REQUIRED` | persist report/carry-forward → `AWAITING_RESEARCH` |
+| `L-011` | `AWAITING_RESEARCH` | valid `RESEARCH_REVISION_IMPORTED` | new Research/Planning revision → `PLANNING_A` |
+| `L-012` | `PLANNING_A` | `RESEARCH_SUFFICIENT` + Draft Finalized Scope | `SCOPE_APPROVAL_PENDING` |
+| `L-020` | `SCOPE_APPROVAL_PENDING` | valid `SCOPE_APPROVED` | bind Accepted Scope → active Cycle / `PLANNING_B` |
+| `L-021` | `SCOPE_APPROVAL_PENDING` | `SCOPE_REJECTED` / material user change | Planning A revision; no Accepted Scope from rejected subject |
+| `L-030` | `PLANNING_B` | Candidate Planning Package produced | deterministic Planning Package Validation |
+| `L-031` | Planning Package Validation | `PLANNING_PACKAGE_VALID` | `EXECUTION_APPROVAL_PENDING` |
+| `L-032` | Planning Package Validation | package/design defect | `PLANNING_B` revision |
+| `L-033` | Planning Package Validation | Scope/product-intent defect | Planning A / Scope revision boundary |
+| `L-034` | Planning Package Validation | Research evidence defect preventing Scope correction | `AWAITING_RESEARCH` via Research revision path |
+| `L-040` | `EXECUTION_APPROVAL_PENDING` | valid `EXECUTION_APPROVED` + current bindings/no blocker | `PLAN_READY` |
+| `L-041` | `EXECUTION_APPROVAL_PENDING` | `EXECUTION_REJECTED` | Planning B revision, or Planning A if product intent changed |
+| `L-050` | `PLAN_READY` | valid execution dispatch | `EXECUTION` |
+| `L-051` | `EXECUTION` | bounded failure within authority | local Repair path |
+| `L-052` | `EXECUTION` | material change / exhausted/structural issue | Diagnosis/Recovery/Planning/owner path; affected dispatch stops |
+| `L-060` | execution/gates | `ALL_REQUIRED_PHASES_PASS` + no blocker/current bindings | `EVALUATION` |
+| `L-061` | `EVALUATION` | `EVALUATION_BLOCKING` | Diagnosis/Recovery/Planning as classified |
+| `L-062` | `EVALUATION` | accepted Evaluation result | `CLOSURE_PREPARATION` |
+| `L-070` | `CLOSURE_PREPARATION` | `FINALIZATION_PASS` | `CLOSED_VALIDATED`; runtime ends |
+| `L-071` | `CLOSURE_PREPARATION` | `FINALIZATION_FAIL` | remain unclosed; route to correct repair/blocked boundary |
+| `L-080` | runnable controlled stage | `PAUSE_REQUESTED` | safe durable `PAUSED` equivalent; no new controlled dispatch |
+| `L-081` | `PAUSED` | valid `RESUME_REQUESTED` after reconciliation | resume last valid authority/stage |
+| `L-082` | non-terminal runtime | `CANCEL_REQUESTED` | `CANCELLED` equivalent; no successful closure |
+
+Any transition not represented by this matrix or by an explicit subsystem exception contract must fail closed rather than be inferred from model prose.
+
+## 20. No Implicit Transition Rule
 
 When a required transition condition is:
 
@@ -438,12 +599,18 @@ do not infer success.
 
 Fail closed or enter an explicit blocked/pending condition.
 
-## 20. Core Invariants
+## 21. Core Invariants
 
 ```text
 External Research is outside runtime.
 
 Import starts runtime, not Cycle authority.
+
+Successful import archives immutable Research evidence, binds to archive, and clears consumed ingest input.
+
+Material Research insufficiency routes to AWAITING_RESEARCH without creating Scope authority.
+
+A replacement Research Handoff creates new Research/Planning revision identity; prior bindings are not silently rewritten.
 
 Accepted Scope binding starts active development Cycle authority.
 
@@ -451,7 +618,9 @@ Validated Planning Package + valid EXECUTION_APPROVAL are required for PLAN_READ
 
 PLAN_READY starts production execution authority.
 
-Models propose; deterministic runtime transitions.
+Models propose semantic outcomes; deterministic runtime validates and transitions.
+
+The canonical transition matrix controls cross-agent interpretation.
 
 User may pause or cancel controlled runtime work.
 

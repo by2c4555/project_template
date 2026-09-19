@@ -21,6 +21,7 @@ Planning Validation Authority
 Human Control Authority
 Evaluation Authority
 Closure Authority
+Agent Adapter Non-Authority
 ```
 
 ## 3. Product Authority
@@ -39,7 +40,11 @@ External Research does not own Product Authority.
 
 ## 4. Planning Authority
 
-Planning owns:
+Planning owns semantic Research sufficiency judgment and applicable:
+
+- `RESEARCH_SUFFICIENT` vs `RESEARCH_REVISION_REQUIRED` recommendation/output;
+
+Planning also owns:
 
 - final architecture;
 - constraints;
@@ -139,6 +144,28 @@ Independent Evaluation determines acceptance findings.
 
 Deterministic finalization owns `CLOSED_VALIDATED`.
 
+### 11.1 Agent Adapter Non-Authority
+
+Planner/Evaluation adapters may:
+
+- construct canonical provider context;
+- invoke an approved capable model/provider;
+- normalize/parse provider output;
+- validate adapter-level schema/protocol;
+- record provider/model provenance;
+- report invocation/format/capability failure.
+
+Adapters do **not** own:
+
+- Scope approval;
+- Planning Package deterministic validation;
+- lifecycle transition authority;
+- Task/Phase PASS;
+- production mutation authority;
+- deterministic closure.
+
+Changing provider/model through an adapter must not reinterpret already-bound execution authority. A changed plan requires explicit new Planning revision/binding.
+
 ## 12. Non-Authority Sources
 
 The following do not create authority by themselves:
@@ -170,6 +197,9 @@ When authority is revised:
 |---|---|
 | User intent | User |
 | External Research | Outside runtime |
+| Research revision identity/archive binding | Deterministic import/runtime |
+| Research semantic sufficiency | Planning |
+| Planner/Evaluation adaptation | Adapter boundary; normalization/invocation only |
 | Semantic Scope finalization | Planning |
 | Scope approval | User |
 | Accepted Scope binding | Deterministic Workplan |
@@ -187,4 +217,5 @@ When authority is revised:
 | Runtime pause/cancel | User |
 | Safe pause/cancel enforcement | Deterministic runtime |
 | Final acceptance reasoning | Independent Evaluation |
+| Human-facing report content/index | Presentation/reference surface; no authority |
 | CLOSED_VALIDATED | Deterministic finalization |

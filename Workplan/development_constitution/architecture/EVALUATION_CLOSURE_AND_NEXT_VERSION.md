@@ -29,6 +29,8 @@ Applicable:
 
 ## 4. Evaluation Responsibilities
 
+Independent Evaluation should be invoked through the canonical Evaluation Adapter boundary when provider/model abstraction is used. Adapter normalization does not change Evaluation authority.
+
 Independent Evaluation should:
 
 - verify actual repository outcome;
@@ -54,6 +56,8 @@ The evaluator:
 - must not weaken acceptance merely because implementation already consumed cost.
 
 A different model/provider may improve independence, but is not required by the Constitution.
+
+Changing Evaluation provider/model must not change the bound acceptance contract. The adapter must present the current canonical Scope/Planning/evidence inputs and normalize the result into the canonical Evaluation contract.
 
 The same underlying model may perform Evaluation only when invoked as a separate evaluation role/context with no production mutation authority and with current bound evidence.
 
@@ -140,6 +144,8 @@ Its exact file layout may vary, but deterministic finalization must verify that 
 Every `CLOSED_VALIDATED` Cycle must provide:
 
 #### Completion Report
+
+The normal human-facing completion report must be discoverable from the canonical `Workplan/reports/` surface and may reference authoritative closure artifacts rather than duplicating them.
 
 - what was implemented;
 - what was verified;
@@ -285,6 +291,8 @@ new Accepted Scope
 
 ## 11. Cross-Cycle Isolation
 
+Previous Research revisions, Research revision reports, and Planning carry-forward knowledge may remain reusable historical knowledge.
+
 Previous:
 
 - Scope;
@@ -314,6 +322,12 @@ Next-Version External Research
 new Research Handoff
     ↓
 next runtime import
+    ↓
+new immutable Research revision
+    ↓
+new Planning authority
+
+Prior Completion Knowledge and selected historical Research/carry-forward knowledge may reduce rediscovery cost, but do not become current authority.
 ```
 
 Project Template must not automatically spend model/token/tool cost on next-version Research merely because the previous Cycle closed.
@@ -340,6 +354,8 @@ Future version begins through a separately initiated new Research + Planning fin
 Evaluation is independent in authority and evidence posture.
 
 Required closure knowledge exists before CLOSED_VALIDATED.
+
+Normal human-facing closure/evaluation reports are discoverable from one canonical report surface and do not replace authority artifacts.
 
 Next-version Research does not auto-start.
 ```

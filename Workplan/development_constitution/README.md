@@ -12,6 +12,7 @@ This directory defines:
 
 - product identity and optimization goals;
 - external Research vs runtime boundaries;
+- Research revision, archival, and carry-forward semantics;
 - Planning responsibilities;
 - user approval and cost-control boundaries;
 - runtime authority;
@@ -20,6 +21,8 @@ This directory defines:
 - failure and repair;
 - Diagnosis and Recovery;
 - Evaluation and closure;
+- centralized human-facing reporting;
+- replaceable high-reasoning agent adapter boundaries;
 - next-version handoff;
 - durable state, binding, and resume;
 - context and token/cost discipline;
@@ -89,6 +92,9 @@ Workplan/development_constitution/
 │
 └─ architecture/
    ├─ RUNTIME_LIFECYCLE_AND_TRANSITIONS.md
+   ├─ RESEARCH_REVISION_AND_CARRY_FORWARD.md
+   ├─ REPORTING_AND_HUMAN_REVIEW.md
+   ├─ AGENT_ADAPTER_BOUNDARIES.md
    ├─ TRUST_AND_INPUT_BOUNDARIES.md
    ├─ USER_APPROVAL_AND_COST_CONTROL.md
    ├─ AUTHORITY_MODEL.md
@@ -114,12 +120,26 @@ Research Handoff
 
 Import / Structural Validation
     ↓
-Imported Research Package
+Immutable Archived Research Revision
+    ↓
+consumed package cleared from ingest
     ↓
 Planning A
 Research Investigation & Finalization
-    ↓
-Draft Finalized Scope
+    │
+    ├─ RESEARCH_REVISION_REQUIRED
+    │      ↓
+    │  Research revision report + carry-forward knowledge
+    │      ↓
+    │  AWAITING_RESEARCH
+    │      ↓
+    │  new Research Handoff / revision
+    │      ↓
+    │  Planning A revision / delta reconciliation
+    │
+    └─ RESEARCH_SUFFICIENT
+           ↓
+       Draft Finalized Scope
     ↓
 USER SCOPE APPROVAL
     ↓
@@ -178,6 +198,9 @@ new Research Handoff
 | External Research → Accepted Scope | `RESEARCH_AND_SCOPE_MODEL.md` |
 | Planning reasoning and implementation planning | `PLANNING_MODEL.md` |
 | Runtime lifecycle and transition semantics | `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md` |
+| Research revision/archive/carry-forward semantics | `architecture/RESEARCH_REVISION_AND_CARRY_FORWARD.md` |
+| Human-facing report surface and report history | `architecture/REPORTING_AND_HUMAN_REVIEW.md` |
+| Planner/Evaluation adapter and provider boundaries | `architecture/AGENT_ADAPTER_BOUNDARIES.md` |
 | Trust, untrusted input, instruction/data boundary | `architecture/TRUST_AND_INPUT_BOUNDARIES.md` |
 | User approvals and cost/authority envelopes | `architecture/USER_APPROVAL_AND_COST_CONTROL.md` |
 | Runtime authority ownership | `architecture/AUTHORITY_MODEL.md` |
@@ -209,8 +232,9 @@ If two constitutional files appear inconsistent:
 
 1. preserve the higher-level product intent in `OBJECTIVE.md`;
 2. use `REFERENCE_ARCHITECTURE.md` for whole-system integration;
-3. use the specific detailed architecture module as owner of subsystem semantics;
-4. report the conflict rather than silently choosing a new architecture.
+3. `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md` owns lifecycle transition interpretation whenever another module can be read as implying a competing transition;
+4. use the specific detailed architecture module as owner of non-transition subsystem semantics;
+5. report any remaining conflict rather than silently choosing a new architecture.
 
 ## Update Rule
 

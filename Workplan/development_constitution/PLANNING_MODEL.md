@@ -65,11 +65,12 @@ Planning must never treat Research confidence, volume, or recommendation as a su
 
 Applicable inputs:
 
-- Imported Research Package;
+- current immutable archived Research revision / Imported Research Package;
 - Scope Candidate;
 - Research Knowledge;
 - current repository baseline;
 - prior completion knowledge where relevant;
+- prior Research revision report/carry-forward knowledge where relevant;
 - user decisions;
 - Planning revision issue/evidence;
 - deterministic bindings.
@@ -78,13 +79,17 @@ Applicable inputs:
 
 ### 5.1 Early Decision-Blocker Triage
 
-Before spending substantial strong-model reasoning on deep technical investigation, Planning should identify obvious material `USER_DECISION_REQUIRED` items.
+Before spending substantial strong-model reasoning on deep technical investigation, Planning should first assess whether the active Research revision is sufficiently complete and coherent to justify Planning finalization.
+
+If material missing, contradictory, stale, weak, or unavailable evidence would require Planning to reproduce substantial External Research, Planning should stop the expensive path and return `RESEARCH_REVISION_REQUIRED` with durable focused findings.
+
+Planning should also identify obvious material `USER_DECISION_REQUIRED` items.
 
 If a user decision could materially invalidate or redirect expensive downstream investigation, Planning should request that focused decision early.
 
 Do not ask low-value questions merely to avoid reasonable Planning decisions.
 
-After blocker triage, Planning should:
+After sufficiency/blocker triage, Planning should:
 
 1. identify material product objective;
 2. identify observable required behavior;
@@ -143,6 +148,24 @@ EXTERNAL_BLOCKER
 
 No important unknown should remain an invisible assumption.
 
+### 7.1 Research Revision Required
+
+When the current Research revision is materially insufficient, Planning A should produce durable equivalent information containing:
+
+- source Research revision/digest;
+- verified findings worth preserving;
+- material gaps;
+- contradictions/stale claims;
+- focused evidence required from new Research;
+- safe Planning decisions that remain valid;
+- work that should not be repeated;
+- relevant provenance;
+- latest safe Planning checkpoint.
+
+This result is knowledge and workflow evidence. It is not Accepted Scope, Planning execution authority, or user approval.
+
+Detailed semantics are owned by `architecture/RESEARCH_REVISION_AND_CARRY_FORWARD.md`.
+
 ## 8. User Decision Boundary
 
 Planning decides technical HOW.
@@ -165,12 +188,26 @@ After incorporating the answer, Planning A must produce/revise the Draft Finaliz
 
 ## 9. Planning A Output
 
+Planning A has two normal semantic outcomes.
+
+Sufficient Research:
+
 ```text
+RESEARCH_SUFFICIENT
 Draft Finalized Scope
 Finalized Research Knowledge
 Material Decision Record
 Remaining Non-Blocking Uncertainty
 Evidence/Provenance References
+```
+
+Insufficient Research:
+
+```text
+RESEARCH_REVISION_REQUIRED
+Research Revision Required Report
+Planning Carry-Forward Knowledge
+Latest Safe Planning Checkpoint
 ```
 
 ## 10. Scope Approval Handoff
@@ -347,7 +384,18 @@ Validated Planning Package
 
 This validator does not judge architecture quality or replace Planning semantic responsibility.
 
-Validation failure routes back to Planning B or the correct earlier boundary.
+Validation failure must route according to the defect source, not by vague fallback:
+
+```text
+Planning-package structural/design defect
+    → Planning B revision
+
+Accepted Scope/product-intent defect
+    → Planning A / Scope revision boundary
+
+Research evidence defect that prevents responsible Scope correction
+    → RESEARCH_REVISION_REQUIRED / AWAITING_RESEARCH
+```
 
 ## 21. Execution Approval Handoff
 
@@ -374,7 +422,9 @@ Useful logical checkpoints include:
 
 ```text
 RESEARCH_REVIEW_STARTED
+RESEARCH_SUFFICIENCY_ASSESSED
 MATERIAL_UNKNOWNS_CLASSIFIED
+RESEARCH_REVISION_REQUIRED / AWAITING_RESEARCH when applicable
 RESEARCH_FINALIZATION_COMPLETE
 SCOPE_APPROVAL_PENDING
 SCOPE_ACCEPTED
@@ -391,11 +441,14 @@ Exact names belong to implementation.
 
 A fresh Planning session should continue from durable artifacts and checkpoints, not external chat replay.
 
+When a new Research revision supersedes an insufficient prior revision, resume must use explicit new Research/Planning identity and delta reconciliation against preserved carry-forward knowledge. It must not silently rebind the prior Planning Work to the new Research digest.
+
 ## 24. Planning Revision
 
 Revision must preserve:
 
 - issue identity;
+- source Research revision/digest and predecessor lineage where applicable;
 - previous authority;
 - reason for revision;
 - changed decisions;
@@ -409,6 +462,8 @@ Do not:
 
 - blindly trust Research;
 - blindly repeat all Research;
+- absorb substantial missing External Research merely to avoid returning `RESEARCH_REVISION_REQUIRED`;
+- silently replace the Research digest of existing Planning Work;
 - create Tasks before Scope finalization/approval;
 - invent product requirements;
 - over-plan trivial work;
@@ -438,6 +493,12 @@ Execution approval precedes PLAN_READY.
 Planning reuses strong Research.
 
 Planning selectively verifies material Research.
+
+Planning may reject materially insufficient Research through the explicit Research revision path.
+
+Research revision resume preserves verified knowledge without preserving stale authority.
+
+Changing Planner model/provider does not reinterpret already-bound Planning/Execution authority; changed Planning requires a new Planning revision.
 
 Planning owns technical HOW.
 
