@@ -76,7 +76,9 @@ def _validate_project_details_text(text: str, strict_research: bool):
 
 
 def validate(source_root: Path | None = None, write_receipt=True, allow_accepted=False, strict_research=True):
-    source_root = Path(source_root or INGEST_DIR)
+    # Resolve to canonical long path so relative_to(ROOT) succeeds on Windows
+    # even when source_root originates from tempfile (which may use 8.3 short names).
+    source_root = Path(source_root or INGEST_DIR).resolve()
     pd = source_root / 'project_details.md'
     if not pd.is_file():
         raise SystemExit('INGEST: BLOCKED\nmissing project_details.md')

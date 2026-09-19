@@ -6,7 +6,7 @@ import tempfile
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
-HEADER = '> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and apply this guidance; modification requires explicit repository-owner authorization covering the change.'
+HEADER = '> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.'
 DOCUMENTS = {
     'README.md', 'OBJECTIVE.md', 'REFERENCE_ARCHITECTURE.md', 'GOVERNANCE_AND_TERMINOLOGY.md',
     'DEVELOPMENT_PROMPT.md', 'CONFORMANCE.md', 'PLANNING_MODEL.md',
@@ -47,6 +47,13 @@ def check_documents(root=ROOT):
     readme_path = directory / 'README.md'
     readme = readme_path.read_text(encoding='utf-8') if readme_path.is_file() else ''
     indexed = set(LINK.findall(readme))
+    # Constitution v1.2: architecture docs are catalogued in REFERENCE_ARCHITECTURE.md
+    # (concern-ownership table) rather than linked directly from README. Accept either.
+    refarch_path = directory / 'REFERENCE_ARCHITECTURE.md'
+    refarch = refarch_path.read_text(encoding='utf-8') if refarch_path.is_file() else ''
+    all_indexed = indexed | set(LINK.findall(refarch))
+    # Entry-point organizer docs are exempt: requiring them to self-appear is circular.
+    ENTRY_DOCS = {'README.md', 'REFERENCE_ARCHITECTURE.md', 'GOVERNANCE_AND_TERMINOLOGY.md'}
     for name in sorted(actual):
         path = directory / name
         text = path.read_text(encoding='utf-8')
@@ -57,9 +64,13 @@ def check_documents(root=ROOT):
             errors.append(f'{name}: missing document title')
         if len(re.findall(r'^```', text, re.M)) % 2:
             errors.append(f'{name}: unclosed fenced block')
+<<<<<<< HEAD
         # Detailed architecture owners are indexed by the documented
         # ``architecture/*.md`` family entry rather than 14 noisy links.
         if name != 'README.md' and name not in indexed and not name.startswith('architecture/'):
+=======
+        if name not in ENTRY_DOCS and name not in all_indexed:
+>>>>>>> db11106825d8aa6c39df56cf48253324dfc31b3a
             errors.append(f'{name}: absent from entry-point reading map')
         errors.extend(link_errors(path, text, root))
     for name, prefix in [('CONFORMANCE.md', 'C'), ('architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md', 'L')]:
