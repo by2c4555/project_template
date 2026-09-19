@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Execution Model
 
@@ -18,6 +18,8 @@ PLAN_READY
 
 ## 2. Environment
 
+Current reference integration (one execution profile, not a portable-core requirement):
+
 ```text
 VS Code
 +
@@ -27,6 +29,8 @@ ExecutionManager
 +
 Builder
 ```
+
+Agent/model brands do not define authority. An alternative integration must demonstrate the same role separation, ticket validation, mutation enforcement, evidence capture, and resume controls before it is supported under `CONFORMANCE.md`. Do not assume availability merely because an agent can read this specification.
 
 ## 3. Execution Hierarchy
 
@@ -73,6 +77,8 @@ Builder owns bounded execution:
 - evidence production.
 
 Builder must stop on unexpected failure.
+
+An expected negative-test result is not an unexpected failure. Interpret outcomes against the bound check's acceptance criterion; stop when the result invalidates the authorized strategy, exceeds authority, or leaves mutation/evidence uncertain.
 
 Builder mutation authority covers **actual side effects**, not only direct edits or the command text.
 
@@ -125,7 +131,9 @@ External side effects require separately appropriate authority; repository mutat
 
 ## 8. Fresh Attempt Rule
 
-Every Builder dispatch creates a fresh Attempt.
+Every new Builder implementation dispatch creates a fresh Attempt.
+
+Here, dispatch means authorization of a new implementation attempt. Reacquiring an interrupted, still-valid Attempt is resume: keep its identity and consumed repair budget, advance the writer generation as required, and reconcile existing effects before continuing. It must not replay uncertain commands or hide a new repair under the old Attempt.
 
 Never overwrite previous failed Attempt evidence.
 
@@ -152,3 +160,5 @@ Resume must validate current bindings and repository state before issuing new wo
 Execution completes only when all required Phase Gates pass and no blocking issue remains.
 
 Then Independent Evaluation becomes eligible.
+
+Conformance coverage: `C-008`, `C-009`, `C-011`, `C-013`, `C-021`.

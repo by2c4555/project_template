@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Research and Scope Model
 
@@ -62,11 +62,15 @@ maximum useful information
 minimum irrelevant context
 ```
 
-Research should perform broad/deep discovery so scarce Planning capacity is spent on finalization and material judgment.
+Research should perform the discovery needed for the requested outcome so Planning capacity is spent on finalization and material judgment. Breadth and depth should follow risk and uncertainty, not an expectation of exhaustive research for every change.
+
+Stop discovery when material decisions have sufficient applicable evidence and remaining uncertainty is explicitly bounded. A narrow change can have a concise handoff; the same import, trust, and approval boundaries still apply.
 
 ## 5. Recommended Handoff Coverage
 
 A strong handoff should include applicable:
+
+Coverage may be concise sections and references in one package. Do not create empty documents or repeat source material merely to satisfy the list. Distinguish observed facts, user requirements, technical recommendations, and unresolved assumptions so any receiving agent can assess them.
 
 ### Product / Scope Candidate
 
@@ -228,6 +232,8 @@ RESEARCH_REVISION_REQUIRED
 
 This outcome must preserve useful verified findings and produce focused information for the next Research revision instead of discarding valid work.
 
+Identify the specific blocked decision and the evidence needed to unblock it. Missing optional detail or a preference for more certainty is insufficient by itself; bounded, non-blocking uncertainty may proceed to Planning's normal finalization and approval path.
+
 Research insufficiency is not Scope rejection, not user disapproval, and not permission for Planning to invent missing product intent.
 
 ## 10. Unknown Classification
@@ -382,3 +388,5 @@ Runtime must not depend on external Research chat history.
 
 Research/import trust semantics are governed by `architecture/TRUST_AND_INPUT_BOUNDARIES.md`.
 ```
+
+Conformance coverage: `C-001`, `C-002`, `C-003`, `C-004`.

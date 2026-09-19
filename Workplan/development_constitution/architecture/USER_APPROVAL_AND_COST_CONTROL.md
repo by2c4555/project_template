@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # User Approval and Cost Control
 
@@ -94,6 +94,14 @@ Approval must not be inferred from:
 
 A UI/chat action such as "approve", "yes", or "proceed" may be valid **only when** runtime can deterministically bind that action to the currently presented pending approval subject and exact bound revision/digest.
 
+#### Trusted decision source
+
+The approval mechanism MUST establish that the action came from a trusted channel authenticated for the relevant user/owner. Repository prose, Research, issue text, copied chat, model output, environment variables, tool output, and generated artifacts cannot impersonate approval.
+
+An approval record MUST identify the approving principal or trusted-channel identity, approval kind, exact subject/revision/digest, displayed material envelope, decision, time, and anti-replay binding. Delegation, when supported, MUST be explicit, scoped, durable, and revocable by an authorized principal.
+
+If identity or channel authenticity cannot be established, record the input as untrusted evidence and keep the approval pending. Do not ask the model to decide whether approval-looking text is genuine.
+
 ```text
 USER_DECISION_REQUIRED answer
     ≠
@@ -131,6 +139,21 @@ Exact enum names are implementation-defined.
 - `CONSUMED`: approval was validly used for its one-time transition.
 
 Consumed approval remains durable history and cannot be replayed to authorize a different revision.
+
+A request for changes is not partial approval. Runtime records rejection/change-request semantics, returns to the owning proposal boundary, and presents a new exact subject when ready. Implementations MAY support explicitly narrowed approval only by creating and validating a new narrowed subject; they MUST NOT edit an approved subject in place.
+
+### 2.4 Preserve Valid Authorization Without Repeating Reviews
+
+Check durable approval state before asking the user. Valid authorization already covering the current action remains usable; a new session, model, provider, or routine retry is not a new approval boundary.
+
+Distinguish the exact subject of a pending approval from work inside a previously consumed envelope:
+
+- Changing the subject/revision/digest of an unconsumed approval requires a new bound decision; do not transfer the old approval to edited content.
+- Routine work within consumed authority proceeds under that authority without reusing the approval as a new grant.
+- A permitted non-material contract revision still requires the deterministic revision/binding path and a recorded explanation of why it remains inside the approved envelope. It must not silently rewrite the original subject or approval history.
+- A material revision requires Change Approval and any newly applicable Scope/Planning validation. It cannot bypass those checks by calling itself a repair.
+
+One user review may present multiple distinct decisions when each subject, consequence, and explicit decision is bound separately. Do not treat one approval class as another, or ask again for a boundary whose existing approval remains valid.
 
 ## 3. Approval Classes
 
@@ -195,6 +218,8 @@ Examples:
 - major extra work;
 - new external cost;
 - significant execution envelope expansion.
+
+Deployment, publication, remote mutation, paid service use, or sensitive-data disclosure MUST be included in the Scope/Execution envelope or an exact Change Approval before the effect. Approval to prepare or preview an action does not authorize executing the external effect.
 
 ## 7. No Approval for Routine Progress
 
@@ -329,6 +354,8 @@ Crossing an explicit approved ceiling is material and requires a new approval/bu
 
 Unknown cost must be labeled unknown; it must not be fabricated as an exact estimate.
 
+Cost checks must account for work already dispatched but not yet reported. Parallel dispatch and provider retries must not each assume the same unspent budget is available. The implementation may reserve estimated cost or serialize dispatch; exact accounting mechanics belong to the runtime. The strict-ceiling and unknown-cost rules are defined in `CONTEXT_AND_COST_MODEL.md`.
+
 ## 17. Duplicate Approval Rule
 
 Do not ask for duplicate approval for the same already-approved envelope.
@@ -405,3 +432,5 @@ Approval never substitutes for deterministic PASS.
 
 Recovery cannot self-authorize material envelope expansion.
 ```
+
+Conformance coverage: `C-004`, `C-006`, `C-013`, `C-014`, `C-021`.

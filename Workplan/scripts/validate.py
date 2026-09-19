@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import configparser, json, os, subprocess, sys
+import configparser, json, os, runpy, subprocess, sys
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -48,9 +48,12 @@ if (W/'VERSION').is_file() and (W/'VERSION').read_text().strip()!=EXPECTED_VERSI
     errors.append(f'VERSION must be {EXPECTED_VERSION}')
 
 contains('README.md',['Project Template v5.3.2','Cycle -> Phase -> Task -> Attempt','WORKPLAN_NEXT','Project Builder Local','development_constitution','MIGRATION_V5_3_1_TO_V5_3_2.md'])
-contains('Workplan/development_constitution/OBJECTIVE.md',['AI-assisted software-development control plane','Cycle -> Phase -> Task -> Attempt','External Diagnosis is reasoning-only','hard maximum is **5 local Repair Attempts'])
-contains('Workplan/development_constitution/REFERENCE_ARCHITECTURE.md',['VS CODE COPILOT AGENT ONLY','Manager Diagnosis #5','Builder REPAIR #5','External Diagnosis','CLOSED_VALIDATED'])
-contains('Workplan/development_constitution/DEVELOPMENT_PROMPT.md',['CONSTITUTION_CHANGE_REQUIRED','Do not make the constitution follow the latest patch'])
+# Check the complete constitution and its navigation without freezing obsolete prose.
+# These checks establish document consistency, never runtime conformance.
+try:
+    checker = runpy.run_path(str(W/'tests/run_constitution_hardening.py'))
+    errors.extend(checker['check_documents'](ROOT))
+except Exception as e: errors.append(f'constitution document validation error: {e}')
 contains('Workplan/ENTRY_PROMPT.md',['v5.3.2','exact literal token','EXECUTE_IMPLEMENTATION','EXECUTE_RECOVERY','WORKPLAN_NEXT'])
 contains('Workplan/MIGRATION_V5_2_TO_V5_3.md',['schema 6','in-flight v5.2','implicit `PHASE_001`','Do not silently upgrade'])
 contains('Workplan/MIGRATION_V5_3_0_TO_V5_3_1.md',['schema 6','Project Builder Local','EXTERNAL_RESEARCH_PROTOCOL_V1','migrate_v530_to_v531.py'])

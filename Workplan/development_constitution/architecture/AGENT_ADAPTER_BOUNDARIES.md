@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Agent Adapter Boundaries
 
@@ -62,6 +62,22 @@ Evaluation Adapter may own equivalent:
 
 It must preserve Evaluation independence in authority/evidence posture.
 
+## 4.1 Role capability contract
+
+An adapter MUST select from an approved role configuration, not from provider marketing, price, or model self-assessment. The configuration MUST state applicable:
+
+- supported input/output contract and context limits;
+- required structured-output reliability and validation behavior;
+- reasoning responsibilities and prohibited authority;
+- tool, network, data-class, and mutation restrictions;
+- baseline/binding and provenance handling;
+- timeout, retry, cost, and fallback policy;
+- known limitations and evidence establishing suitability for the role.
+
+Suitability evidence MAY include representative evaluations, prior verified operation, or an owner-approved configuration review. It MUST cover the material failure modes of the assigned role. A provider/model change requires compatibility validation against the same contract; it does not require user approval when an already approved equivalent fallback and cost envelope cover it.
+
+If no configured option satisfies the role contract, block the invocation or request owner action. A weaker model MAY perform a narrower reclassified task only after Planning/runtime explicitly narrows the task and preserves all higher-level authority requirements.
+
 ## 5. Adapter Prohibitions
 
 Planner/Evaluation adapters do not own:
@@ -122,9 +138,23 @@ fail closed into the appropriate retry/blocked/revision path.
 
 Do not infer lifecycle authority from partial provider output.
 
+### 9.1 Transport Success Is Not Semantic Success
+
+Keep invocation/format outcomes distinct from Planning/Evaluation outcomes. A successful API call with valid JSON may still contain insufficient Research, an unresolved product decision, or a blocking Evaluation finding. Conversely, a provider timeout is not evidence that implementation failed.
+
+The adapter must preserve the provider result's meaning when normalizing it. It must not invent missing acceptance evidence, convert uncertainty into PASS, discard blocking findings, or retry until a favorable answer replaces an unfavorable valid result. A malformed result may be retried only under the applicable bounded retry/cost policy; valid semantic rejection returns to the owning lifecycle path.
+
+### 9.2 Durable Invocation Contract
+
+Each invocation must identify its role, canonical input/schema version, current artifact/baseline bindings, permitted capabilities, expected output contract, and applicable cost/retry limits. Preserve provider/model provenance, invocation identity, normalized outcome, and references to relevant returned evidence. Retain or redact provider payloads according to the trust/data rules; provenance is not a reason to store secrets.
+
+Before accepting returned output, runtime rechecks current bindings and control conditions. A response from an outdated generation, cancelled invocation, or superseded input is historical evidence rather than current authority. A provider's conversation continuity cannot waive these checks.
+
+Input artifacts and provider-generated instructions remain untrusted data under `TRUST_AND_INPUT_BOUNDARIES.md`. Capability configuration must be enforced at the tool/execution boundary; a prompt saying "read only" is not sufficient enforcement of that boundary.
+
 ## 10. Execution Plane Boundary
 
-Production implementation remains in the VS Code Copilot execution plane described by the Reference Architecture and Execution Model.
+Production implementation uses a supported execution profile described by the Reference Architecture and Execution Model. The current reference profile is the VS Code Copilot execution plane.
 
 External Planner/Evaluation provider interchangeability does not grant those external high-reasoning agents production mutation authority.
 
@@ -135,7 +165,7 @@ Planning / Evaluation
     = replaceable high-reasoning provider behind adapter
 
 Execute Implementation
-    = VS Code Copilot execution plane
+    = supported execution profile (currently VS Code Copilot reference profile)
 
 Deterministic Workplan
     = lifecycle/authority/gates/bindings
@@ -156,5 +186,7 @@ changing Evaluator does not change acceptance requirements
 
 provider session memory is not workflow authority
 
-production mutation remains in the authorized VS Code execution plane
+production mutation remains in an authorized conformant execution profile
 ```
+
+Conformance coverage: `C-015`, `C-016`, `C-019`, `C-021`.

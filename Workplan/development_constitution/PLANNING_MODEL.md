@@ -1,10 +1,10 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Planning Model
 
 ## 1. Purpose
 
-Planning is the strongest normal reasoning stage inside Project Template runtime.
+Planning owns the material semantic reasoning inside Project Template runtime and requires capability sufficient for that responsibility. This role does not depend on a specific agent, model, provider, or price tier.
 
 Canonical Planning:
 
@@ -40,6 +40,8 @@ Planning = maximize decision quality
 ```
 
 Planning should not redo Research without material reason.
+
+Scale planning detail to the change's risk, uncertainty, and dependencies. A small bounded change may use one Task, an implicit Phase, and concise sections in the existing Planning Package. Broader changes need enough decomposition to control integration and recovery. This changes document depth, never required approvals, bindings, gates, or evidence.
 
 ### 3.1 Semantic Responsibility Rule
 
@@ -88,6 +90,8 @@ Planning should also identify obvious material `USER_DECISION_REQUIRED` items.
 If a user decision could materially invalidate or redirect expensive downstream investigation, Planning should request that focused decision early.
 
 Do not ask low-value questions merely to avoid reasonable Planning decisions.
+
+Continue independent investigation that an unresolved user decision cannot invalidate. State ordinary, reversible technical assumptions in the existing decision record; do not convert them into product blockers or new approval requests.
 
 After sufficiency/blocker triage, Planning should:
 
@@ -147,6 +151,8 @@ EXTERNAL_BLOCKER
 ```
 
 No important unknown should remain an invisible assumption.
+
+For a remaining material unknown, state its effect on the next decision, how it will be resolved or bounded, and whether it blocks that decision. Non-blocking uncertainty does not justify an indefinite Research/Planning loop.
 
 ### 7.1 Research Revision Required
 
@@ -293,6 +299,8 @@ Tasks should be:
 - verifiable;
 - suitable for a lower-cost Builder.
 
+Prefer a coherent, observable outcome per Task. Split work when dependencies, authority, verification, or recovery benefit; do not create a Task per file or a separate agent merely to fill a role label. Any parallel work still requires valid tickets and safe mutation coordination.
+
 ## 15. Authorized Path Design
 
 Authorized paths must be minimal sufficient and bound to Task authority.
@@ -321,6 +329,8 @@ Planning may define:
 - regression checks.
 
 Verification must map to acceptance.
+
+Describe the observable result each required check establishes and its relevant failure cases. Check selection should follow behavior and risk, not implementation resemblance or a fixed test count. Reuse existing suitable checks; record environmental prerequisites and limitations so another agent can reproduce the result.
 
 ## 18. Evidence Design
 
@@ -370,7 +380,7 @@ Before execution approval, deterministic validation must establish applicable st
 - generation/repository binding matches;
 - material Scope coverage is represented;
 - Phase/Task graph references are valid;
-- dependencies resolve;
+- dependencies resolve and the execution dependency graph is acyclic;
 - authorized paths are valid/bounded;
 - verification/evidence contracts exist where required;
 - blocking unknowns/issues are not silently omitted;
@@ -456,6 +466,10 @@ Revision must preserve:
 - supersession of stale authority;
 - whether re-approval is required.
 
+If Accepted Scope changes, Planning MUST use the Scope-revision transition family in `architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md`: suspend affected downstream dispatch, create a successor Scope subject, obtain new Scope Approval, revise and validate the Planning Package, and obtain applicable execution authority. Prior Task/Phase results remain history and are current only after recorded impact analysis.
+
+If Scope is unchanged but Planning changes, create a successor Planning revision and generation, invalidate affected tickets/evidence, rerun deterministic package validation, and apply materiality against the previously approved execution envelope. “Non-material” does not permit editing an approved package in place.
+
 ## 25. Anti-Patterns
 
 Do not:
@@ -480,7 +494,7 @@ Planning is optimized for decision correctness.
 
 Planning may reuse Research, but cannot delegate final semantic responsibility to Research.
 
-Planning is strongest normal runtime reasoning.
+Planning requires capability sufficient for material semantic reasoning.
 
 Scope approval precedes Accepted Scope authority.
 
@@ -504,3 +518,5 @@ Planning owns technical HOW.
 
 Planning does not own deterministic PASS.
 ```
+
+Conformance coverage: `C-003`, `C-005`, `C-010`, `C-014`, `C-015`.

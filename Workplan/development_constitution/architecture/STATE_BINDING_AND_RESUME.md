@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # State, Binding, and Resume
 
@@ -8,7 +8,9 @@ Defines durable state, immutable bindings, generation fencing, checkpoints, and 
 
 ## 2. Durable Truth
 
-Repository/filesystem state is durable truth.
+Repository/filesystem state preserves durable evidence and canonical authority records.
+
+Only validated canonical state carries authority. Arbitrary files, partially written records, and agent summaries are not authoritative merely because they are durable.
 
 Chat/session context is disposable.
 
@@ -115,9 +117,38 @@ Generation must prevent stale sessions/agents from completing or mutating newer 
 
 Production mutation on the same active authority must be serialized, leased, generation-fenced, or otherwise conflict-detected so two sessions cannot both validly mutate as the current writer.
 
-A stale writer must fail before authoritative completion and should be prevented from mutation where implementation can enforce that boundary.
+A stale writer must fail before authoritative completion. Current generation/writer authority must also be enforced at the shared mutation or promotion boundary. A lease expiry alone cannot stop an already running command; do not give a replacement writer access to the same mutable state until the old writer is stopped or isolated and its effects are reconciled.
+
+If an environment cannot enforce the required writer boundary, the affected concurrent mutation is unsupported. Use serialized or isolated execution, or block it; do not present completion-time rejection as prevention of stale writes.
 
 Generation/lease recovery must not silently transfer authority without durable state.
+
+### 5.1 Crash-Consistent Transitions
+
+Authority-changing transitions must validate the expected prior revision/generation and publish a complete successor state. Readers must see either the previous valid state or the complete new state, never partially granted authority.
+
+Use atomic persistence or a recoverable transaction protocol appropriate to the storage. Persist transition identity and enough intent/result information to reconcile an interrupted operation without consuming an approval twice, issuing duplicate work, or silently skipping a gate.
+
+Import must retain the verified archive and durable binding before clearing the exact consumed ingest content. If cleanup is interrupted, resume that cleanup without importing a duplicate revision or deleting newly submitted input.
+
+These are required outcomes, not a requirement for a particular database or event-sourcing framework.
+
+### 5.2 Record disagreement and recovery authority
+
+Implementation MUST designate one canonical commit rule for an authority transition and enough durable recovery metadata to distinguish `PREPARED`, `COMMITTED`, `ABORTED`, and `UNKNOWN` outcomes or equivalents.
+
+When state, event history, approval history, artifacts, or external receipts disagree:
+
+1. freeze the affected transition and dependent dispatch;
+2. preserve every conflicting record without rewriting history;
+3. verify integrity, transition/operation identity, expected predecessor, generation, and external effect;
+4. apply the designated commit rule to reconstruct only a result supported by evidence;
+5. publish a reconciliation record explaining the chosen authority and superseded/invalid records;
+6. resume only after current bindings and control conditions validate.
+
+No agent may resolve disagreement by selecting the most advanced state, replaying approval, or trusting the newest timestamp alone. If evidence cannot establish a unique valid outcome, retain `UNKNOWN`/blocked status and require the owning recovery or human boundary.
+
+An event log may be audit evidence, a recovery journal, or canonical state according to implementation, but that role MUST be declared. Two stores MUST NOT both be treated as independently authoritative when they can diverge.
 
 ## 6. Approval and Human-Control State
 
@@ -157,7 +188,9 @@ When Research is returned for revision, durable state should preserve applicable
 
 ## 8. Attempt History
 
-Every Builder dispatch creates a durable Attempt record.
+Every new Builder implementation dispatch creates a durable Attempt record.
+
+Record the Attempt identity, authority bindings, and dispatch intent before starting work. Distinguish work that was never dispatched from dispatched work whose outcome is unknown. A transport timeout is not evidence that execution did not start.
 
 Failed Attempts remain historical evidence.
 
@@ -187,7 +220,13 @@ A branch name alone is insufficient.
 
 If the workspace contains uncommitted or generated changes, baseline identity must include an equivalent durable content digest/manifest or other mechanism that distinguishes the actual working state from the underlying commit.
 
+Record existing relevant changes before mutation so they are not misattributed to an Attempt or overwritten during repair. Concurrent or unexpected content changes require reconciliation before dependent work resumes.
+
+Gate and Evaluation evidence must identify the relevant content state it checked. Later changes to that content or its verification inputs invalidate affected acceptance evidence. Re-run affected checks or record a justified independence assessment; unchanged unrelated files do not require a full verification restart.
+
 Potentially non-idempotent commands or external side effects must not be blindly replayed after uncertain interruption.
+
+Use a stable operation identity or destination-supported idempotency key where available, and inspect the actual result before retrying. When the result cannot be established, preserve an unknown outcome and block dependent action rather than declaring success or retrying by guess.
 
 ## 12. Pause / Interrupted-Action Resume
 
@@ -215,6 +254,8 @@ A fresh session must determine:
 - whether finalization completed;
 - whether `CLOSED_VALIDATED` is valid;
 - whether Completion Knowledge Package exists and matches final baseline.
+
+Finalization must compare the evaluated baseline with the current relevant repository state and publish closure through the crash-consistent transition rules above. Preparing completion artifacts must not silently change the production content that Evaluation accepted.
 
 ## 14. Cross-Machine / Provider Resume
 
@@ -257,3 +298,5 @@ closure package binding is part of closure truth
 
 resume depends on durable state, not chat
 ```
+
+Conformance coverage: `C-002`, `C-009`, `C-013`, `C-017`, `C-019`.

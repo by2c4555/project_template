@@ -1,10 +1,12 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Authority Model
 
 ## 1. Purpose
 
 This document defines who owns which runtime decisions and what cannot create authority.
+
+The Development Constitution is guidance for implementing Project Template. Authority during a user project's runtime comes from the current accepted contracts and deterministic transitions described here; reading this document does not issue execution authority.
 
 ## 2. Authority Classes
 
@@ -65,6 +67,8 @@ Builder may mutate production only under current valid bounded ticket authority.
 
 Builder capability does not expand mutation authority.
 
+Repository mutation authority excludes the control state that authorizes the current Attempt. Builder may submit candidate outputs, but only designated runtime transitions may issue authoritative tickets, approval records, bindings, evidence records, or gate results. `TRUST_AND_INPUT_BOUNDARIES.md` owns this separation.
+
 ## 6. Lifecycle Transition and Fail-Closed Authority
 
 Deterministic Workplan owns lifecycle transition authority.
@@ -118,6 +122,8 @@ Task Gate owns Task PASS.
 Phase Gate owns Phase PASS.
 
 No AI role may self-grant these states.
+
+Deterministic gates establish compliance with the bound checks and evidence contract. They do not prove requirements complete, a test oracle correct, or software free of defects. Planning owns the verification design; Independent Evaluation checks its adequacy against Accepted Scope and actual outcomes.
 
 ## 9. Approval Authority
 
@@ -209,6 +215,7 @@ When authority is revised:
 | Task/Phase routing | Deterministic Workplan |
 | Task-local diagnosis | Manager |
 | Repository mutation | Builder |
+| Authoritative control-state publication | Designated deterministic runtime transitions |
 | Task PASS | Task Gate |
 | Phase PASS | Phase Gate |
 | Escalated diagnosis | External Diagnosis |
@@ -219,3 +226,5 @@ When authority is revised:
 | Final acceptance reasoning | Independent Evaluation |
 | Human-facing report content/index | Presentation/reference surface; no authority |
 | CLOSED_VALIDATED | Deterministic finalization |
+
+Conformance coverage: `C-001`, `C-004`, `C-006`, `C-007`, `C-008`, `C-010`, `C-012`, `C-016`, `C-017`.

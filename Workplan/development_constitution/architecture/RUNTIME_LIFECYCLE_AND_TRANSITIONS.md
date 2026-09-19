@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Runtime Lifecycle and Transitions
 
@@ -89,6 +89,9 @@ PLANNING_PACKAGE_INVALID
 EXECUTION_APPROVED
 EXECUTION_REJECTED
 MATERIAL_CHANGE_IDENTIFIED
+REVISION_AUTHORITY_VALIDATED
+RECOVERY_AUTHORITY_VALIDATED
+RECOVERY_VERIFIED
 PAUSE_REQUESTED
 RESUME_REQUESTED
 CANCEL_REQUESTED
@@ -117,6 +120,23 @@ No model may create a lifecycle transition merely by:
 AI roles may produce candidate artifacts, reasoning, evidence, diagnoses, or recommendations.
 
 Deterministic runtime decides whether transition preconditions are actually satisfied.
+
+### 3.1 Transition Evidence and Control Precedence
+
+Each authority-changing transition must durably identify its triggering event, prior authority, checked prerequisites, resulting authority, and relevant artifact/approval bindings. A retry must recognize an already-completed transition instead of consuming approval twice or creating duplicate authority. Interrupted transitions use the reconciliation rules in `STATE_BINDING_AND_RESUME.md`.
+
+Stage and control conditions are separate concepts. For example, Planning may be paused or execution may be blocked without losing the underlying stage. Do not resume from a control condition by guessing which stage comes next.
+
+Before controlled dispatch or authoritative completion, runtime checks:
+
+1. the runtime/Cycle is not cancelled or successfully closed;
+2. no applicable pause or blocking condition prohibits the action;
+3. the actor, generation, bindings, approvals, and remaining cost envelope are valid;
+4. the stage-specific prerequisites hold.
+
+Pause, cancellation, or supersession fences pending outputs: a late provider/Builder result may be retained as evidence, but must not advance authority under an invalid or suspended dispatch. Reconciliation determines whether it can be accepted after a valid resume. Cancellation is terminal for that runtime/Cycle; a later request creates new authority rather than resuming cancelled tickets.
+
+When more than one control condition applies, the most restrictive effect governs dispatch. Clearing one condition does not clear another. Runtime MUST preserve the underlying stage plus every active control condition and its independently validated clear condition.
 
 ## 4. Canonical Lifecycle
 
@@ -411,6 +431,20 @@ new binding/revision/generation as required
 
 Existing approval must not be stretched to cover materially different work.
 
+### 12.1 Revision effect
+
+A material revision MUST identify what authority changed and compute its downstream invalidation:
+
+| Changed authority | Minimum effect |
+|---|---|
+| Research evidence before Scope acceptance | New Research/Planning A revision; no silent rebinding |
+| Accepted Scope/product intent | Suspend affected execution; new Scope revision and Scope Approval; revise/revalidate Planning; new Execution Approval when the execution envelope changes |
+| Planning design/package within unchanged Scope | New Planning revision, deterministic package validation, and Execution or Change Approval as materiality requires |
+| Task/Recovery contract within approved envelope | New contract/generation; invalidate affected tickets and evidence; re-run affected gates |
+| Cost/risk/path/external-effect envelope | Change Approval before expanded dispatch |
+
+Previously completed Tasks remain historical PASS records. They are current only when impact analysis shows their authority, outputs, dependencies, and evidence remain valid under the successor revision. Otherwise affected Tasks return to an eligible unpassed state under new authority; history is never erased.
+
 ## 13. User Control Actions
 
 User control actions are distinct from approval classes.
@@ -504,6 +538,8 @@ Blocked work must preserve:
 - authority/binding context;
 - evidence.
 
+It must also identify the affected stage/dispatch boundary and the condition that would permit continuation. New evidence, a user answer, or an environment repair does not itself clear the block: runtime validates that the named condition is resolved and rechecks current authority before continuing. Unaffected work may continue only when its independence and authority are explicit.
+
 A blocked condition must not silently fall through into execution.
 
 ## 16. Evaluation Transition
@@ -573,14 +609,23 @@ This matrix is normative at the semantic level. Exact persisted enum/command nam
 | `L-050` | `PLAN_READY` | valid execution dispatch | `EXECUTION` |
 | `L-051` | `EXECUTION` | bounded failure within authority | local Repair path |
 | `L-052` | `EXECUTION` | material change / exhausted/structural issue | Diagnosis/Recovery/Planning/owner path; affected dispatch stops |
+| `L-053` | non-terminal authority stage | `MATERIAL_CHANGE_IDENTIFIED` | stop affected dispatch; validated revision and bound Change Approval precede replacement authority |
+| `L-054` | revision pending | `REVISION_AUTHORITY_VALIDATED` + applicable approval | publish successor revision/generation; invalidate affected downstream tickets/evidence; return to its owning stage |
+| `L-055` | diagnosed recoverable issue | `RECOVERY_AUTHORITY_VALIDATED` | issue bounded Recovery contract/Attempt under unchanged or newly approved envelope |
+| `L-056` | Recovery implementation/gates | `RECOVERY_VERIFIED` | return to the failed owning boundary: Task/Phase progression, Planning validation, or Evaluation eligibility |
 | `L-060` | execution/gates | `ALL_REQUIRED_PHASES_PASS` + no blocker/current bindings | `EVALUATION` |
 | `L-061` | `EVALUATION` | `EVALUATION_BLOCKING` | Diagnosis/Recovery/Planning as classified |
 | `L-062` | `EVALUATION` | accepted Evaluation result | `CLOSURE_PREPARATION` |
+| `L-063` | Diagnosis/Recovery after Evaluation blocker | correction passes applicable execution gates and bindings are current | start a new Evaluation attempt against the corrected baseline |
 | `L-070` | `CLOSURE_PREPARATION` | `FINALIZATION_PASS` | `CLOSED_VALIDATED`; runtime ends |
 | `L-071` | `CLOSURE_PREPARATION` | `FINALIZATION_FAIL` | remain unclosed; route to correct repair/blocked boundary |
 | `L-080` | runnable controlled stage | `PAUSE_REQUESTED` | safe durable `PAUSED` equivalent; no new controlled dispatch |
 | `L-081` | `PAUSED` | valid `RESUME_REQUESTED` after reconciliation | resume last valid authority/stage |
 | `L-082` | non-terminal runtime | `CANCEL_REQUESTED` | `CANCELLED` equivalent; no successful closure |
+| `L-084` | `CANCELLED` or `CLOSED_VALIDATED` | separately authenticated new external request plus new Handoff | create new runtime identity at `IMPORT`; prior authority remains historical only |
+| `L-083` | pending unconsumed approval | approval revoked, stale, or rejected | prevent consumption; remain pending or return to the applicable proposal revision boundary |
+| `L-090` | non-terminal stage | required prerequisite unavailable or unverifiable | retain stage and authority history; enter an explicit `BLOCKED` condition |
+| `L-091` | blocked stage | recorded unblock condition resolved and current prerequisites revalidated | clear only the resolved block; resume the last valid stage if no other control condition prevents it |
 
 Any transition not represented by this matrix or by an explicit subsystem exception contract must fail closed rather than be inferred from model prose.
 
@@ -634,3 +679,5 @@ CLOSED_VALIDATED ends runtime.
 
 Next-version Research never auto-starts.
 ```
+
+Conformance coverage: `C-002`, `C-003`, `C-004`, `C-006`, `C-007`, `C-009`, `C-012`, `C-013`, `C-016`, `C-017`, `C-019`.

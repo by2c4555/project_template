@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Research Revision and Carry-Forward Model
 
@@ -50,6 +50,18 @@ clear consumed package from ingest
 Planning must not depend on the consumed package remaining in ingest.
 
 Failed structural/trust import must not be promoted to an imported Research revision.
+
+### 3.1 Interruption, duplicates, and mailbox preservation
+
+Treat archive creation, verification, binding, and mailbox cleanup as one recoverable import operation, using the durable-transition rules in [STATE_BINDING_AND_RESUME.md](STATE_BINDING_AND_RESUME.md).
+
+- Stage and verify the declared files before committing a binding. Never overwrite an existing archive identity with different bytes.
+- Recheck the consumed files against the validated manifest before cleanup. Delete only the exact consumed files; retain unrelated or newly arrived input.
+- If source content changes during import, or archive verification fails, record the failure and grant no downstream authority.
+- If cleanup is interrupted or uncertain, preserve the verified archive and a pending reconciliation record. Planning must wait until the import operation is reconciled; it must not depend on mutable mailbox bytes.
+- Retrying the same interrupted operation must reuse its durable operation/revision identity and verify stored digests. A deliberately submitted successor revision gets new revision identity and lineage, even when some files are unchanged.
+
+Logical immutability means runtime does not overwrite accepted history and verifies its identity before use. It is not a claim that local filesystem owners cannot alter bytes; tamper detection must fail closed.
 
 ## 4. Research Revision Identity
 
@@ -217,3 +229,5 @@ carry-forward knowledge is not authority
 
 new Research/Planning authority is explicit
 ```
+
+Conformance coverage: `C-002`, `C-003`, `C-004`, `C-019`.

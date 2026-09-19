@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Diagnosis and Recovery
 
@@ -37,6 +37,8 @@ blast radius
 classification
 correct recovery boundary
 ```
+
+The Diagnosis Record must separate observed evidence from inferred cause. Include the failing authority/baseline, reproducible symptom or limitation, evidence references, leading hypothesis, relevant alternatives, and what would confirm or disprove the hypothesis. If the cause cannot be established, record `UNKNOWN` with a bounded evidence-gathering action; do not invent a root cause to make the record appear complete.
 
 ## 4. Canonical Classifications
 
@@ -82,6 +84,10 @@ Recovery is reasoning-only.
 
 It converts eligible Diagnosis into a durable correction contract.
 
+The contract must identify the issue and Diagnosis evidence, current Scope/Planning/generation and repository baseline, intended correction, authorized paths and side effects, verification criteria, stop/escalation conditions, and applicable repair/cost limits. Where rollback or compensation is relevant, state its feasibility and authority; do not assume reversal is always possible.
+
+Runtime validates these bindings and the approved envelope before issuing a fresh Recovery Attempt. Producing a Recovery Contract is not permission to implement it.
+
 ## 7. Recovery Flow
 
 ```text
@@ -103,6 +109,19 @@ Verification / Evidence
     ↓
 Task Gate / Phase Gate
 ```
+
+That diagram applies to production correction. Other classifications return through their owning boundary:
+
+| Corrected class | Required return |
+|---|---|
+| Implementation or bounded Task defect | Fresh authorized Attempt -> affected Task/Phase Gates |
+| Planning or Scope defect | Successor revision under `L-054` -> applicable approvals/package validation -> affected execution/gates |
+| Verification defect | Validate successor verification contract -> rerun affected checks -> affected gates |
+| Evaluation defect | Validate successor Evaluation method/evidence -> new Evaluation attempt; no production edit solely to satisfy the old evaluator |
+| Environment/tooling defect | Validate corrected environment/tool -> rerun only evidence invalidated by the defect -> owning gate/Evaluation |
+| External blocker or `UNKNOWN` | Remain blocked until the named condition/evidence is independently resolved and current authority revalidates |
+
+Runtime records the owning return boundary in the issue. Recovery completion cannot choose a later stage because it appears cheaper.
 
 ## 8. Recovery Boundaries
 
@@ -164,3 +183,9 @@ Repeated failure must either:
 - terminate as blocked.
 
 `UNKNOWN` must never mean "try arbitrary production changes until something works."
+
+Each additional Diagnosis/Recovery round must name the new evidence, changed hypothesis, or revised authorized correction that justifies it. Repeating the same unsuccessful strategy against unchanged evidence is not progress. Preserve a stable issue lineage and cumulative effort/cost across new Attempts and provider changes; a reset must not erase exhaustion. Use the bound repair/escalation policy and explicit budget instead of inventing a new retry allowance.
+
+Resolve an issue only when the correction has the required verification/gate evidence against the current baseline. A proposed fix, completed edit, provider success response, or superseded plan alone does not prove resolution. Supersession must reference the successor authority and preserve unresolved findings for its validation.
+
+Conformance coverage: `C-011`, `C-012`, `C-013`, `C-016`, `C-019`.

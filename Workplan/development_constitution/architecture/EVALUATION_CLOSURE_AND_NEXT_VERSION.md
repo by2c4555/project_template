@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Evaluation, Closure, and Next Version
 
@@ -26,6 +26,8 @@ Applicable:
 - current repository state;
 - verification evidence;
 - relevant issue/recovery history.
+
+Evaluation must bind to a specific repository content baseline, Scope/Planning revision, and evidence set. If production changes after that baseline, determine which checks are invalidated and rerun them before accepting the changed outcome. An earlier PASS cannot certify later unexamined content.
 
 ## 4. Evaluation Responsibilities
 
@@ -60,6 +62,14 @@ A different model/provider may improve independence, but is not required by the 
 Changing Evaluation provider/model must not change the bound acceptance contract. The adapter must present the current canonical Scope/Planning/evidence inputs and normalize the result into the canonical Evaluation contract.
 
 The same underlying model may perform Evaluation only when invoked as a separate evaluation role/context with no production mutation authority and with current bound evidence.
+
+### 4.2 Acceptance Coverage and Uncertainty
+
+For every required acceptance criterion, record a stable criterion reference, observed result, evidence reference, and any verification limitation. Distinguish verified, failed, not checked, and inconclusive results. Missing, skipped, unavailable, or inconclusive evidence for a required criterion blocks acceptance unless the bound acceptance contract explicitly defines an applicable alternative and that alternative passes.
+
+Checks must evaluate the requested behavior and material failure cases, not merely repeat implementation claims. A model's confidence or a count of passing tests does not establish complete Scope coverage.
+
+Verification commands may create disposable outputs only within their authorized environment and paths. They must not alter production content, issue authority, or silently use external credentials/services beyond the approved envelope. Reconcile unexpected effects before continuing Evaluation.
 
 ## 5. Evaluation Results
 
@@ -110,6 +120,10 @@ Deterministic finalization then verifies applicable:
 - final required evidence.
 
 Only then may deterministic runtime establish `CLOSED_VALIDATED`.
+
+The closure record must reference the accepted Evaluation, exact evaluated content baseline, current Scope/Planning bindings, required gate evidence, and Completion Knowledge Package identity/digest. Finalization must reject stale or mismatched references and remain unclosed after partial failure. A retry may finish missing finalization work but must not manufacture a second successful closure or skip failed checks.
+
+Define the evaluated content boundary separately from generated Evaluation/closure metadata so writing a report does not create an impossible self-referential baseline. Any production-content change during closure preparation requires impact assessment and renewed affected verification/Evaluation before finalization.
 
 ## 8. CLOSED_VALIDATED Semantics
 
@@ -359,3 +373,5 @@ Normal human-facing closure/evaluation reports are discoverable from one canonic
 
 Next-version Research does not auto-start.
 ```
+
+Conformance coverage: `C-016`, `C-017`, `C-018`, `C-019`, `C-021`.

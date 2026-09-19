@@ -1,541 +1,125 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Project Template Development Objective
 
-## 1. Product Identity
+## 1. Product identity
 
-Project Template is an **AI-assisted software-development control plane**.
+Project Template is an **AI-assisted software-development control plane**. It converts externally prepared product/research information into bounded, auditable development authority and coordinates implementation, verification, recovery, acceptance, closure, and cross-session continuation.
 
-Its purpose is to convert externally prepared product/research information into reliable software-development authority, then coordinate high-quality repository implementation, verification, recovery, and final acceptance.
+It is not a general-purpose autonomous-agent framework. External user-facing Research can be performed by a human or any suitable system and remains outside runtime authority.
 
-Project Template runtime coordinates:
+## 2. Optimization order
 
-- Research Handoff import and structural validation;
-- Research Investigation & Finalization by Planning;
-- authoritative Scope finalization;
-- user approval of material Scope and execution envelopes;
-- architecture and implementation planning;
-- bounded source-code implementation;
-- CLI/tool execution;
-- controlled file operations;
-- software debugging and repair;
-- verification and regression checking;
-- recovery from failed implementation;
-- independent final acceptance;
-- deterministic closure;
-- durable next-version knowledge output;
-- cross-session continuation.
+Project Template MUST optimize in this order:
 
-Project Template does **not** perform or govern the external user-facing Research conversation.
+1. satisfy the authorized product outcome;
+2. preserve correctness, security, trust, and authority boundaries;
+3. produce adequate observable evidence;
+4. minimize unnecessary model/tool cost, latency, repeated context, rework, and user effort.
 
-External Research may be performed by ChatGPT, another web chat, another AI system, a human researcher, or another preparation process.
+`engineering quality / token / cost` is a design shorthand, not a numeric score and never permission to trade away items 1–3. Unknown quality or cost MUST NOT be presented with false precision.
 
-Project Template may provide Research prompts, protocols, instructions, and templates. Those helpers do not make Research a runtime lifecycle stage, Work item, Cycle, or authority source.
-
-Project Template is not a general-purpose autonomous-agent framework.
-
-## 2. Core Objective
-
-Maximize:
+## 3. Capability allocation
 
 ```text
-engineering quality / token / cost
-```
-
-while keeping authority:
-
-- deterministic;
-- durable;
-- auditable;
-- bounded;
-- resumable;
-- stale-safe;
-- provider-neutral;
-- independently verifiable.
-
-## 3. Capability Allocation
-
-```text
-External Research AI
-    -> broad/deep preparation
-    -> user clarification
-    -> repository/technical research
-    -> candidate Scope
-    -> candidate architecture/design
-    -> evidence
-
-Planning AI
-    -> strongest normal runtime reasoning
-    -> Research Investigation & Finalization
-    -> selective independent verification
-    -> Accepted Scope synthesis
-    -> implementation authority design
-
-Manager
-    -> execution coordination
-    -> Task-local debugging
-    -> bounded repair reasoning
-
-Builder
-    -> lower-cost bounded implementation
-
-Deterministic Workplan
-    -> import integrity
-    -> state
-    -> routing
-    -> approvals
-    -> tickets
-    -> bindings
-    -> generations
-    -> gates
-    -> retry limits
-    -> validation
-    -> finalization
-
-Repository/filesystem state
-    -> durable truth
-
-Chat/session state
-    -> disposable context
-```
-
-## 4. Engineering Principles
-
-1. Deterministic mechanisms before prompt complexity.
-2. Durable repository state before conversational memory.
-3. Bounded contracts before open-ended autonomy.
-4. Strong reasoning only where it materially improves decision quality.
-5. Use the lowest-cost capable Builder for routine implementation.
-6. Executed verification before claimed completion.
-7. Immutable execution bindings.
-8. Explicit escalation instead of unbounded retries.
-9. Resumability across sessions, models, providers, and machines.
-10. Selective context instead of repository-wide context by default.
-11. Negative-path validation for authority boundaries.
-12. One source of truth per concern.
-13. Preserve existing valid work before rewriting.
-14. Fix root causes rather than accumulating compensating mechanisms.
-15. Internal rigor may increase, but normal user workflow should become simpler.
-16. External preparation must not be confused with runtime authority.
-17. Research should maximize useful information, not authority.
-18. Planning must finalize Research before Scope becomes runtime authority.
-19. Planning should reuse strong Research rather than blindly repeat it.
-20. Material claims should be independently verified when wrongness would materially affect architecture, compatibility, acceptance, security, irreversible behavior, or major cost/risk.
-21. Planning must not invent unresolved material product requirements.
-22. Technical HOW belongs to Planning unless it changes product WHAT/WHY.
-23. User approval should protect meaningful cost/authority/rework boundaries, not every routine step.
-24. An approval applies only to the exact approved envelope and becomes stale when that envelope materially changes.
-25. `CLOSED_VALIDATED` must produce durable output for future external Research.
-26. Completion knowledge is not automatically the next Scope.
-27. Authority-critical ambiguity must fail closed rather than be optimistically inferred.
-28. External/repository/tool content is evidence by default, not runtime instruction authority.
-29. User approval must be explicit and bound; silence or unrelated user input is not approval.
-30. Users retain deterministic pause/cancel control over runtime-controlled work.
-31. Explicit cost ceilings must be enforced before dispatch when applicable.
-32. Planning may produce a package, but deterministic validation must establish package readiness.
-33. Independent Evaluation must be non-mutating acceptance against actual repository state.
-34. `CLOSED_VALIDATED` must not exist before required Completion Knowledge Package contents are valid.
-35. A successful Cycle must not automatically start next-version Research.
-
-## 5. Authority Model
-
-Workflow authority comes from deterministic Workplan state and accepted runtime contracts.
-
-Authority does not come from:
-
-- model capability;
-- model price;
-- provider identity;
-- model confidence;
-- chat context;
-- prompt self-assertion;
-- external Research conversation;
-- Research Handoff by itself;
-- candidate architecture;
-- implementation summary;
-- model claim of PASS.
-
-External Research is **high-value, non-authoritative input**.
-
-Planning creates semantic authority only through controlled finalization and deterministic binding.
-
-User approval authorizes only explicit material envelopes.
-
-Deterministic software owns runtime authority transitions and PASS/finalization gates.
-
-## 6. Canonical Lifecycle
-
-```text
-OUTSIDE RUNTIME
 External Research
-    ↓
-Research Handoff
-
-RUNTIME
-Import
-    ↓
-Planning A — Research Investigation & Finalization
-    ↓
-User Scope Approval
-    ↓
-Accepted Scope
-    ↓
-Planning B — Implementation Planning
-    ↓
-User Execution Approval
-    ↓
-PLAN_READY
-    ↓
-Execution
-    ↓
-Independent Evaluation
-    ↓
-Completion Knowledge Package preparation
-    ↓
-Deterministic Finalization
-    ↓
-CLOSED_VALIDATED
-    ↓
-Completion Knowledge Package exported
-
-OUTSIDE RUNTIME AGAIN
-new external action/request
-    ↓
-Next-Version External Research
-```
-
-Diagnosis, Recovery, and Change Re-Approval are controlled exception paths.
-
-### 6.1 Runtime, Cycle, and Execution Boundaries
-
-These boundaries are intentionally distinct:
-
-```text
-Project Template runtime ingress
-    begins when a Research Handoff enters Import.
-
-Active development Cycle authority
-    begins only after Planning A has produced Draft Finalized Scope,
-    valid SCOPE_APPROVAL exists,
-    and deterministic binding creates Accepted Scope.
-
-Production execution authority
-    begins only after Planning B has produced a valid Planning Package,
-    valid EXECUTION_APPROVAL exists,
-    and deterministic Workplan establishes PLAN_READY.
-```
-
-Planning A therefore occurs **inside Project Template runtime but before active development Cycle authority**.
-
-Implementation may allocate provisional identifiers or checkpoints before Accepted Scope for bookkeeping, but they must not grant active Cycle authority or production execution authority.
-
-## 7. Runtime Hierarchy
-
-```text
-Cycle -> Phase -> Task -> Attempt
-```
-
-Required invariants:
-
-- no production Task authority before Accepted Scope and valid approved Planning authority;
-- every Task belongs to exactly one Phase;
-- every Builder dispatch creates a fresh Attempt;
-- Attempt kinds include `INITIAL`, `REPAIR`, and `RECOVERY`;
-- a simple project may use an implicit Phase;
-- normal users should not manually manage IDs, generations, digests, tickets, or repair counters.
-
-## 8. External Research Principle
-
-Research should produce maximum useful information with minimum irrelevant context.
-
-Research may provide:
-
-- product requirements;
-- repository findings;
-- technical evidence;
-- compatibility findings;
-- risks;
-- candidate architecture;
-- preliminary interfaces/data;
-- verification ideas;
-- unresolved questions.
-
-Research may recommend conclusions.
-
-Planning must finalize them.
-
-The capability contract is:
-
-```text
-Research
-    = optimized for information production
+    -> broad or focused evidence production
 
 Planning
-    = optimized for decision correctness
-```
+    -> semantic sufficiency, product finalization, architecture and implementation authority design
 
-Planning should reuse Research where justified, but **final semantic responsibility must never be delegated back to Research**.
-
-Planning owns the decision that Research evidence is sufficient, insufficient, contradictory, stale, or requires independent verification.
-
-## 9. Planning Principle
-
-Planning is the strongest normal runtime reasoning stage.
-
-Planning has two mandatory logical responsibilities:
-
-```text
-A. Research Investigation & Finalization
-B. Implementation Planning
-```
-
-Planning A produces Draft Finalized Scope and Finalized Research Knowledge.
-
-After material Scope review, User Scope Approval converts the finalized Scope into Accepted Scope authority.
-
-Planning B produces a Candidate Planning Package.
-
-Deterministic Planning Package Validation establishes structural/binding/traceability readiness before execution approval.
-
-User Execution Approval authorizes entry into execution only for the validated current package.
-
-## 10. User Approval Principle
-
-Approval is required where a new material:
-
-- product-Scope commitment;
-- execution cost;
-- authority expansion;
-- destructive effect;
-- rework envelope;
-- compatibility break;
-- migration risk
-
-is introduced.
-
-Do not require approval for routine Task/Phase progression or bounded repair already covered by an approved envelope.
-
-Approval must be explicit and bound to the current subject/revision/digest. Answering a Planning question, silence, or unrelated continuation language must not be treated as approval unless deterministic UI/runtime context binds that action to the pending approval subject.
-
-Users may also pause or cancel runtime-controlled work. Pause/cancel are control actions, not PASS and not approval classes.
-
-## 11. Execution Principle
-
-Normal production implementation uses the VS Code Copilot Agent execution environment.
-
-```text
 Manager
-    -> reasoning, coordination, local debugging, repair strategy
+    -> execution coordination, Task-local diagnosis, bounded repair strategy
 
 Builder
-    -> bounded repository mutation
+    -> bounded mutation, verification execution, evidence production
+
+Independent Evaluation
+    -> non-mutating acceptance against actual outcome and bound evidence
 
 Deterministic Workplan
-    -> routing, authority, retry control, gates
+    -> validation, state, routing, approvals, bindings, generations, gates, limits and closure
+
+Repository/filesystem
+    -> durable evidence and designated validated authority records
+
+Chat/session memory
+    -> disposable convenience context
 ```
 
-## 12. Manager Principle
+Each role requires capability sufficient for its contract. Provider identity, model price, model confidence, and access to tools do not grant authority.
 
-Manager is the local execution reasoning layer.
+## 4. Stable product invariants
 
-Manager coordinates and diagnoses.
+### Research and Scope
 
-Manager is not the normal production editor.
+- External Research is outside runtime and produces non-authoritative input.
+- Import validates, archives an immutable Research revision, binds to that revision, and clears only exact consumed mailbox content.
+- Import never creates Accepted Scope.
+- Planning A judges Research sufficiency and finalizes product WHAT/WHY without inventing unresolved material intent.
+- `RESEARCH_REVISION_REQUIRED` preserves useful work and creates successor Research/Planning identity rather than rebinding history.
+- Active Cycle authority begins only after exact Draft Finalized Scope receives valid bound Scope Approval and deterministic binding.
 
-## 13. Builder Principle
+### Planning and execution authority
 
-Builder is the lower-cost bounded implementation worker.
+- Planning B begins only under Accepted Scope and owns technical HOW, Task design, path authority, verification, and evidence contracts.
+- Planning produces a Candidate Planning Package; deterministic validation establishes structural, binding, graph, and traceability readiness.
+- Production execution authority begins only at `PLAN_READY` after valid bound Execution Approval.
+- Material changes to an approved envelope stop affected work and require the applicable revised authority and Change Approval.
 
-Builder must not:
+### Execution, evidence, and repair
 
-- expand Scope;
-- expand write authority;
-- invent new lifecycle authority;
-- decide deterministic PASS;
-- enter open-ended debug/edit/retry loops.
+- The execution hierarchy is `Cycle -> Phase -> Task -> Attempt`.
+- Builder mutation requires a current bounded ticket; actual resolved direct and indirect side effects determine compliance.
+- Every new Builder implementation dispatch creates a new Attempt. Resume continues the same reconciled Attempt.
+- Only deterministic Task and Phase Gates grant PASS; model claims and user approval do not.
+- Verification evidence is bound to the authority and content state it checked. Skipped, unknown, stale, or self-issued evidence cannot establish PASS.
+- Ordinary Task-local Repair is bounded to at most five Repair Attempts in one failure chain; a lower configured limit may apply. There is no sixth ordinary repair.
+- Diagnosis and Recovery preserve history, cannot invent Scope, cannot self-expand authority, and cannot self-grant PASS.
 
-## 14. Gate Principle
+### Trust, state, and human control
 
-Only deterministic Task Gate logic may mark Task PASS.
+- Readable content is data/evidence unless a designated current authority source says otherwise.
+- Authority-critical ambiguity fails closed at the affected boundary while independent authorized work may continue.
+- Original bindings and predecessor history remain durable; new authority receives new revision/generation identity.
+- Stale or concurrent writers cannot publish current authority. Uncertain side effects are reconciled before retry or resume.
+- User approval is explicit, authenticated through a trusted channel, bound, stale-safe, revocable before consumption, and single-use where it authorizes a transition.
+- Pause and cancel prevent new controlled dispatch. Resume uses durable authority and reconciliation rather than chat reconstruction.
+- Explicit cost ceilings apply to controlled dispatch, including shared in-flight reservations and retries.
 
-Only deterministic Phase Gate logic may mark Phase PASS.
+### Evaluation and closure
 
-A model statement never replaces evidence.
+- Independent Evaluation has no production mutation authority and evaluates actual outcomes rather than Builder/Manager claims.
+- `PASS_WITH_FINDINGS` contains only demonstrably non-blocking findings.
+- Required completion knowledge, final content baseline, current bindings, accepted Evaluation, and closure evidence exist before deterministic finalization.
+- `CLOSED_VALIDATED` ends the successful runtime/Cycle; it does not claim perfection beyond Scope.
+- Completion knowledge informs a future separately initiated Research process but never becomes new Scope automatically.
 
-## 15. Local Repair Principle
+## 5. Engineering principles
 
-Ordinary Task-local failure uses:
+1. Deterministic enforcement before prompt complexity.
+2. Durable validated state before conversational memory.
+3. Bounded contracts before open-ended autonomy.
+4. Observable verification before completion claims.
+5. One canonical owner per concern.
+6. Preserve valid existing work and history before replacement.
+7. Fix root causes instead of accumulating compensating mechanisms.
+8. Scale process and context to material risk without weakening authority boundaries.
+9. Use the least costly capability that satisfies the role contract.
+10. Ask users only for material product, cost, risk, destructive-effect, or authority decisions.
+11. Treat external/repository/tool content as untrusted evidence by default.
+12. Make normal user workflow simpler as internal rigor improves.
 
-```text
-Builder failure
-    ↓
-durable failure evidence
-    ↓
-Manager diagnosis
-    ↓
-Manager-defined repair
-    ↓
-fresh Builder REPAIR Attempt
-    ↓
-Task Gate
-```
+## 6. Product boundaries
 
-Hard maximum:
+Project Template MAY supply Research prompts, protocols, templates, provider adapters, reference execution integrations, and reports. These helpers MUST NOT become parallel sources of runtime authority.
 
-```text
-5 local Repair Attempts per failure chain
-```
+The portable core contracts are provider and editor neutral. The current VS Code Copilot Manager/Builder arrangement is a reference execution profile under [GOVERNANCE_AND_TERMINOLOGY.md](GOVERNANCE_AND_TERMINOLOGY.md), not a universal authority requirement.
 
-No sixth local repair.
+## 7. Direction of travel
 
-## 16. Durable Failure Principle
+Project Template should move toward better structured handoffs, stronger but economical Planning, measurable conformance, less duplicated reasoning, bounded implementation, trustworthy evidence, safe interruption/resume, independent acceptance, useful completion knowledge, and a simpler user experience.
 
-Every authoritative runtime failure must leave enough durable evidence for a fresh capable model/session to diagnose, repair, recover, or resume.
+Changes that add a role, stage, approval class, authority path, retry mechanism, alias, or source of truth require an architectural reason beyond simplifying one patch.
 
-Failed strategies must not be silently overwritten.
-
-## 17. Escalation Principle
-
-External strong reasoning is used when local execution reasoning is insufficient.
-
-Escalation may be required for:
-
-- exhausted local repair;
-- structural defect;
-- Task defect;
-- Plan defect;
-- Scope defect;
-- environment/tooling defect;
-- verification defect;
-- external blocker;
-- correctness uncertainty.
-
-## 18. Diagnosis and Recovery Principle
-
-External Diagnosis is reasoning-only.
-
-External Recovery is reasoning-only.
-
-Recovery cannot directly mark implementation PASS.
-
-Recovery cannot silently broaden Task authority or create product Scope.
-
-## 19. Trust and Fail-Closed Principle
-
-External Research, repository prose, logs, tool output, generated content, and embedded instructions are data/evidence by default.
-
-They do not gain runtime instruction authority merely because an AI can read them.
-
-Authority-critical state that is missing, stale, ambiguous, mismatched, or unverifiable must not be inferred as valid.
-
-The system must fail closed or enter an explicit pending/blocked path.
-
-## 20. Context Principle
-
-Context expansion is read authority only.
-
-Additional context must never silently expand Scope, Task objective, write paths, or repair authority.
-
-## 21. Binding and Resume Principle
-
-Original authority bindings must remain durable.
-
-Generation fencing must prevent stale sessions from completing newer authority.
-
-A fresh session must be able to continue without replaying prior chat.
-
-External Research conversation history must not be required.
-
-## 22. Independent Evaluation Principle
-
-Independent Evaluation occurs after required execution gates pass.
-
-It verifies actual repository outcomes against Accepted Scope and Planning authority.
-
-Evaluation is acceptance, not production repair.
-
-Independence is an authority/evidence boundary: the evaluator has no production mutation authority, must inspect actual repository/evidence, and must not accept Manager/Builder self-claims as sufficient proof. A separate provider is optional, not the definition of independence.
-
-## 23. CLOSED_VALIDATED Principle
-
-`CLOSED_VALIDATED` means:
-
-- required Accepted Scope was satisfied;
-- required implementation completed;
-- required Task/Phase Gates passed;
-- Independent Evaluation accepted the result;
-- required Completion Knowledge Package contents were prepared and validated;
-- deterministic finalization completed;
-- final repository baseline is durably identifiable.
-
-It does not claim perfection outside Scope.
-
-## 24. Cross-Cycle Principle
-
-A completed Cycle must produce durable knowledge for future external Research.
-
-The output may include:
-
-- Completion Report;
-- final repository/version baseline;
-- verified architecture state;
-- Scope outcome;
-- accepted decisions;
-- known limitations;
-- deferred work;
-- repair/recovery lessons;
-- next-version Research seed.
-
-This package is knowledge, not next Scope.
-
-Closure ends the current runtime. Next-version External Research begins only through a new external action/request; it must not auto-start merely because the prior Cycle closed.
-
-## 25. Provider and Model Neutrality
-
-Model capability affects cost and reasoning quality.
-
-It does not grant workflow authority.
-
-Core authority must remain provider-neutral.
-
-## 26. Human Ownership Principle
-
-This Development Constitution is human-owned.
-
-AI may read and use it.
-
-AI must not change it unless the repository owner explicitly authorizes protected-area modification.
-
-## 27. Change Governance
-
-Material changes must consider:
-
-- constitution impact;
-- authority impact;
-- architecture impact;
-- token/cost impact;
-- user approval impact;
-- context impact;
-- reliability;
-- recovery/resume;
-- migration;
-- tests;
-- docs.
-
-Do not add roles, lifecycle stages, authority paths, prompts, aliases, or sources of truth merely because they simplify one local patch.
-
-## 28. Direction of Travel
-
-Project Template should move toward:
-
-- richer but focused Research handoffs;
-- stronger Planning finalization;
-- less duplicated expensive reasoning;
-- explicit user cost/authority gates;
-- more deterministic execution authority;
-- bounded low-cost implementation;
-- durable failure evidence;
-- safe resume/recovery;
-- strong independent acceptance;
-- durable next-version handoff;
-- simpler user workflow.
+Conformance coverage: product invariants constrain `C-001` through `C-021`; detailed evidence is owned by the registry and subsystem documents.

@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Reporting and Human Review
 
@@ -33,7 +33,7 @@ Workplan/ingest/
 Workplan/archive/
     immutable consumed/historical evidence
 
-Workplan/Work/
+Workplan/work/
     machine/runtime Work, checkpoints, bindings, reasoning artifacts
 
 Workplan/reports/
@@ -135,6 +135,10 @@ Applicable reports should provide or reference:
 
 Reports should avoid duplicating large authoritative artifacts when stable references are sufficient.
 
+Report observed results separately from proposals and assumptions. Use explicit `PASS`, `FAIL`, `NOT RUN`, `BLOCKED`, or `NOT APPLICABLE` where verification is summarized; include a reason when a required check is unavailable. A mock result must be labeled as such.
+
+Link to the relevant baseline, authority revision, and evidence. Do not claim the current repository passed a check that ran only against an older baseline. Summaries must preserve material caveats from the authoritative result.
+
 ## 9. Security and Trust
 
 Reports are generated content and are data/evidence by default.
@@ -155,6 +159,22 @@ A new agent/model/provider may use reports to understand history quickly, but mu
 
 Reports reduce orientation/context cost; they do not permit reconstruction of authority from prose alone.
 
+### 11.1 Bounded historical views
+
+Immutable report events and authoritative history MAY move to a verified cold archive, but MUST retain stable identity, integrity metadata, lineage, and resolvable references. Archiving is storage organization, not deletion or supersession.
+
+Derived indexes and summaries SHOULD expose a bounded current view containing:
+
+- active/pending items and required user action;
+- latest report of each material type;
+- unresolved findings and predecessor/successor links;
+- relevant Scope/Planning/baseline identities;
+- archive references for older history.
+
+Compaction MUST NOT discard approval, failure, Attempt, decision, migration, Evaluation, or closure evidence required for audit/recovery. A summary never replaces its source and MUST be regenerated or marked stale when referenced authority changes.
+
+Retention or deletion of non-authoritative raw material follows the applicable privacy/retention policy in `TRUST_AND_INPUT_BOUNDARIES.md`. If historical content is legally or operationally removed, preserve a tombstone/reference sufficient to explain the absence without retaining prohibited data.
+
 ## 12. Core Invariants
 
 ```text
@@ -172,3 +192,5 @@ reports preserve enough lineage for user review
 
 report acknowledgement is not approval
 ```
+
+Conformance coverage: `C-018`, `C-019`, `C-021`.

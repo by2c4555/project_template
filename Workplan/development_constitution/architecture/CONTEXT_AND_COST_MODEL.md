@@ -1,16 +1,16 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Context and Cost Model
 
 ## 1. Purpose
 
-Defines how Project Template minimizes token/model cost without reducing engineering quality.
+Defines how Project Template reduces total development cost without weakening correctness, authority, or evidence.
 
 ## 2. Core Objective
 
-```text
-engineering quality / token / cost
-```
+First satisfy the authorized outcome, correctness requirements, and trust boundaries. Within those constraints, reduce total cost: model/tool spend, elapsed time, avoidable rework, repeated context, and user effort.
+
+Token count alone is not a quality or efficiency measure. Report measured usage separately from estimates; do not invent savings or precise cost when measurement is unavailable.
 
 ## 3. Capability Allocation
 
@@ -19,14 +19,14 @@ External Research
     -> broad/deep discovery
 
 Planning
-    -> scarce strongest reasoning
+    -> capability sufficient for material semantic decisions
     -> finalization and authority synthesis
 
 Manager
     -> local execution reasoning
 
 Builder
-    -> lower-cost bounded implementation
+    -> capability sufficient for bounded implementation
 
 Deterministic software
     -> authority and validation
@@ -37,6 +37,10 @@ Deterministic software
 Do not load the whole repository by default.
 
 Context should be task/reasoning specific.
+
+A fresh agent needs the current objective, applicable authority and constraints, relevant baseline, next bounded action, expected evidence, and stop/escalation conditions. Supply these through existing contracts/checkpoints and precise references, not a duplicate document set or complete chat replay.
+
+Expand context to resolve a named uncertainty or dependency. Reuse prior evidence only while its source, baseline, and applicability remain valid.
 
 ## 5. Research Context
 
@@ -108,6 +112,8 @@ Conceptually:
 ```text
 consumed cost
 +
+reserved cost of in-flight controlled actions
++
 estimated next controlled action
 >
 approved ceiling
@@ -115,6 +121,8 @@ approved ceiling
 → DO NOT DISPATCH
 → request budget/CHANGE_APPROVAL or reduce work within authority
 ```
+
+Concurrent dispatch must share the same budget accounting; independent agents must not each spend the same remaining allowance. Reconcile reservations with observed usage when calls finish, including failed calls and retries. Preserve accounting across resume; keep a conservative reservation for an interrupted call with unknown consumption until reconciled. Planning/reasoning spend controlled by runtime also counts against its applicable budget.
 
 If exact provider cost is unavailable:
 
@@ -186,11 +194,17 @@ Prefer:
 
 Use mocks/samples/simulation where real external systems are unavailable, but do not replace real verification where real verification is possible.
 
+After the required checks pass, repeat or broaden them only for changed inputs, a failure, an unresolved risk, or a release requirement. Record unavailable checks and their impact honestly; simulated results do not establish live integration success.
+
 ## 12. Model Capability Floor and Escalation Cost
 
 Use strong external Diagnosis when materially necessary, not merely because a stronger model exists.
 
 A lower-cost model may be used only when it satisfies the capability contract of the assigned role.
+
+Role requirements describe needed reasoning, tools, context, and evidence handling, not a provider brand or price tier. A model's name, cost, or self-assessment does not establish capability. Reuse configured, validated role assignments and authorized fallbacks instead of requesting routine provider decisions from the user.
+
+The observable capability and fallback contract is owned by `AGENT_ADAPTER_BOUNDARIES.md`. Context-window size alone does not establish suitability, and loading more context does not repair a missing reasoning/tool capability.
 
 Do not silently downgrade:
 
@@ -232,9 +246,9 @@ reuse durable reasoning
 
 delta-reconcile Research revisions instead of replaying unchanged context
 
-strong model for material judgment
+capability sufficient for material judgment
 
-cheap model for bounded implementation
+least costly suitable execution within the required capability floor
 
 deterministic software for authority
 
@@ -246,3 +260,5 @@ cost never authorizes skipping correctness
 
 role capability floors are not silently downgraded
 ```
+
+Conformance coverage: `C-014`, `C-015`, `C-019`.

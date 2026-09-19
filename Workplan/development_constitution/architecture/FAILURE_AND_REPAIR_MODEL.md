@@ -1,4 +1,4 @@
-> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and use this file as development guidance, but MUST NOT edit, modify, rewrite, move, rename, or delete it.
+> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2 — Human owned. AI may read and apply this guidance; modification requires explicit authorization from a trusted repository-owner channel covering the change.
 
 # Failure and Repair Model
 
@@ -55,6 +55,10 @@ Maximum ordinary Task-local Repair Attempts per failure chain:
 
 No sixth local repair.
 
+The initial Attempt does not count as a Repair Attempt. The configured repair allowance may be smaller than five. Reserve/count each fresh authorized repair before dispatch; a failed, interrupted, or abandoned dispatched repair remains part of the same failure chain. Resume preserves that count.
+
+An infrastructure retry with no new implementation attempt may use a separate bounded retry policy, but must retain its invocation/effect evidence and cost. It must not conceal additional edits or reset the local repair allowance.
+
 ## 5. Early Escalation
 
 Escalate earlier when:
@@ -72,6 +76,10 @@ Escalate earlier when:
 Failed strategies must remain durable.
 
 Do not silently repeat the same disproven strategy.
+
+Each proposed repair must state the observed defect, a supported hypothesis, the bounded change, and the check that would disprove or confirm the hypothesis. A repeat is justified only by new evidence or a recorded transient cause. Repeated no-progress failures should escalate before the maximum.
+
+Do not rerun a failed or flaky acceptance check until it happens to pass and then discard the failures. Establish the cause or follow a predefined repeat policy, retaining all outcomes.
 
 ## 7. Repair Authority
 
@@ -94,6 +102,8 @@ Manager does not self-grant PASS.
 
 Retries must belong to the same failure chain where appropriate so the hard limit cannot be bypassed by renaming the attempt.
 
+Changing the Task name, model, provider, session, or worktree does not reset an unresolved failure chain. A materially revised Task/Recovery contract must reference the predecessor, describe the changed strategy and authority, and receive any required re-approval. It cannot authorize an unchanged sixth ordinary repair.
+
 ## 10. Core Invariants
 
 ```text
@@ -105,3 +115,5 @@ Builder mutates
 Task Gate decides PASS
 no sixth local repair
 ```
+
+Conformance coverage: `C-010`, `C-011`, `C-012`, `C-019`.
