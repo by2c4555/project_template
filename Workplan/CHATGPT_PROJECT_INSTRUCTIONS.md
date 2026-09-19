@@ -1,4 +1,4 @@
-# ChatGPT Project Instructions — Project Template v5.3.2
+# ChatGPT Project Instructions — Project Template v5.4.0
 
 Use the current repository Workplan as workflow authority. Repository/filesystem state is durable; chat history, memory, and model confidence are not authority.
 

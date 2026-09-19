@@ -11,9 +11,9 @@ PUBLIC_COMMANDS = (
     'EXECUTE_IMPLEMENTATION','EXECUTE_DIAGNOSIS','EXECUTE_RECOVERY','EXECUTE_EVALUATION',
     'RESET_PLANNING','RESET_DIAGNOSIS','RESET_RECOVERY','RESET_EVALUATION'
 )
-ROLE_COMMAND = {'PLANNING':'EXECUTE_PLANNING','DIAGNOSIS':'EXECUTE_DIAGNOSIS','RECOVERY':'EXECUTE_RECOVERY','EVALUATION':'EXECUTE_EVALUATION'}
+ROLE_COMMAND = {'PLANNING_A':'EXECUTE_PLANNING','PLANNING_B':'EXECUTE_PLANNING','DIAGNOSIS':'EXECUTE_DIAGNOSIS','RECOVERY':'EXECUTE_RECOVERY','EVALUATION':'EXECUTE_EVALUATION'}
 COMMAND_ROLE = {v:k for k,v in ROLE_COMMAND.items()}
-ROLE_CONSTITUTION = {r:f'Workplan/external_agent/{r}_PROMPT.md' for r in ROLE_COMMAND}
+ROLE_CONSTITUTION = {r:('Workplan/external_agent/PLANNING_PROMPT.md' if r.startswith('PLANNING_') else f'Workplan/external_agent/{r}_PROMPT.md') for r in ROLE_COMMAND}
 RESET_ROLE = {f'RESET_{r}':r for r in ROLE_COMMAND}
 
 
@@ -30,8 +30,8 @@ def continuation(st=None):
     if stage in {'PLAN_READY','EXECUTION'}:
         return {'current_result':'Bounded implementation is ready or resumable.','current_stage':stage,'next_surface':'VS_CODE','next_command':'EXECUTE_IMPLEMENTATION','why':'Deterministic Workplan routing selects Phase, Task, Attempt and ticket.'}
     if stage == 'CLOSED_VALIDATED':
-        return {'current_result':'The cycle is validated and closed.','current_stage':stage,'next_surface':'EXTERNAL_AI','next_command':'EXECUTE_RESEARCH','why':'A new feature/version starts from a new Research handoff.'}
-    if stage in {'BOOTSTRAP',None}:
+        return {'current_result':'The cycle is validated and closed. Runtime ends.','current_stage':stage,'next_surface':'HUMAN','next_command':None,'why':'A new Research handoff requires a separate user request.'}
+    if stage in {'BOOTSTRAP','AWAITING_RESEARCH','RESEARCH_REVISION_REQUIRED',None}:
         return {'current_result':'No active validated Scope exists.','current_stage':stage or 'BOOTSTRAP','next_surface':'EXTERNAL_AI','next_command':'EXECUTE_RESEARCH','why':'Research must establish product WHAT/WHY before Planning.'}
     return {'current_result':'Workplan requires deterministic status inspection.','current_stage':stage,'next_surface':'UNKNOWN','next_command':'WORKPLAN_STATUS','why':'No public execution command is valid for the current stage.'}
 
@@ -84,8 +84,8 @@ def execute(command, surface, tool='unknown', model='unknown'):
     if command == 'WORKPLAN_NEXT': return {'status':'OK','command':command,'state_changed':False,'continuation':continuation(st),'allowed_commands':allowed_commands(st)}
     if command == 'EXECUTE_RESEARCH':
         if surface != 'EXTERNAL_AI': return _reject(command, st, 'RESEARCH_REQUIRES_EXTERNAL_AI')
-        if st.get('lifecycle_stage') not in {'BOOTSTRAP','CLOSED_VALIDATED'}: return _reject(command, st, 'ACTIVE_CYCLE_MUST_FINISH_BEFORE_NEW_RESEARCH')
-        return {'status':'ACCEPTED','command':command,'mode':'INIT' if st.get('lifecycle_stage')=='BOOTSTRAP' else 'NEW_CYCLE','surface':'EXTERNAL_AI','role':'RESEARCH','role_constitution':'Workplan/external_agent/RESEARCH_INSTRUCTION.md','research_protocol':'Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md','template':'Workplan/templates/PROJECT_DETAILS_TEMPLATE.md','expected_output':['Workplan/ingest/project_details.md','Workplan/ingest/docs/raw/*'],'state_changed':False}
+        if st.get('lifecycle_stage') not in {'BOOTSTRAP','AWAITING_RESEARCH','RESEARCH_REVISION_REQUIRED'}: return _reject(command, st, 'RESEARCH_REQUIRES_NEW_USER_REQUEST')
+        return {'status':'ACCEPTED','command':command,'mode':'INIT','surface':'EXTERNAL_AI','role':'RESEARCH','role_constitution':'Workplan/external_agent/RESEARCH_INSTRUCTION.md','research_protocol':'Workplan/external_agent/RESEARCH_POTOCAL_PROMPT.md','template':'Workplan/templates/PROJECT_DETAILS_TEMPLATE.md','expected_output':['Workplan/ingest/project_details.md','Workplan/ingest/docs/raw/*'],'state_changed':False}
     if command == 'EXECUTE_IMPLEMENTATION':
         if surface != 'VS_CODE': return _reject(command, st, 'IMPLEMENTATION_REQUIRES_VS_CODE')
         if st.get('lifecycle_stage') not in {'PLAN_READY','EXECUTION'}: return _reject(command, st, 'IMPLEMENTATION_NOT_ALLOWED_IN_CURRENT_STAGE')
@@ -100,14 +100,15 @@ def execute(command, surface, tool='unknown', model='unknown'):
             if p.is_file():
                 meta = json.loads(p.read_text(encoding='utf-8')); resumable = meta.get('role') == role and meta.get('status') != 'COMPLETED'
         subject = _subject(st, role)
-        if role == 'PLANNING' and not resumable:
+        if role in {'PLANNING_A','PLANNING_B'} and not resumable:
             if not grant_matches(st, command, subject):
                 return _approval(command, st, 'NEW_COST_ENVELOPE', subject)
             # Consume before starting Work. The grant is state-bound and single-use;
             # starting Work is itself a state transition.
             consume_grant(st, command, subject)
             save_state(st, event='COMMAND_APPROVAL_CONSUMED', actor='machine:command', details={'command':command,'subject':subject})
-        mode, meta, ticket = W.acquire(role, tool, model)
+        mode, meta, ticket = W.acquire('PLANNING' if role.startswith('PLANNING_') else role, tool, model)
+        meta['planning_stage'] = role
         return {'status':'ACCEPTED','command':command,'mode':mode,'surface':'EXTERNAL_AI','role':role,'role_constitution':ROLE_CONSTITUTION[role],'work_id':meta['work_id'],'generation':meta['generation'],'ticket':ticket,'state_changed':True}
     if command in RESET_ROLE:
         role = RESET_ROLE[command]

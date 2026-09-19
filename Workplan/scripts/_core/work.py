@@ -29,10 +29,12 @@ def _cycle(st):
 
 def _current_binding(st, role, task_id=None, attempt_kind='INITIAL', recovery_contract_digest=None):
     cid, cycle = _cycle(st)
+    research = (st.get('research_revisions') or {}).get(st.get('active_research_revision'), {})
     binding = {
         'cycle_id': cid,
-        'scope_digest': (cycle.get('scope') or {}).get('digest'),
-        'ingest_digest': (cycle.get('ingest') or {}).get('package_digest'),
+        'scope_digest': (cycle.get('scope') or {}).get('digest') or ((research.get('scope_candidate') or {}).get('digest')),
+        'ingest_digest': (cycle.get('ingest') or {}).get('package_digest') or ((research.get('ingest') or {}).get('package_digest')),
+        'research_revision_id': cycle.get('research_revision_id') or st.get('active_research_revision'),
         'planning_package_digest': (cycle.get('planning') or {}).get('candidate_package_digest'),
         'phase_digest': None,
         'task_digest': None,

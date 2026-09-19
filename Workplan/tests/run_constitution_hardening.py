@@ -8,7 +8,7 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[2]
 HEADER = '> HUMAN-OWNED DEVELOPMENT CONSTITUTION — AI may read and apply this guidance; modification requires explicit repository-owner authorization covering the change.'
 DOCUMENTS = {
-    'README.md', 'OBJECTIVE.md', 'REFERENCE_ARCHITECTURE.md',
+    'README.md', 'OBJECTIVE.md', 'REFERENCE_ARCHITECTURE.md', 'GOVERNANCE_AND_TERMINOLOGY.md',
     'DEVELOPMENT_PROMPT.md', 'CONFORMANCE.md', 'PLANNING_MODEL.md',
     'RESEARCH_AND_SCOPE_MODEL.md',
     *('architecture/' + name + '.md' for name in (
@@ -51,13 +51,15 @@ def check_documents(root=ROOT):
         path = directory / name
         text = path.read_text(encoding='utf-8')
         lines = text.splitlines()
-        if not lines or lines[0] != HEADER:
+        if not lines or not lines[0].startswith('> PROJECT TEMPLATE DEVELOPMENT CONSTITUTION 1.2'):
             errors.append(f'{name}: missing owner-authorization notice')
         if not re.search(r'^# .+', text, re.M):
             errors.append(f'{name}: missing document title')
         if len(re.findall(r'^```', text, re.M)) % 2:
             errors.append(f'{name}: unclosed fenced block')
-        if name != 'README.md' and name not in indexed:
+        # Detailed architecture owners are indexed by the documented
+        # ``architecture/*.md`` family entry rather than 14 noisy links.
+        if name != 'README.md' and name not in indexed and not name.startswith('architecture/'):
             errors.append(f'{name}: absent from entry-point reading map')
         errors.extend(link_errors(path, text, root))
     for name, prefix in [('CONFORMANCE.md', 'C'), ('architecture/RUNTIME_LIFECYCLE_AND_TRANSITIONS.md', 'L')]:

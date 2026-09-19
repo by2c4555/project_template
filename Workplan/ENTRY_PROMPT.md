@@ -1,4 +1,4 @@
-# Workplan Universal Entry Protocol — v5.3.2
+# Workplan Universal Entry Protocol — v5.4.0
 
 This is the single AI bootstrap entrypoint for Project Template Workplan on every provider/surface.
 

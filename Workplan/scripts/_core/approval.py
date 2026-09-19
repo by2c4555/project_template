@@ -5,12 +5,12 @@ from .paths import APPROVAL_DIR
 from .state import load_state, save_state, next_id, now
 from .io import atomic_write_json
 
-ALLOWED_RISKS = {'NEW_COST_ENVELOPE','MATERIAL_WORK_EXPANSION','LARGE_REWORK','EXCESS_REPAIR_EXPANSION','BROAD_RECOVERY','EXPENSIVE_REEVALUATION','SUBSTANTIAL_INVALIDATION'}
+ALLOWED_RISKS = {'SCOPE_APPROVAL','EXECUTION_APPROVAL','CHANGE_APPROVAL','NEW_COST_ENVELOPE','MATERIAL_WORK_EXPANSION','LARGE_REWORK','EXCESS_REPAIR_EXPANSION','BROAD_RECOVERY','EXPENSIVE_REEVALUATION','SUBSTANTIAL_INVALIDATION'}
 DEFAULT_TTL_SECONDS = 900
 
 
 def _digest_binding(st, risk, action, subject):
-    payload = {'state_seq': st['state_seq'], 'cycle': st.get('active_cycle'), 'stage': st.get('lifecycle_stage'), 'work': st.get('active_work'), 'task': st.get('active_task'), 'attempt': st.get('active_attempt'), 'risk': risk, 'action': action, 'subject': subject}
+    payload = {'state_seq': st['state_seq'], 'cycle': st.get('active_cycle'), 'research_revision': st.get('active_research_revision'), 'stage': st.get('lifecycle_stage'), 'work': st.get('active_work'), 'task': st.get('active_task'), 'attempt': st.get('active_attempt'), 'risk': risk, 'action': action, 'subject': subject}
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 

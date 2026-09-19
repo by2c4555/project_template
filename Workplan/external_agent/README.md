@@ -1,6 +1,6 @@
 # External Agent Roles — Project Template v5.3.2
 
-`Workplan/external_agent/` contains bounded reasoning-role instructions selected by deterministic Workplan commands. These files guide model behavior; they do **not** replace Workplan state, tickets, approvals, bindings, gates, or validation.
+`Workplan/external_agent/` contains bounded reasoning-role instructions selected by deterministic Workplan commands. These files guide model behavior; they do **not** replace Workplan state, tickets, approvals, bindings, gates, or validation. Planning is split into Planning A (sufficiency and Scope proposal) and Planning B (implementation package); only their deterministic approval boundaries publish authority.
 
 ## Files
 

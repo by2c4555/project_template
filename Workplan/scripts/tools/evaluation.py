@@ -21,5 +21,5 @@ else:
     if not cp.is_file(): raise SystemExit('EVALUATION: BLOCKED\ncompletion report missing')
     txt=cp.read_text(); scope=cycle['scope']
     if scope['revision_label'] not in txt or scope['digest'] not in txt: raise SystemExit('EVALUATION: BLOCKED\ncompletion report must contain exact scope revision and digest')
-    rec['completion_report']=a.completion_report; rec['completion_digest']=sha256_file(cp); cycle['status']='CLOSED_VALIDATED'; st['project_state']='CLOSED_VALIDATED'; st['lifecycle_stage']='CLOSED_VALIDATED'; st['next_action']='EXECUTE_RESEARCH'
+    rec['completion_report']=a.completion_report; rec['completion_digest']=sha256_file(cp); cycle['status']='CLOSED_VALIDATED'; st['project_state']='CLOSED_VALIDATED'; st['lifecycle_stage']='CLOSED_VALIDATED'; st['next_action']=None
 st['cycles'][cid]=cycle; save_state(st,event='EVALUATION_FINALIZED',actor='tool:evaluation',details={'result':a.result,'evaluation':rec['version']}); print('EVALUATION:',a.result); print('continuation:',continuation(load_state()))

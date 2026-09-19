@@ -1,4 +1,4 @@
-# Workplan v5.3.2 — Deterministic Control Plane Reference
+# Workplan v5.4.0 — Deterministic Control Plane Reference
 
 `Workplan/` is the durable authority layer for Project Template. It controls workflow state, role routing, tickets, approvals, immutable bindings, mutation authority, repair/recovery, gates, integrity, resume, and final closure.
 

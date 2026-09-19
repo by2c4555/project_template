@@ -177,3 +177,22 @@ def normalize_active_ingest():
     (INGEST_DIR / 'docs' / 'raw').mkdir(parents=True, exist_ok=True)
     (INGEST_DIR / '.gitkeep').touch(exist_ok=True)
     (INGEST_DIR / 'docs' / 'raw' / '.gitkeep').touch(exist_ok=True)
+
+
+def clear_exact_consumed(binding):
+    """Remove only files whose current bytes still equal the imported handoff."""
+    removed, retained = [], []
+    for row in binding.get('physical_files', []):
+        p = ROOT / binding['source_root'] / row['path']
+        if p.is_file() and sha256_file(p) == row['sha256']:
+            p.unlink(); removed.append(row['path'])
+        elif p.exists():
+            retained.append(row['path'])
+    for d in sorted(INGEST_DIR.rglob('*'), reverse=True):
+        if d.is_dir() and d not in {INGEST_DIR, INGEST_DIR / 'docs', INGEST_DIR / 'docs' / 'raw'}:
+            try: d.rmdir()
+            except OSError: pass
+    (INGEST_DIR / 'docs' / 'raw').mkdir(parents=True, exist_ok=True)
+    (INGEST_DIR / '.gitkeep').touch(exist_ok=True)
+    (INGEST_DIR / 'docs' / 'raw' / '.gitkeep').touch(exist_ok=True)
+    return {'removed': removed, 'retained': retained}

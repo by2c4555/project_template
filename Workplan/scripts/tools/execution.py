@@ -6,7 +6,6 @@ from _core.state import load_state, save_state, next_id, now
 from _core.paths import WORKPLAN, ROOT
 from _core.integrity import build_package_manifest
 from _core.contracts import load_contract_package
-from _core.approval import create_pending, grant_matches, consume_grant
 from _core.gates import task_gate, phase_gate
 from _core import work as W
 
@@ -136,11 +135,6 @@ if a.cmd == 'start':
     if not ok: raise SystemExit('EXECUTION: BLOCKED\npackage changed after PLAN_READY')
     try: package = load_contract_package(validate=True)
     except Exception as e: raise SystemExit(f'EXECUTION: BLOCKED\ncontract validation failed: {e}')
-    subject = man['package_digest']; grant = st.get('last_granted_approval') or {}
-    if man['task_count'] > 3 and not grant_matches(st, 'START_EXECUTION', subject):
-        if not st.get('pending_approval'):
-            rec = create_pending('NEW_COST_ENVELOPE', 'START_EXECUTION', subject); print('EXECUTION: HUMAN_APPROVAL_REQUIRED'); print('id:', rec['approval_id']); print('challenge:', rec['challenge']); raise SystemExit(2)
-        raise SystemExit('EXECUTION: BLOCKED\npending approval exists')
     phases = {pid: {'status': 'PENDING', 'digest': _digest(pc), 'evidence': None} for pid, pc in package['phases'].items()}
     tasks = {}
     for tid, task in package['tasks'].items():
@@ -151,8 +145,6 @@ if a.cmd == 'start':
         }
     cycle['execution'] = {'version': next_id(st, 'execution', 'Execution_V', 1), 'status': 'READY', 'package_digest': man['package_digest'], 'phases': phases, 'tasks': tasks, 'attempts': {}, 'active_issue': None}
     cycle['status'] = 'EXECUTION'; st['cycles'][cid] = cycle; st['project_state'] = 'EXECUTION'; st['lifecycle_stage'] = 'EXECUTION'; st['next_action'] = 'RUN_EXECUTION_MANAGER'
-    if grant_matches(st, 'START_EXECUTION', subject):
-        consume_grant(st, 'START_EXECUTION', subject)
     save_state(st, event='EXECUTION_STARTED', actor='tool:execution', details={'task_count': len(tasks), 'phase_count': len(phases), 'package_digest': man['package_digest']}); print('EXECUTION: READY'); raise SystemExit
 ex = cycle.get('execution') or {}
 if st.get('lifecycle_stage') != 'EXECUTION': raise SystemExit('EXECUTION: BLOCKED\nnot in EXECUTION stage')
